@@ -2,6 +2,7 @@ package com.pavellukyanov.themartian.ui.base
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pavellukyanov.themartian.utils.ext.dispatcher
 import com.pavellukyanov.themartian.utils.ext.log
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -20,7 +21,7 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
     private val mutex = Mutex()
     private val _state: MutableStateFlow<STATE> = MutableStateFlow(initState)
     private val errorHandler = CoroutineExceptionHandler { context, exception ->
-        log.e(exception, "Context: $context, Exception: $exception")
+        log.e(exception, "Context: ${context.dispatcher}, Exception: $exception")
         handledError(exception)
     }
 
@@ -43,20 +44,20 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
 
     fun sendAction(action: ACTION) = cpu {
         reduce(_state.value, action)
-        log.v("Reduce -> oldState: ${_state.value} | action: $action")
+        log.w("Reduce -> oldState: ${_state.value} | action: $action")
     }
 
     protected suspend fun saveState(newState: STATE) = cpu {
         withLock {
             _state.emit(newState)
-            log.v("SaveState -> newState: $newState")
+            log.w("SaveState -> newState: $newState")
         }
     }
 
     protected suspend fun sendEffect(newEffect: EFFECT) = ui {
         withLock {
             effect.send(newEffect)
-            log.v("SendEffect -> newEffect: $newEffect")
+            log.w("SendEffect -> newEffect: $newEffect")
         }
     }
 
