@@ -17,8 +17,7 @@ fun debug(message: () -> String) {
 val CoroutineContext.dispatcher get() = splitContext(this)
 
 fun CoroutineScope.suspendDebugLog(tag: String? = null, message: () -> String = { "" }) {
-    val t = tag ?: "SMOTRIM"
-    Timber.tag(t).w("${coroutineContext.dispatcher} -> ${message()}")
+    Timber.tag(tag ?: "SMOTRIM").w("${coroutineContext.dispatcher} -> ${message()}")
 }
 
 private fun splitContext(coroutineContext: CoroutineContext): String {
