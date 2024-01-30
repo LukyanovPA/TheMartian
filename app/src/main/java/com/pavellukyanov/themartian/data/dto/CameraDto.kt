@@ -1,0 +1,12 @@
+package com.pavellukyanov.themartian.data.dto
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class CameraDto(
+    @SerialName("id") val id: Int,
+    @SerialName("name") val name: String,
+    @SerialName("rover_id") val roverId: Int,
+    @SerialName("full_name") val fullName: String
+)
