@@ -10,7 +10,6 @@ androidx-activityCompose = "1.8.2"
 serialization-version = "1.6.2"
 koin-version = "3.5.0"
 koin-android-compose-version = "3.5.0"
-koin-compose-version = "1.1.0"
 coroutines-version = "1.7.3"
 navigation-compose = "2.7.6"
 accompanist-systemuicontroller-version = "0.32.0"
@@ -18,7 +17,6 @@ desugar_version = "2.0.4"
 lifecycle-runtime-compose = "2.7.0"
 room-version = "2.6.1"
 timber-version = "5.0.1"
-ktx = "1.12.0"
 coil-version = "2.5.0"
 constraint_version = "1.0.1"
 retrofit_version = "2.9.0"
@@ -26,6 +24,7 @@ converter_gson_version = "2.9.0"
 interceptor_version = "4.11.0"
 converter_scalars_version = "2.4.0"
 serialization-version-jw = "0.8.0"
+dev-tools = "1.9.10-1.0.13"
 
 [libraries]
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit_version" }
@@ -36,8 +35,6 @@ retrofitSerializations = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-
 constraint_layout = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraint_version" }
 coil = { module = "io.coil-kt:coil-compose", version.ref = "coil-version" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
-androidx-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "ktx" }
-androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle-runtime-compose" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber-version" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room-version" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room-version" }
@@ -59,15 +56,14 @@ compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = 
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
 compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
 compose-material = { module = "androidx.compose.material:material", version.ref = "compose" }
-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines-version" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines-version" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin-version" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin-version" }
 koin-android-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin-android-compose-version" }
-koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin-compose-version" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization-version" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "dev-tools" }

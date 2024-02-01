@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">TheMartian</string>
+
+    //Service
+    <string name="cache_service_title">Обновление кэша</string>
+    <string name="cache_service_content">Загружаю актуальную информацию о роверах</string>
+    <string name="cache_updated">Кэш успешно обновлен</string>
+
+    //Common
+    <string name="loading_title">Загружаю данные</string>
+    <string name="button_back">Кнопка назад</string>
+    <string name="any_screen_error">Ошибка</string>
+    <string name="any_screen_ok">OK</string>
+
+    //Rover Info
+    <string name="landing_date">Дата посадки:</string>
+    <string name="launch_date">Дата запуска:</string>
+    <string name="last_photo_date">Последние фото:</string>
+    <string name="total_photo">Всего фото:</string>
 </resources>

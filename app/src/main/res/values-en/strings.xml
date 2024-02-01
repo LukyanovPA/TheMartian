@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TheMartian</string>
+    <string name="cache_service_title">Update cache</string>
+    <string name="cache_service_content">Download actual rovers information</string>
+    <string name="cache_updated">Cache updated successfully</string>
+    <string name="loading_title">Loading data</string>
+    <string name="landing_date">Landing date:</string>
+    <string name="launch_date">Launch date:</string>
+    <string name="last_photo_date">Last photo:</string>
+    <string name="total_photo">Total photos:</string>
+    <string name="button_back">Button back</string>
+    <string name="any_screen_error">Error</string>
+    <string name="any_screen_ok">OK</string>
+</resources>

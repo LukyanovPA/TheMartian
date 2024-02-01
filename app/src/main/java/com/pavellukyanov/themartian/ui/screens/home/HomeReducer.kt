@@ -9,12 +9,16 @@ class HomeReducer(
     override suspend fun reduce(oldState: HomeState, action: HomeAction) {
         when (action) {
             is HomeAction.LoadRovers -> onLoadRovers()
+            is HomeAction.OnRoverClick -> sendEffect(HomeEffect.NavigateToRoverGallery(roverName = action.rover.roverName))
         }
     }
 
     private fun onLoadRovers() = io {
-        actionWithState { current ->
-            saveState(current.copy(isLoading = false, rovers = loadRovers()))
-        }
+        loadRovers()
+            .collect { rovers ->
+                actionWithState { current ->
+                    saveState(current.copy(isLoading = rovers.isEmpty(), rovers = rovers))
+                }
+            }
     }
 }

@@ -12,6 +12,9 @@ data class HomeState(
 
 sealed class HomeAction : Action() {
     data object LoadRovers : HomeAction()
+    data class OnRoverClick(val rover: Rover) : HomeAction()
 }
 
-sealed class HomeEffect : Effect()
+sealed class HomeEffect : Effect() {
+    data class NavigateToRoverGallery(val roverName: String) : HomeEffect()
+}

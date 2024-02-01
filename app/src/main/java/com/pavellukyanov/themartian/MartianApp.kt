@@ -26,6 +26,8 @@ class MartianApp : Application() {
             modules(domainModule)
             modules(reducerModule)
         }
+
+//        this.applicationContext.deleteDatabase("MartianLocalDatabase.db")
     }
 
     private fun initLogger() {

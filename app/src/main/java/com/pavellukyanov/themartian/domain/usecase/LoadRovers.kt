@@ -1,12 +1,10 @@
 package com.pavellukyanov.themartian.domain.usecase
 
-import com.pavellukyanov.themartian.data.api.ApiDataSource
-import com.pavellukyanov.themartian.data.dto.RoverItemDto
+import com.pavellukyanov.themartian.data.cache.dao.RoverInfoDao
 import com.pavellukyanov.themartian.domain.entity.Rover
-import com.pavellukyanov.themartian.domain.entity.toRover
+import kotlinx.coroutines.flow.Flow
 
-class LoadRovers(private val apiDataSource: ApiDataSource) {
-    suspend operator fun invoke(): List<Rover> =
-        apiDataSource.getRoversInfo()
-            .map(RoverItemDto::toRover)
+class LoadRovers(private val roverInfoDao: RoverInfoDao) {
+    operator fun invoke(): Flow<List<Rover>> =
+        roverInfoDao.subscribeAll()
 }
