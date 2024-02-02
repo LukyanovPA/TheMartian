@@ -8,6 +8,7 @@ import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.C.ERROR_MESSAGE
 import com.pavellukyanov.themartian.utils.ext.dispatcher
 import com.pavellukyanov.themartian.utils.ext.log
+import com.pavellukyanov.themartian.utils.ext.suspendDebugLog
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +24,8 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initState: STATE) : ViewModel(), KoinComponent {
-    private val context: Context by inject()
+    private val tag = this::class.java.simpleName
+    protected val context: Context by inject()
     private val mutex = Mutex()
     private val _state: MutableStateFlow<STATE> = MutableStateFlow(initState)
     private val errorHandler = CoroutineExceptionHandler { context, exception ->
@@ -50,24 +52,24 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
 
     fun sendAction(action: ACTION) = cpu {
         reduce(_state.value, action)
-        log.w("Reduce -> oldState: ${_state.value} | action: $action")
+        suspendDebugLog(tag) { "Reduce -> oldState: ${_state.value} | action: $action" }
     }
 
     protected suspend fun saveState(newState: STATE) = cpu {
         withLock {
             _state.emit(newState)
-            log.w("SaveState -> newState: $newState")
+            suspendDebugLog(tag) { "SaveState -> newState: $newState" }
         }
     }
 
     protected suspend fun sendEffect(newEffect: EFFECT) = ui {
         withLock {
             effect.send(newEffect)
-            log.w("SendEffect -> newEffect: $newEffect")
+            suspendDebugLog(tag) { "SendEffect -> newEffect: $newEffect" }
         }
     }
 
-    protected fun actionWithState(onAction: suspend (currentState: STATE) -> Unit) = cpu {
+    protected fun withState(onAction: suspend (currentState: STATE) -> Unit) = cpu {
         onAction(_state.value)
     }
 

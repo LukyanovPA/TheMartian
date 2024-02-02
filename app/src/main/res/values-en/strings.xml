@@ -12,4 +12,8 @@
     <string name="button_back">Button back</string>
     <string name="any_screen_error">Error</string>
     <string name="any_screen_ok">OK</string>
+    <string name="sol">Sol</string>
+    <string name="earth_date">Earth date</string>
+    <string name="rover_name">Rover name</string>
+    <string name="camera_name">Camera</string>
 </resources>

@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
@@ -51,6 +53,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val hasError = remember { mutableStateOf(false) }
                 val error = remember { mutableStateOf(EMPTY_STRING) }
+                val configuration = LocalConfiguration.current
 
                 Launch {
                     reducer.subscribeEffect { effect ->
@@ -74,7 +77,7 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .paint(
                                 painterResource(id = R.drawable.main_background),
-                                contentScale = ContentScale.FillHeight
+                                contentScale = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) ContentScale.Crop else ContentScale.FillHeight
                             ),
                         navController = navController
                     )
@@ -144,13 +147,13 @@ class MainActivity : ComponentActivity() {
         unregisterReceiver(cacheReceiver)
     }
 
-    private fun unregisterErrorBroadcastReceiver() {
-        log.w("unregisterErrorBroadcastReceiver")
+    private fun unregisterBroadcastReceivers() {
+        log.w("unregisterBroadcastReceivers")
         unregisterReceiver(errorReceiver)
     }
 
     override fun onDestroy() {
-        unregisterErrorBroadcastReceiver()
+        unregisterBroadcastReceivers()
         super.onDestroy()
     }
 }

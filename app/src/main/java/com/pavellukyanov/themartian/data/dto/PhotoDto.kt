@@ -1,5 +1,8 @@
 package com.pavellukyanov.themartian.data.dto
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.pavellukyanov.themartian.utils.DateFormatter
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -12,3 +15,25 @@ data class PhotoDto(
     @SerialName("earth_date") val earthDate: String,
     @SerialName("rover") val roverDto: RoverDto
 )
+
+
+@Entity(tableName = "favourites")
+data class FavouritesPhoto(
+    @PrimaryKey
+    val id: Int,
+    val sol: Int,
+    val cameraName: String,
+    val cameraFullName: String,
+    val earthDate: String,
+    val roverName: String
+)
+
+fun PhotoDto.map(): FavouritesPhoto =
+    FavouritesPhoto(
+        id = id,
+        sol = sol,
+        cameraName = cameraDto.name,
+        cameraFullName = cameraDto.fullName,
+        earthDate = DateFormatter.format(earthDate),
+        roverName = roverDto.name
+    )

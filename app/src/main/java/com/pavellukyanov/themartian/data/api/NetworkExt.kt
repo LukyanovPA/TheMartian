@@ -1,4 +1,4 @@
-package com.pavellukyanov.themartian.data.dto
+package com.pavellukyanov.themartian.data.api
 
 import retrofit2.Response
 

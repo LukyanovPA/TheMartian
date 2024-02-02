@@ -17,4 +17,10 @@
     <string name="launch_date">Дата запуска:</string>
     <string name="last_photo_date">Последние фото:</string>
     <string name="total_photo">Всего фото:</string>
+
+    //Photo Info
+    <string name="sol">Сол</string>
+    <string name="earth_date">Дата на Земле</string>
+    <string name="rover_name">Ровер</string>
+    <string name="camera_name">Камера</string>
 </resources>

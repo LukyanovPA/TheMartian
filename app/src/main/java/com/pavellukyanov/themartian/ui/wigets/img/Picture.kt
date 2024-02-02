@@ -15,10 +15,11 @@ import coil.request.ImageRequest
 fun Picture(
     modifier: Modifier,
     url: Any?,
-    contentDescription: String? = null
+    contentDescription: String? = null,
+    contentScale: ContentScale = ContentScale.None
 ) {
     SubcomposeAsyncImage(
-        contentScale = ContentScale.Crop,
+        contentScale = contentScale,
         modifier = modifier,
         model = ImageRequest.Builder(LocalContext.current)
             .data(url)
@@ -26,7 +27,7 @@ fun Picture(
             .build(),
         loading = {
             CircularProgressIndicator(
-                modifier = Modifier
+                modifier = modifier
                     .size(8.dp),
                 color = Color.Red
             )

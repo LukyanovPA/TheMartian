@@ -1,5 +1,6 @@
 package com.pavellukyanov.themartian.ui.screens.gallery
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,7 +42,7 @@ import com.pavellukyanov.themartian.utils.ext.subscribeEffect
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun RoverGallery(
+fun GalleryScreen(
     roverName: String,
     modifier: Modifier,
     navController: NavHostController,
@@ -53,20 +54,21 @@ fun RoverGallery(
         reducer.sendAction(GalleryAction.LoadLatestPhotos(roverName = roverName))
         reducer.subscribeEffect { effect ->
             when (effect) {
-                is GalleryEffect.GoBack -> navController.popBackStack()
+                is GalleryEffect.OnBackClick -> navController.popBackStack()
+                is GalleryEffect.OnPhotoClick -> navController.navigate("ui/screens/photo")
             }
         }
     }
 
     state.receive<GalleryState>(
         content = { currentState ->
-            GalleryContent(modifier = modifier, state = currentState, onClick = reducer::sendAction)
+            GalleryScreenContent(modifier = modifier, state = currentState, onClick = reducer::sendAction)
         }
     )
 }
 
 @Composable
-private fun GalleryContent(
+private fun GalleryScreenContent(
     modifier: Modifier,
     state: GalleryState,
     onClick: (GalleryAction) -> Unit
@@ -74,7 +76,7 @@ private fun GalleryContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(top = 14.dp)
+            .padding(top = 24.dp, bottom = 30.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.Start,
@@ -123,10 +125,12 @@ private fun GalleryContent(
                 content = {
                     items(state.photos) { photo ->
                         Picture(
+                            url = photo.imgSrc,
+                            contentDescription = null,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .wrapContentHeight(),
-                            url = photo.imgSrc
+                                .wrapContentHeight()
+                                .clickable { onClick(GalleryAction.OnPhotoClick(photo)) }
                         )
                     }
                 }

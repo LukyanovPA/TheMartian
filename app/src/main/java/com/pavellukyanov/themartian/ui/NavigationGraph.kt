@@ -7,8 +7,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.pavellukyanov.themartian.ui.screens.gallery.RoverGallery
+import com.pavellukyanov.themartian.ui.screens.gallery.GalleryScreen
 import com.pavellukyanov.themartian.ui.screens.home.HomeScreen
+import com.pavellukyanov.themartian.ui.screens.photo.PhotoScreen
 import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
 import com.pavellukyanov.themartian.utils.C.ROVER_NAME_ARG
 
@@ -34,7 +35,10 @@ fun NavigationGraph(
             )
         ) { backStackEntry ->
             val roverName = backStackEntry.arguments?.getString(ROVER_NAME_ARG, EMPTY_STRING).orEmpty()
-            RoverGallery(roverName = roverName, modifier = modifier, navController = navController)
+            GalleryScreen(roverName = roverName, modifier = modifier, navController = navController)
+        }
+        composable(route = "ui/screens/photo") {
+            PhotoScreen(modifier = modifier, navController = navController)
         }
     }
 }

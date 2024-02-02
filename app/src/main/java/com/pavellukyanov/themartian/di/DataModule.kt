@@ -23,4 +23,5 @@ val dataModule = module {
     }
 
     single { get<MartianLocalDatabase>().roverInfo() }
+    single { get<MartianLocalDatabase>().favourites() }
 }

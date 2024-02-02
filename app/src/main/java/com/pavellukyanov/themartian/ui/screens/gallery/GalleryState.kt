@@ -15,8 +15,10 @@ data class GalleryState(
 sealed class GalleryAction : Action() {
     data class LoadLatestPhotos(val roverName: String) : GalleryAction()
     data object OnBackClick : GalleryAction()
+    data class OnPhotoClick(val photoDto: PhotoDto) : GalleryAction()
 }
 
 sealed class GalleryEffect : Effect() {
-    data object GoBack : GalleryEffect()
+    data object OnBackClick : GalleryEffect()
+    data object OnPhotoClick : GalleryEffect()
 }
