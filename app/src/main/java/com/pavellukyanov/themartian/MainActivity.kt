@@ -18,7 +18,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
@@ -36,8 +35,6 @@ import com.pavellukyanov.themartian.utils.ext.checkSdkVersion
 import com.pavellukyanov.themartian.utils.ext.debug
 import com.pavellukyanov.themartian.utils.ext.log
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
-import com.pavellukyanov.themartian.utils.ext.suspendDebugLog
-import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
@@ -126,10 +123,8 @@ class MainActivity : ComponentActivity() {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 intent?.getBooleanExtra(OK_RESULT, false)?.let { state ->
-                    lifecycleScope.launch {
-                        suspendDebugLog { "onReceiveCache -> $state" }
-                        if (state) stopCacheService(); unregisterCacheBroadcastReceiver()
-                    }
+                    log.w("onReceiveCache -> $state")
+                    if (state) stopCacheService(); unregisterCacheBroadcastReceiver()
                 }
             }
         }
