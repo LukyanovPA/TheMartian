@@ -22,6 +22,15 @@ object DateFormatter {
         return listOf(year, SPACE, getMonth(month), day).joinToString(separator = DEFAULT)
     }
 
+    //год, месяц, день
+    fun parse(date: String): Triple<Int, Int, Int> =
+        if (date.isNotEmpty()) {
+            val list = date.split(' ')
+            Triple(list.first().toInt(), getMonthInt(list[1]), list[2].toInt())
+        } else {
+            Triple(0, 0, 0)
+        }
+
     private fun getMonth(month: String): String =
         when (month) {
             "01" -> "Jan"
@@ -37,5 +46,22 @@ object DateFormatter {
             "11" -> "Nov"
             "12" -> "Dec"
             else -> DEFAULT
+        }
+
+    private fun getMonthInt(month: String): Int =
+        when (month) {
+            "Jan" -> 0
+            "Feb" -> 1
+            "Mar" -> 2
+            "Apr" -> 3
+            "May" -> 4
+            "Jun" -> 5
+            "Jul" -> 6
+            "Aug" -> 7
+            "Sep" -> 8
+            "Okt" -> 9
+            "Nov" -> 10
+            "Dec" -> 11
+            else -> 0
         }
 }

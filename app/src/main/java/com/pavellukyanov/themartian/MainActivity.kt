@@ -20,6 +20,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
+import coil.annotation.ExperimentalCoilApi
+import coil.imageLoader
 import com.pavellukyanov.themartian.services.CacheService
 import com.pavellukyanov.themartian.ui.NavigationGraph
 import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
@@ -31,6 +33,7 @@ import com.pavellukyanov.themartian.utils.C.ERROR_MESSAGE
 import com.pavellukyanov.themartian.utils.C.OK_RESULT
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.checkSdkVersion
+import com.pavellukyanov.themartian.utils.ext.debug
 import com.pavellukyanov.themartian.utils.ext.log
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
 import com.pavellukyanov.themartian.utils.ext.suspendDebugLog
@@ -42,6 +45,7 @@ class MainActivity : ComponentActivity() {
     private val errorReceiver by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { initErrorBroadcastReceiver() }
     private val reducer by inject<MainActivityReducer>()
 
+    @OptIn(ExperimentalCoilApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -54,6 +58,16 @@ class MainActivity : ComponentActivity() {
                 val hasError = remember { mutableStateOf(false) }
                 val error = remember { mutableStateOf(EMPTY_STRING) }
                 val configuration = LocalConfiguration.current
+
+                //Coil Cache
+//                Button(onClick = {
+//                    context.imageLoader.diskCache?.clear()
+//                    context.imageLoader.memoryCache?.clear()
+//                }) {
+//                    Text("Clear Image Cache")
+//                }
+                val currentImageCacheSize = ((applicationContext.imageLoader.diskCache?.size ?: 0L) / 1024) / 1024
+                debug { "CACHE SIZE $currentImageCacheSize" }
 
                 Launch {
                     reducer.subscribeEffect { effect ->
@@ -117,11 +131,8 @@ class MainActivity : ComponentActivity() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 intent?.getBooleanExtra(OK_RESULT, false)?.let { state ->
                     lifecycleScope.launch {
-                        suspendDebugLog { "onReceive state -> $state" }
-                        if (state) {
-                            stopCacheService()
-                            unregisterCacheBroadcastReceiver()
-                        }
+                        suspendDebugLog { "onReceiveCache -> $state" }
+                        if (state) stopCacheService(); unregisterCacheBroadcastReceiver()
                     }
                 }
             }
@@ -130,8 +141,8 @@ class MainActivity : ComponentActivity() {
     private fun initErrorBroadcastReceiver(): BroadcastReceiver =
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                log.w("initErrorBroadcastReceiver -> $intent")
                 intent?.getStringExtra(ERROR_MESSAGE)?.let { errorMessage ->
+                    log.w("onReceiveError -> $errorMessage")
                     reducer.sendAction(MainAction.Error(errorMessage = errorMessage))
                 }
             }
@@ -147,13 +158,8 @@ class MainActivity : ComponentActivity() {
         unregisterReceiver(cacheReceiver)
     }
 
-    private fun unregisterBroadcastReceivers() {
-        log.w("unregisterBroadcastReceivers")
-        unregisterReceiver(errorReceiver)
-    }
-
     override fun onDestroy() {
-        unregisterBroadcastReceivers()
+        unregisterReceiver(errorReceiver)
         super.onDestroy()
     }
 }

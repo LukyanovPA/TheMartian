@@ -84,7 +84,16 @@ fun GalleryScreen(
             ) { padding ->
                 GalleryScreenContent(modifier = modifier, paddingValues = padding, state = currentState, onClick = reducer::sendAction)
 
-                if (showBottomSheet) BottomFilter(currentDate = "", isFavourites = isLocal, paddingValues = padding, onShowBottomSheetState = { showBottomSheet = it })
+                if (showBottomSheet) BottomFilter(
+                    currentDate = currentState.currentDate,
+                    isFavourites = isLocal,
+                    paddingValues = padding,
+                    onShowBottomSheetState = { showBottomSheet = it },
+                    onNewDate = {
+                        reducer.sendAction(GalleryAction.OnSetNewDate(newDate = it))
+                        showBottomSheet = false
+                    }
+                )
             }
         }
     )

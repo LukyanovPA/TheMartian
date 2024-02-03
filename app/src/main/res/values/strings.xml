@@ -11,6 +11,8 @@
     <string name="button_back">Кнопка назад</string>
     <string name="any_screen_error">Ошибка</string>
     <string name="any_screen_ok">OK</string>
+    <string name="any_screen_confirm">Подтвердить</string>
+    <string name="any_screen_chancel">Отмена</string>
 
     //Rover Info
     <string name="landing_date">Дата посадки:</string>

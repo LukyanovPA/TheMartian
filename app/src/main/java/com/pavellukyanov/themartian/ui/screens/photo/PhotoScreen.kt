@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +45,7 @@ import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -97,7 +99,8 @@ fun PhotoScreenContent(
     onChangeFavouritesClick: () -> Unit
 ) {
     var scale by remember { mutableFloatStateOf(1f) }
-    var rotationState by remember { mutableFloatStateOf(1f) }
+    var rotationState by remember { mutableFloatStateOf(0f) }
+    val scope = rememberCoroutineScope()
 
     ConstraintLayout(
         modifier = modifier
@@ -106,36 +109,32 @@ fun PhotoScreenContent(
         val (buttonBack, photoBox, info) = createRefs()
 
         //Photo
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = modifier
+        Picture(
+            url = photoSrc,
+            contentDescription = null,
+            modifier = Modifier
                 .constrainAs(photoBox) {
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
-                .fillMaxSize() // Give the size you want...
+                .fillMaxWidth()
                 .pointerInput(Unit) {
-                    detectTransformGestures { centroid, pan, zoom, rotation ->
-                        scale *= zoom
-                        rotationState += rotation
+                    detectTransformGestures { _, _, zoom, rotation ->
+                        scope.launch {
+                            scale *= zoom
+                            rotationState += rotation
+                        }
                     }
                 }
-        ) {
-            Picture(
-                url = photoSrc,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer(
-                        // adding some zoom limits (min 50%, max 200%)
-                        scaleX = maxOf(0.5f, minOf(3f, scale)),
-                        scaleY = maxOf(0.5f, minOf(3f, scale)),
-                        rotationZ = rotationState
-                    )
-            )
-        }
+                .graphicsLayer(
+                    // adding some zoom limits (min 50%, max 200%)
+                    scaleX = maxOf(0.5f, minOf(10f, scale)),
+                    scaleY = maxOf(0.5f, minOf(10f, scale)),
+                    rotationZ = rotationState
+                )
+        )
 
         //Header
         Column(

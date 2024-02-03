@@ -39,6 +39,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.utils.DateFormatter
+import com.pavellukyanov.themartian.utils.ext.Launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -50,13 +54,26 @@ fun BottomFilter(
     currentDate: String,
     isFavourites: Boolean,
     paddingValues: PaddingValues,
-    onShowBottomSheetState: (Boolean) -> Unit
+    onShowBottomSheetState: (Boolean) -> Unit,
+    onNewDate: (String) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
     var showDatePicker by remember { mutableStateOf(false) }
+    var currentDateTriple by remember { mutableStateOf(Triple(0, 0, 0)) }
 
-    if (showDatePicker) DateDialog(onShowDatePicker = { showDatePicker = it })
+    Launch {
+        launch(Dispatchers.Default) {
+            currentDateTriple = DateFormatter.parse(currentDate)
+        }
+    }
+
+    if (showDatePicker) DateDialog(
+        startYear = currentDateTriple.first,
+        startMonth = currentDateTriple.second,
+        startDay = currentDateTriple.third,
+        onShowDatePicker = { showDatePicker = it },
+        onNewDate = onNewDate
+    )
 
     ModalBottomSheet(
         modifier = Modifier
@@ -108,7 +125,7 @@ fun BottomFilter(
                         .padding(16.dp)
                 ) {
                     Text(
-//                        modifier = Modifier,
+                        modifier = Modifier.padding(horizontal = 8.dp),
                         text = stringResource(id = R.string.filter_current_date),
                         color = Color.Black,
                         fontSize = 12.sp,
@@ -116,7 +133,7 @@ fun BottomFilter(
                         textAlign = TextAlign.Start
                     )
                     Text(
-//                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.padding(horizontal = 8.dp),
                         text = currentDate,
                         color = Color.Black,
                         fontSize = 12.sp,
@@ -129,7 +146,6 @@ fun BottomFilter(
                         }
                     ) {
                         Text(
-//                            modifier = Modifier.fillMaxWidth(),
                             text = "Change",
                             color = Color.Black,
                             fontSize = 12.sp,
@@ -146,34 +162,41 @@ fun BottomFilter(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateDialog(
-    onShowDatePicker: (Boolean) -> Unit
+    startYear: Int,
+    startMonth: Int,
+    startDay: Int,
+    onShowDatePicker: (Boolean) -> Unit,
+    onNewDate: (String) -> Unit
 ) {
     val calendar = Calendar.getInstance()
-    calendar.set(1990, 0, 22) // add year, month (Jan), date
+    calendar.set(startYear, startMonth, startDay)
 
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = calendar.timeInMillis)
-
-    var selectedDate by remember {
-        mutableLongStateOf(calendar.timeInMillis) // or use mutableStateOf(calendar.timeInMillis)
-    }
+    var selectedDate by remember { mutableLongStateOf(calendar.timeInMillis) }
+    val scope = rememberCoroutineScope()
 
     DatePickerDialog(
         onDismissRequest = {
             onShowDatePicker(false)
         },
         confirmButton = {
-            TextButton(onClick = {
-                onShowDatePicker(false)
-                selectedDate = datePickerState.selectedDateMillis!!
-            }) {
-                Text(text = "Confirm")
+            TextButton(
+                onClick = {
+                    scope.launch {
+                        onShowDatePicker(false)
+                        selectedDate = datePickerState.selectedDateMillis!!
+                        onNewDate(SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Date(selectedDate)))
+                    }
+                }
+            ) {
+                Text(text = stringResource(id = R.string.any_screen_confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = {
                 onShowDatePicker(false)
             }) {
-                Text(text = "Cancel")
+                Text(text = stringResource(id = R.string.any_screen_chancel))
             }
         }
     ) {
@@ -181,9 +204,4 @@ fun DateDialog(
             state = datePickerState
         )
     }
-
-    val formatter = SimpleDateFormat("dd MMMM yyyy", Locale.ROOT)
-    Text(
-        text = "Selected date: ${formatter.format(Date(selectedDate))}"
-    )
 }

@@ -13,5 +13,8 @@ class ApiDataSource(private val roverService: RoverService) {
             .map { it.toData().roverItem }
 
     suspend fun getLatestPhotos(roverName: String): List<PhotoDto> =
-        roverService.getLatestPhotos(roverName = roverName).toData().photoDtos
+        roverService.getLatestPhotos(roverName = roverName, page = 1).toData().photoDtos
+
+    suspend fun getPhotosByEarthDate(roverName: String, earthDate: String): List<PhotoDto> =
+        roverService.getByEarthData(roverName = roverName, earthDate = earthDate).toData().photos
 }
