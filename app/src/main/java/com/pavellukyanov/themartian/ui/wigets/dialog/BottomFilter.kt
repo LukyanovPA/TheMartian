@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.utils.DateFormatter
 import com.pavellukyanov.themartian.utils.ext.Launch
+import com.pavellukyanov.themartian.utils.ext.suspendDebugLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -64,6 +65,7 @@ fun BottomFilter(
     Launch {
         launch(Dispatchers.Default) {
             currentDateTriple = DateFormatter.parse(currentDate)
+            suspendDebugLog { "date -> $currentDateTriple" }
         }
     }
 

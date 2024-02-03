@@ -11,6 +11,6 @@ import org.koin.dsl.module
 val reducerModule = module {
     viewModel { MainActivityReducer() }
     viewModel { HomeReducer(loadRovers = get()) }
-    viewModel { GalleryReducer(getLatestPhotos = get(), storage = get(named("PHOTO_STORAGE")), getPhotosByEarthDateRemote = get()) }
+    viewModel { GalleryReducer(storage = get(named("PHOTO_STORAGE"))) }
     viewModel { PhotoReducer(storage = get(named("PHOTO_STORAGE")), isFavourites = get(), changeFavourites = get()) }
 }

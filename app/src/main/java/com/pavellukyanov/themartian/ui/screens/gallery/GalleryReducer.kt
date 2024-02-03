@@ -1,47 +1,56 @@
 package com.pavellukyanov.themartian.ui.screens.gallery
 
+import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import com.pavellukyanov.themartian.data.dto.Photo
-import com.pavellukyanov.themartian.domain.usecase.GetLatestPhotos
-import com.pavellukyanov.themartian.domain.usecase.GetPhotosByEarthDateRemote
+import com.pavellukyanov.themartian.domain.entity.PhotosOptions
+import com.pavellukyanov.themartian.domain.usecase.PhotosDataSource
 import com.pavellukyanov.themartian.domain.utils.Storage
 import com.pavellukyanov.themartian.ui.base.Reducer
 
 class GalleryReducer(
-    private val getLatestPhotos: GetLatestPhotos,
-    private val storage: Storage<Photo?>,
-    private val getPhotosByEarthDateRemote: GetPhotosByEarthDateRemote
+    private val storage: Storage<Photo?>
 ) : Reducer<GalleryState, GalleryAction, GalleryEffect>(GalleryState()) {
     override suspend fun reduce(oldState: GalleryState, action: GalleryAction) {
         when (action) {
             is GalleryAction.LoadLatestPhotos -> {
-                saveState(oldState.copy(roverName = action.roverName))
-                onLoadLatest(roverName = action.roverName, isLocal = action.isLocal)
+                val newOptions = oldState.options.copy(roverName = action.roverName)
+                saveState(oldState.copy(options = newOptions, isLocal = action.isLocal))
+                onLoadPhotos(options = newOptions, isLatest = true)
             }
 
             is GalleryAction.OnBackClick -> sendEffect(GalleryEffect.OnBackClick)
             is GalleryAction.OnPhotoClick -> setPhotoToStorage(action.photoDto)
             is GalleryAction.OnSetNewDate -> {
-                saveState(oldState.copy(isLoading = true))
-                loadPhotosByNewDate(roverName = oldState.photos.first().roverName, action.newDate)
+                val newOptions = oldState.options.copy(date = action.newDate)
+                saveState(oldState.copy(isLoading = true, options = newOptions))
+                onLoadPhotos(options = newOptions, isLatest = false)
             }
         }
     }
 
-    private fun onLoadLatest(roverName: String, isLocal: Boolean) = io {
-        val latest = getLatestPhotos(roverName, isLocal)
+    private suspend fun onLoadPhotos(options: PhotosOptions, isLatest: Boolean) = io {
+        val pagedData = Pager(
+            config = PagingConfig(pageSize = 25),
+            initialKey = 1,
+            pagingSourceFactory = { PhotosDataSource(options = options, isLatest = isLatest, currentDate = ::handleCurrentDate) }
+        ).flow.cachedIn(viewModelScope)
+
         withState { currentState ->
-            saveState(currentState.copy(isLoading = false, photos = latest, currentDate = latest.first().earthDate))
+            saveState(currentState.copy(isLoading = false, photos = pagedData))
+        }
+    }
+
+    private fun handleCurrentDate(date: String) = cpu {
+        withState { currentState ->
+            saveState(currentState.copy(options = currentState.options.copy(date = date)))
         }
     }
 
     private fun setPhotoToStorage(photo: Photo) = cpu {
         storage.set(photo)
         sendEffect(GalleryEffect.OnPhotoClick)
-    }
-
-    private fun loadPhotosByNewDate(roverName: String, newDate: String) = io {
-        withState { currentState ->
-            saveState(currentState.copy(isLoading = false, currentDate = newDate, photos = getPhotosByEarthDateRemote(roverName, newDate)))
-        }
     }
 }

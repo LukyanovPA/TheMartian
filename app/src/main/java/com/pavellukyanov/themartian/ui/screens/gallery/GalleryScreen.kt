@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -42,12 +41,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.ui.wigets.dialog.BottomFilter
 import com.pavellukyanov.themartian.ui.wigets.img.Picture
 import com.pavellukyanov.themartian.ui.wigets.loading.Loading
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
+import com.pavellukyanov.themartian.utils.ext.itemsPaging
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
 import org.koin.androidx.compose.koinViewModel
@@ -85,7 +88,7 @@ fun GalleryScreen(
                 GalleryScreenContent(modifier = modifier, paddingValues = padding, state = currentState, onClick = reducer::sendAction)
 
                 if (showBottomSheet) BottomFilter(
-                    currentDate = currentState.currentDate,
+                    currentDate = currentState.options.date,
                     isFavourites = isLocal,
                     paddingValues = padding,
                     onShowBottomSheetState = { showBottomSheet = it },
@@ -106,6 +109,8 @@ private fun GalleryScreenContent(
     state: GalleryState,
     onClick: (GalleryAction) -> Unit
 ) {
+    val photos: LazyPagingItems<Photo> = state.photos.collectAsLazyPagingItems()
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -137,7 +142,7 @@ private fun GalleryScreenContent(
                     .weight(3f)
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center,
-                text = state.roverName,
+                text = state.options.roverName,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp
@@ -154,12 +159,12 @@ private fun GalleryScreenContent(
         } else {
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(2),
-                verticalItemSpacing = 4.dp,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalItemSpacing = 1.dp,
+                horizontalArrangement = Arrangement.spacedBy(1.dp),
                 content = {
-                    items(state.photos) { photo ->
+                    itemsPaging(photos) { photo ->
                         Picture(
-                            url = photo.src,
+                            url = photo!!.src,
                             contentDescription = null,
                             modifier = Modifier
                                 .fillMaxWidth()

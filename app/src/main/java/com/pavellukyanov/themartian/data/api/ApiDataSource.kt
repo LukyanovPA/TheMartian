@@ -1,20 +1,28 @@
 package com.pavellukyanov.themartian.data.api
 
+import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.data.dto.PhotoDto
 import com.pavellukyanov.themartian.data.dto.RoverItemDto
 import com.pavellukyanov.themartian.data.dto.RoverName
+import com.pavellukyanov.themartian.data.dto.map
+import com.pavellukyanov.themartian.domain.entity.PhotosOptions
 
 class ApiDataSource(private val roverService: RoverService) {
-
     suspend fun getRoversInfo(): List<RoverItemDto> =
         RoverName.entries
             .map { it.roverName }
             .map { name -> roverService.loadRoverInfo(roverName = name) }
             .map { it.toData().roverItem }
 
-    suspend fun getLatestPhotos(roverName: String): List<PhotoDto> =
-        roverService.getLatestPhotos(roverName = roverName, page = 1).toData().photoDtos
+    suspend fun getLatest(roverName: String, page: Int): List<Photo> =
+        roverService.getLatestPhotos(roverName = roverName, page = page)
+            .toData()
+            .photoDtos
+            .map(PhotoDto::map)
 
-    suspend fun getPhotosByEarthDate(roverName: String, earthDate: String): List<PhotoDto> =
-        roverService.getByEarthData(roverName = roverName, earthDate = earthDate).toData().photos
+    suspend fun getPhotosByOptions(options: PhotosOptions, page: Int): List<Photo> =
+        roverService.getByOptions(roverName = options.roverName, earthDate = options.date, camera = options.camera, page = page)
+            .toData()
+            .photos
+            .map(PhotoDto::map)
 }

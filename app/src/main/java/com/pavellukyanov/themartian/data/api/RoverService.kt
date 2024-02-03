@@ -21,8 +21,10 @@ interface RoverService {
     ): Response<LatestDto>
 
     @GET("rovers/{rover}/photos?")
-    suspend fun getByEarthData(
+    suspend fun getByOptions(
         @Path("rover") roverName: String,
         @Query("earth_date") earthDate: String,
+        @Query("camera") camera: String?,
+        @Query("page") page: Int
     ): Response<PhotosDto>
 }
