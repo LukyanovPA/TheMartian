@@ -23,4 +23,8 @@
     <string name="earth_date">Дата на Земле</string>
     <string name="rover_name">Ровер</string>
     <string name="camera_name">Камера</string>
+
+    //Filter
+    <string name="filter_title">Фильтр</string>
+    <string name="filter_current_date">Текущая дата</string>
 </resources>

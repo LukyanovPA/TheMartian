@@ -16,12 +16,13 @@ class PhotoReducer(
     private val isFavourites: IsFavourites,
     private val changeFavourites: ChangeFavourites
 ) : Reducer<PhotoState, PhotoAction, PhotoEffect>(PhotoState()) {
+
     override suspend fun reduce(oldState: PhotoState, action: PhotoAction) {
         when (action) {
             is PhotoAction.LoadPhoto -> onSubscribeStorage()
             is PhotoAction.OnBackClick -> sendEffect(PhotoEffect.OnBackClick)
             is PhotoAction.DownloadPhoto -> onDownloadPhoto(photo = action.photo)
-            is PhotoAction.ChangeFavourites -> onChangeFavourites(isAdd = oldState.isFavourites, photo = action.photo)
+            is PhotoAction.ChangeFavourites -> action.photo?.let { onChangeFavourites(isAdd = !oldState.isFavourites, photo = it) }
         }
     }
 
@@ -59,10 +60,8 @@ class PhotoReducer(
         }
     }
 
-    private fun onChangeFavourites(isAdd: Boolean, photo: Photo?) = io {
-        photo?.let {
-            if (isAdd) changeFavourites.add(photo)
-            else changeFavourites.delete(photo)
-        }
+    private fun onChangeFavourites(isAdd: Boolean, photo: Photo) = io {
+        if (isAdd) changeFavourites.add(photo)
+        else changeFavourites.delete(photo)
     }
 }

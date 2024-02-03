@@ -14,7 +14,7 @@ import org.koin.dsl.module
 val domainModule = module {
     single { LoadRovers(roverInfoDao = get()) }
     single { UpdateRoverInfoCache(roverInfoDao = get(), apiDataSource = get()) }
-    single { GetLatestPhotos(apiDataSource = get()) }
+    single { GetLatestPhotos(apiDataSource = get(), favouritesDao = get()) }
     single<Storage<Photo?>>(named("PHOTO_STORAGE")) { PhotoStorage() }
     single { IsFavourites(favouritesDao = get()) }
     single { ChangeFavourites(favouritesDao = get()) }

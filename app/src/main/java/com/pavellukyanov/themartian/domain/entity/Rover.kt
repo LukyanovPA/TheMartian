@@ -123,7 +123,7 @@ data class Rover(
                         textAlign = TextAlign.Start
                     )
                     Text(
-                        text = landingDate,
+                        text = landingDateFormat,
                         fontWeight = FontWeight.Normal,
                         color = Color.Black,
                         fontSize = 12.sp,
@@ -148,7 +148,7 @@ data class Rover(
                         textAlign = TextAlign.Start
                     )
                     Text(
-                        text = maxDate,
+                        text = maxDateFormat,
                         fontWeight = FontWeight.Normal,
                         color = Color.Black,
                         fontSize = 12.sp,

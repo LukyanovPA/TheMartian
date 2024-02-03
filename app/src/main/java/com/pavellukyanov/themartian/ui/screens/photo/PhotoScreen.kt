@@ -162,9 +162,10 @@ fun PhotoScreenContent(
                     onClick = onBackClick,
                     shape = CircleShape,
                     contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                 ) {
                     Icon(
+                        tint = Color.White,
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(id = R.string.button_back)
                     )
@@ -182,9 +183,10 @@ fun PhotoScreenContent(
                         onClick = onDownloadClick,
                         shape = CircleShape,
                         contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                     ) {
                         Icon(
+                            tint = Color.White,
                             modifier = Modifier
                                 .padding(4.dp),
                             painter = painterResource(id = R.drawable.ic_download),
@@ -196,12 +198,13 @@ fun PhotoScreenContent(
                     Button(
                         modifier = Modifier
                             .size(40.dp),
-                        onClick = { },
+                        onClick = onChangeFavouritesClick,
                         shape = CircleShape,
                         contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                     ) {
                         Icon(
+                            tint = Color.Yellow,
                             modifier = Modifier
                                 .padding(4.dp),
                             painter = if (isFavourites) painterResource(id = R.drawable.ic_favourites) else painterResource(id = R.drawable.ic_is_not_favourites),
@@ -226,7 +229,9 @@ fun PhotoScreenContent(
             }
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
                 //Sol
                 Row(
@@ -245,7 +250,7 @@ fun PhotoScreenContent(
                         textAlign = TextAlign.Start
                     )
                     Text(
-                        modifier = Modifier,
+                        modifier = Modifier.fillMaxWidth(),
                         text = sol,
                         color = Color.White,
                         fontSize = 12.sp,
@@ -270,7 +275,7 @@ fun PhotoScreenContent(
                         textAlign = TextAlign.Start
                     )
                     Text(
-                        modifier = Modifier,
+                        modifier = Modifier.fillMaxWidth(),
                         text = earthDate,
                         color = Color.White,
                         fontSize = 12.sp,
@@ -295,7 +300,7 @@ fun PhotoScreenContent(
                         textAlign = TextAlign.Start
                     )
                     Text(
-                        modifier = Modifier,
+                        modifier = Modifier.fillMaxWidth(),
                         text = roverName,
                         color = Color.White,
                         fontSize = 12.sp,
@@ -320,8 +325,8 @@ fun PhotoScreenContent(
                         textAlign = TextAlign.Start
                     )
                     Text(
-                        modifier = Modifier,
-                        text = "${cameraFullName} (${cameraName})",
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "$cameraFullName (${cameraName})",
                         color = Color.White,
                         fontSize = 12.sp,
                         letterSpacing = 1.sp,

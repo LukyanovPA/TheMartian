@@ -16,4 +16,6 @@
     <string name="earth_date">Earth date</string>
     <string name="rover_name">Rover name</string>
     <string name="camera_name">Camera</string>
+    <string name="filter_title">Filter</string>
+    <string name="filter_current_date">Current date</string>
 </resources>
