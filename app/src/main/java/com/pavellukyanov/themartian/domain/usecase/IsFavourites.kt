@@ -8,7 +8,7 @@ class IsFavourites(
     private val favouritesDao: FavouritesDao
 ) {
     operator fun invoke(id: Int): Flow<Boolean> =
-        favouritesDao.getAll()
+        favouritesDao.observe()
             .map { list ->
                 list.find { it.id == id } != null
             }

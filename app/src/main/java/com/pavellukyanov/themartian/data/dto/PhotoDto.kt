@@ -18,22 +18,24 @@ data class PhotoDto(
 
 
 @Entity(tableName = "favourites")
-data class FavouritesPhoto(
+data class Photo(
     @PrimaryKey
     val id: Int,
     val sol: Int,
     val cameraName: String,
     val cameraFullName: String,
     val earthDate: String,
-    val roverName: String
+    val roverName: String,
+    val src: String
 )
 
-fun PhotoDto.map(): FavouritesPhoto =
-    FavouritesPhoto(
+fun PhotoDto.map(): Photo =
+    Photo(
         id = id,
         sol = sol,
         cameraName = cameraDto.name,
         cameraFullName = cameraDto.fullName,
         earthDate = DateFormatter.format(earthDate),
-        roverName = roverDto.name
+        roverName = roverDto.name,
+        src = imgSrc
     )

@@ -20,4 +20,5 @@ object C {
 
     //Args
     const val ROVER_NAME_ARG = "ROVER_NAME_ARG"
+    const val IS_LOCAL_ARG = "IS_LOCAL_ARG"
 }

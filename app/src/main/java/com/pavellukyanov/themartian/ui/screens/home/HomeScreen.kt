@@ -26,7 +26,7 @@ fun HomeScreen(
         reducer.sendAction(HomeAction.LoadRovers)
         reducer.subscribeEffect { effect ->
             when (effect) {
-                is HomeEffect.NavigateToRoverGallery -> navController.navigate("ui/screens/gallery/${effect.roverName}")
+                is HomeEffect.NavigateToRoverGallery -> navController.navigate("ui/screens/gallery/${effect.roverName}/${false}")
             }
         }
     }

@@ -4,13 +4,13 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.pavellukyanov.themartian.data.cache.dao.FavouritesDao
 import com.pavellukyanov.themartian.data.cache.dao.RoverInfoDao
-import com.pavellukyanov.themartian.data.dto.PhotoDto
+import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.domain.entity.Rover
 
 @Database(
     entities = [
         Rover::class,
-        PhotoDto::class
+        Photo::class
     ],
     version = 1,
     exportSchema = true

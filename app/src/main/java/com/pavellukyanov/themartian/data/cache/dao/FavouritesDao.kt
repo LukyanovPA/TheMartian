@@ -5,17 +5,20 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.pavellukyanov.themartian.data.dto.PhotoDto
+import com.pavellukyanov.themartian.data.dto.Photo
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FavouritesDao {
     @Query("SELECT * FROM favourites")
-    fun getAll(): Flow<List<PhotoDto>>
+    fun observe(): Flow<List<Photo>>
+
+    @Query("SELECT * FROM favourites")
+    suspend fun all(): List<Photo>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(photo: PhotoDto)
+    suspend fun insert(photo: Photo)
 
     @Delete
-    suspend fun delete(photo: PhotoDto)
+    suspend fun delete(photo: Photo)
 }

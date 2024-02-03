@@ -1,6 +1,6 @@
 package com.pavellukyanov.themartian.di
 
-import com.pavellukyanov.themartian.data.dto.PhotoDto
+import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.domain.usecase.ChangeFavourites
 import com.pavellukyanov.themartian.domain.usecase.GetLatestPhotos
 import com.pavellukyanov.themartian.domain.usecase.IsFavourites
@@ -15,7 +15,7 @@ val domainModule = module {
     single { LoadRovers(roverInfoDao = get()) }
     single { UpdateRoverInfoCache(roverInfoDao = get(), apiDataSource = get()) }
     single { GetLatestPhotos(apiDataSource = get()) }
-    single<Storage<PhotoDto?>>(named("PHOTO_STORAGE")) { PhotoStorage() }
+    single<Storage<Photo?>>(named("PHOTO_STORAGE")) { PhotoStorage() }
     single { IsFavourites(favouritesDao = get()) }
     single { ChangeFavourites(favouritesDao = get()) }
 }

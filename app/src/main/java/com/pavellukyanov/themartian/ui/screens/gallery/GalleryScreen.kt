@@ -15,10 +15,10 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,6 +44,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun GalleryScreen(
     roverName: String,
+    isLocal: Boolean,
     modifier: Modifier,
     navController: NavHostController,
     reducer: GalleryReducer = koinViewModel()
@@ -51,7 +52,10 @@ fun GalleryScreen(
     val state by reducer.asState()
 
     Launch {
-        reducer.sendAction(GalleryAction.LoadLatestPhotos(roverName = roverName))
+        //isLocal = true -> Избранное
+        //isLocal = false -> Из API
+
+        reducer.sendAction(GalleryAction.LoadLatestPhotos(roverName = roverName, isLocal = isLocal))
         reducer.subscribeEffect { effect ->
             when (effect) {
                 is GalleryEffect.OnBackClick -> navController.popBackStack()
@@ -91,7 +95,7 @@ private fun GalleryScreenContent(
                 onClick = { onClick(GalleryAction.OnBackClick) },
                 shape = CircleShape,
                 contentPadding = PaddingValues(0.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+                colors = ButtonDefaults.buttonColors(contentColor = Color.White)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -125,7 +129,7 @@ private fun GalleryScreenContent(
                 content = {
                     items(state.photos) { photo ->
                         Picture(
-                            url = photo.imgSrc,
+                            url = photo.src,
                             contentDescription = null,
                             modifier = Modifier
                                 .fillMaxWidth()

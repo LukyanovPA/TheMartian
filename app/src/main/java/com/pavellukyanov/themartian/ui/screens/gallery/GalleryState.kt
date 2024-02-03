@@ -1,6 +1,6 @@
 package com.pavellukyanov.themartian.ui.screens.gallery
 
-import com.pavellukyanov.themartian.data.dto.PhotoDto
+import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.ui.base.Action
 import com.pavellukyanov.themartian.ui.base.Effect
 import com.pavellukyanov.themartian.ui.base.State
@@ -8,14 +8,14 @@ import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
 
 data class GalleryState(
     override val isLoading: Boolean = true,
-    val photos: List<PhotoDto> = listOf(),
+    val photos: List<Photo> = listOf(),
     val roverName: String = EMPTY_STRING
 ) : State()
 
 sealed class GalleryAction : Action() {
-    data class LoadLatestPhotos(val roverName: String) : GalleryAction()
+    data class LoadLatestPhotos(val roverName: String, val isLocal: Boolean) : GalleryAction()
     data object OnBackClick : GalleryAction()
-    data class OnPhotoClick(val photoDto: PhotoDto) : GalleryAction()
+    data class OnPhotoClick(val photoDto: Photo) : GalleryAction()
 }
 
 sealed class GalleryEffect : Effect() {
