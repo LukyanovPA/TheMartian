@@ -52,9 +52,7 @@ class CacheService : LifecycleService() {
             updateRoverInfoCache().also {
                 sendBroadcast(Intent(CACHE_BROADCAST_ACTION).putExtra(OK_RESULT, true))
                 stopSelf()
-                suspendDebugLog(tag = this@CacheService::class.java.simpleName) {
-                    "updateRoverInfoCache"
-                }
+                suspendDebugLog(tag = this@CacheService::class.java.simpleName) { "updateRoverInfoCache" }
             }
         }
         return START_STICKY

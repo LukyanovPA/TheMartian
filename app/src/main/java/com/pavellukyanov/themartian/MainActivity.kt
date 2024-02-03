@@ -60,12 +60,8 @@ class MainActivity : ComponentActivity() {
                 val configuration = LocalConfiguration.current
 
                 //Coil Cache
-//                Button(onClick = {
-//                    context.imageLoader.diskCache?.clear()
-//                    context.imageLoader.memoryCache?.clear()
-//                }) {
-//                    Text("Clear Image Cache")
-//                }
+                //context.imageLoader.diskCache?.clear()
+                //context.imageLoader.memoryCache?.clear()
                 val currentImageCacheSize = ((applicationContext.imageLoader.diskCache?.size ?: 0L) / 1024) / 1024
                 debug { "CACHE SIZE $currentImageCacheSize" }
 
