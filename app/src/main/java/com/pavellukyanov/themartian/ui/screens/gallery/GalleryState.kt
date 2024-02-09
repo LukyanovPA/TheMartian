@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
 data class GalleryState(
-    override val isLoading: Boolean = true,
+    override val isLoading: Boolean = false,
     val photos: Flow<PagingData<Photo>> = flowOf(),
     val options: PhotosOptions = PhotosOptions(),
     val isLocal: Boolean = false,
@@ -22,7 +22,7 @@ sealed class GalleryAction : Action() {
     data class LoadLatestPhotos(val roverName: String, val isLocal: Boolean) : GalleryAction()
     data object OnBackClick : GalleryAction()
     data class OnPhotoClick(val photoDto: Photo) : GalleryAction()
-    data class OnSetNewDate(val newDate: String) : GalleryAction()
+    data class OnSetNewOptions(val newOptions: PhotosOptions) : GalleryAction()
 }
 
 sealed class GalleryEffect : Effect() {

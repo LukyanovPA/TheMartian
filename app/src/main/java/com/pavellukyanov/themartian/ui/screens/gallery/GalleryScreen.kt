@@ -54,9 +54,11 @@ import com.pavellukyanov.themartian.ui.wigets.img.Picture
 import com.pavellukyanov.themartian.ui.wigets.loading.Loading
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
+import com.pavellukyanov.themartian.utils.ext.debug
 import com.pavellukyanov.themartian.utils.ext.itemsPaging
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -73,12 +75,16 @@ fun GalleryScreen(
     Launch {
         //isLocal = true -> Избранное
         //isLocal = false -> Из API
+        launch {
+            reducer.sendAction(GalleryAction.LoadLatestPhotos(roverName = roverName, isLocal = isLocal))
+        }
 
-        reducer.sendAction(GalleryAction.LoadLatestPhotos(roverName = roverName, isLocal = isLocal))
-        reducer.subscribeEffect { effect ->
-            when (effect) {
-                is GalleryEffect.OnBackClick -> navController.popBackStack()
-                is GalleryEffect.OnPhotoClick -> navController.navigate("ui/screens/photo/${effect.photoId}")
+        launch {
+            reducer.subscribeEffect { effect ->
+                when (effect) {
+                    is GalleryEffect.OnBackClick -> navController.popBackStack()
+                    is GalleryEffect.OnPhotoClick -> navController.navigate("ui/screens/photo/${effect.photoId}")
+                }
             }
         }
     }
@@ -92,12 +98,13 @@ fun GalleryScreen(
                 GalleryScreenContent(modifier = modifier, paddingValues = padding, state = currentState, onClick = reducer::sendAction)
 
                 if (showBottomSheet) BottomFilter(
-                    currentDate = currentState.options.date,
+                    cameras = currentState.cameras,
+                    options = currentState.options,
                     isFavourites = isLocal,
                     modifier = modifier,
                     onShowBottomSheetState = { showBottomSheet = it },
-                    onNewDate = {
-                        reducer.sendAction(GalleryAction.OnSetNewDate(newDate = it))
+                    onNewOptions = {
+                        reducer.sendAction(GalleryAction.OnSetNewOptions(newOptions = it))
                         showBottomSheet = false
                     }
                 )
@@ -114,6 +121,8 @@ private fun GalleryScreenContent(
     onClick: (GalleryAction) -> Unit
 ) {
     val photos: LazyPagingItems<Photo> = state.photos.collectAsLazyPagingItems()
+
+    debug { "photos ${photos.itemCount}" }
 
     Column(
         modifier = modifier

@@ -1,15 +1,14 @@
 package com.pavellukyanov.themartian.ui.wigets.dialog
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,29 +17,30 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.domain.entity.Camera
-import com.pavellukyanov.themartian.ui.theme.RedRibbon
-import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraDialog(
     cameras: List<Camera>,
-    modifier: Modifier,
-    onSelect: (String) -> Unit,
+    onSelect: (String?) -> Unit,
     onClose: () -> Unit
 ) {
     val showDialog = remember { mutableStateOf(true) }
-    val selected = remember { mutableStateOf(EMPTY_STRING) }
 
     BasicAlertDialog(
-        modifier = modifier,
-        onDismissRequest = { showDialog.value = false }
+        onDismissRequest = {
+            showDialog.value = false
+            onClose()
+        }
     ) {
         //Header
         Column(
@@ -54,54 +54,69 @@ fun CameraDialog(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                color = RedRibbon,
+                color = Color.DarkGray,
                 text = stringResource(R.string.filter_camera_dialog_title)
             )
 
-            //Buttons
-            Row(
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically,
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(top = 16.dp)
+                    .height(200.dp)
             ) {
-                //Select
-                Button(
-                    modifier = Modifier
-                        .padding(8.dp),
-                    enabled = selected.value.isNotEmpty(),
-                    onClick = {
-                        showDialog.value = false
-                        onSelect(selected.value)
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = RedRibbon)
-                ) {
-                    Text(
-                        color = Color.White,
-                        text = stringResource(id = R.string.any_screen_confirm),
-                        fontSize = 18.sp
-                    )
-                }
-
-                //Chancel
-                Button(
-                    modifier = Modifier
-                        .padding(8.dp),
-                    onClick = {
-                        selected.value = EMPTY_STRING
-                        showDialog.value = false
-                        onClose()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = RedRibbon)
-                ) {
-                    Text(
-                        color = Color.White,
-                        text = stringResource(id = R.string.any_screen_confirm),
-                        fontSize = 18.sp
-                    )
+                item {
+                    CameraContent(camera = null, onClick = { onSelect(it?.name) })
+                    cameras.forEach { camera ->
+                        CameraContent(
+                            camera = camera,
+                            onClick = {
+                                onSelect(it?.name)
+                                showDialog.value = false
+                                onClose()
+                            }
+                        )
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun CameraContent(
+    camera: Camera?,
+    onClick: (Camera?) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .background(Color.DarkGray.copy(alpha = 0.3f))
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onClick(camera) },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(horizontal = 6.dp)
+                .padding(bottom = 4.dp),
+            text = camera?.name ?: stringResource(id = R.string.filter_camera_dialog_all),
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center
+        )
+
+        camera?.cameraFullName?.let {
+            Text(
+                modifier = Modifier
+                    .padding(horizontal = 6.dp)
+                    .padding(bottom = 4.dp),
+                text = it,
+                fontWeight = FontWeight.Normal,
+                color = Color.White,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

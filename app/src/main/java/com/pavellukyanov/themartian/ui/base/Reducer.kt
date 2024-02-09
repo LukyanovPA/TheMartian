@@ -55,10 +55,9 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
         suspendDebugLog(tag) { "Reduce -> oldState: ${_state.value} | action: $action" }
     }
 
-    protected suspend fun saveState(newState: STATE) = cpu {
+    protected suspend fun saveState(newState: STATE) {
         withLock {
-            _state.emit(newState)
-            suspendDebugLog(tag) { "SaveState -> newState: $newState" }
+            _state.value = newState
         }
     }
 
@@ -69,7 +68,7 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
         }
     }
 
-    protected fun withState(onAction: suspend (currentState: STATE) -> Unit) = cpu {
+    protected fun withState(onAction: suspend CoroutineScope.(currentState: STATE) -> Unit) = cpu {
         onAction(_state.value)
     }
 

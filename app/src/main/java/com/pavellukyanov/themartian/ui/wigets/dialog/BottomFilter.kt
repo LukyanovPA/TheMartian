@@ -34,6 +34,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.domain.entity.Camera
+import com.pavellukyanov.themartian.domain.entity.PhotosOptions
 import com.pavellukyanov.themartian.utils.DateFormatter
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.suspendDebugLog
@@ -43,19 +45,22 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomFilter(
-    currentDate: String,
+    cameras: List<Camera>,
+    options: PhotosOptions,
     isFavourites: Boolean,
     modifier: Modifier,
     onShowBottomSheetState: (Boolean) -> Unit,
-    onNewDate: (String) -> Unit
+    onNewOptions: (PhotosOptions) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
     var showDatePicker by remember { mutableStateOf(false) }
+    var showCameraDialog by remember { mutableStateOf(false) }
     var currentDateTriple by remember { mutableStateOf(Triple(0, 0, 0)) }
+    var currentOptions by remember { mutableStateOf(options) }
 
     Launch {
         launch(Dispatchers.Default) {
-            currentDateTriple = DateFormatter.parse(currentDate)
+            currentDateTriple = DateFormatter.parse(options.date)
             suspendDebugLog { "date -> $currentDateTriple" }
         }
     }
@@ -65,8 +70,15 @@ fun BottomFilter(
         startMonth = currentDateTriple.second,
         startDay = currentDateTriple.third,
         onShowDatePicker = { showDatePicker = it },
-        onNewDate = onNewDate
+        onNewDate = {
+            currentOptions = currentOptions.copy(date = it)
+        }
     )
+
+    if (showCameraDialog) CameraDialog(
+        cameras = cameras,
+        onSelect = { currentOptions = currentOptions.copy(camera = it) },
+        onClose = { showCameraDialog = false })
 
     ModalBottomSheet(
         modifier = Modifier
@@ -139,7 +151,7 @@ fun BottomFilter(
                             colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                         ) {
                             Text(
-                                text = currentDate,
+                                text = currentOptions.date,
                                 color = Color.Black,
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center
@@ -162,17 +174,43 @@ fun BottomFilter(
                         Button(
                             modifier = Modifier.padding(vertical = 8.dp),
                             onClick = {
-                                showDatePicker = true
+                                showCameraDialog = true
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                         ) {
                             Text(
-                                text = currentDate,
+                                text = currentOptions.camera ?: stringResource(id = R.string.filter_camera_dialog_all),
                                 color = Color.Black,
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center
                             )
                         }
+                    }
+                }
+            }
+
+            //Button submit
+            item {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Button(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        onClick = {
+                            onNewOptions(currentOptions)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Green.copy(alpha = 0.5f))
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.any_screen_confirm),
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
