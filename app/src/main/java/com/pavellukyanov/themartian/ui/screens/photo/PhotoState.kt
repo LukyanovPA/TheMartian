@@ -12,7 +12,7 @@ data class PhotoState(
 ) : State()
 
 sealed class PhotoAction : Action() {
-    data object LoadPhoto : PhotoAction()
+    data class LoadPhoto(val photoId: Int) : PhotoAction()
     data object OnBackClick : PhotoAction()
     data class DownloadPhoto(val photo: Photo?) : PhotoAction()
     data class ChangeFavourites(val photo: Photo?) : PhotoAction()

@@ -16,8 +16,7 @@ data class PhotoDto(
     @SerialName("rover") val roverDto: RoverDto
 )
 
-
-@Entity(tableName = "favourites")
+@Entity(tableName = "photo")
 data class Photo(
     @PrimaryKey
     val id: Int,
@@ -26,7 +25,9 @@ data class Photo(
     val cameraFullName: String,
     val earthDate: String,
     val roverName: String,
-    val src: String
+    val src: String,
+    val isFavourites: Boolean = false,
+    val isCache: Boolean = false
 )
 
 fun PhotoDto.map(): Photo =

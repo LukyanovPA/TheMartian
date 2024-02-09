@@ -11,7 +11,9 @@ import com.pavellukyanov.themartian.ui.screens.gallery.GalleryScreen
 import com.pavellukyanov.themartian.ui.screens.home.HomeScreen
 import com.pavellukyanov.themartian.ui.screens.photo.PhotoScreen
 import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
+import com.pavellukyanov.themartian.utils.C.INT_MINUS_ONE
 import com.pavellukyanov.themartian.utils.C.IS_LOCAL_ARG
+import com.pavellukyanov.themartian.utils.C.PHOTO_ARG
 import com.pavellukyanov.themartian.utils.C.ROVER_NAME_ARG
 
 @Composable
@@ -43,8 +45,17 @@ fun NavigationGraph(
             val roverName = backStackEntry.arguments?.getString(ROVER_NAME_ARG, EMPTY_STRING).orEmpty()
             GalleryScreen(roverName = roverName, modifier = modifier, navController = navController, isLocal = isLocal)
         }
-        composable(route = "ui/screens/photo") {
-            PhotoScreen(modifier = modifier, navController = navController)
+        composable(
+            route = "ui/screens/photo/{$PHOTO_ARG}",
+            arguments = listOf(
+                navArgument(name = PHOTO_ARG) {
+                    type = NavType.IntType
+                    defaultValue = INT_MINUS_ONE
+                }
+            )
+        ) { backStackEntry ->
+            val photoId = backStackEntry.arguments?.getInt(PHOTO_ARG, INT_MINUS_ONE) ?: INT_MINUS_ONE
+            PhotoScreen(photoId = photoId, modifier = modifier, navController = navController)
         }
     }
 }

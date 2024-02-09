@@ -29,4 +29,5 @@
     //Filter
     <string name="filter_title">Фильтр</string>
     <string name="filter_current_date">Текущая дата</string>
+    <string name="filter_camera_dialog_title">Выберите камеру</string>
 </resources>

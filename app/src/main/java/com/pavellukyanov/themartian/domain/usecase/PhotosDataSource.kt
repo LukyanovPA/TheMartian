@@ -3,9 +3,10 @@ package com.pavellukyanov.themartian.domain.usecase
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.pavellukyanov.themartian.data.api.ApiDataSource
-import com.pavellukyanov.themartian.data.cache.dao.FavouritesDao
+import com.pavellukyanov.themartian.data.cache.dao.PhotoDao
 import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.domain.entity.PhotosOptions
+import com.pavellukyanov.themartian.utils.ext.onCpu
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -15,9 +16,10 @@ class PhotosDataSource(
     private val currentDate: (String) -> Unit
 ) : PagingSource<Int, Photo>(), KoinComponent {
     private val apiDataSource: ApiDataSource by inject()
+    private val updateCamerasCache: UpdateCamerasCache by inject()
 
     //TODO сделать базу с пагинацией
-    private val favouritesDao: FavouritesDao by inject()
+    private val photoDao: PhotoDao by inject()
 
     override fun getRefreshKey(state: PagingState<Int, Photo>): Int? =
         state.anchorPosition?.let { anchorPosition ->
@@ -39,6 +41,8 @@ class PhotosDataSource(
                     options = options,
                     page = currentPageNumber
                 )
+
+            onCpu { updateCamerasCache(photos = photos) }
 
             currentDate(photos.first().earthDate)
 

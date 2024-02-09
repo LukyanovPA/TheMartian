@@ -12,6 +12,7 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.pavellukyanov.themartian.MainActivity
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.domain.usecase.DeleteOldCachedPhoto
 import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
 import com.pavellukyanov.themartian.utils.C.CACHE_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.C.INT_ONE
@@ -20,12 +21,17 @@ import com.pavellukyanov.themartian.utils.C.OK_RESULT
 import com.pavellukyanov.themartian.utils.ext.checkSdkVersion
 import com.pavellukyanov.themartian.utils.ext.log
 import com.pavellukyanov.themartian.utils.ext.suspendDebugLog
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.koin.android.ext.android.inject
 
 class CacheService : LifecycleService() {
     private val updateRoverInfoCache: UpdateRoverInfoCache by inject()
+    private val deleteOldCachedPhoto: DeleteOldCachedPhoto by inject()
+    private val tag = this::class.java.simpleName
+    private val workStates = hashMapOf(UPDATE_CACHE_KEY to false, DELETE_CACHE_KEY to false)
+    private val mutex = Mutex()
 
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
@@ -48,14 +54,33 @@ class CacheService : LifecycleService() {
             }
         )
 
-        lifecycleScope.launch {
-            updateRoverInfoCache().also {
-                sendBroadcast(Intent(CACHE_BROADCAST_ACTION).putExtra(OK_RESULT, true))
-                stopSelf()
-                suspendDebugLog(tag = this@CacheService::class.java.simpleName) { "updateRoverInfoCache" }
-            }
-        }
+        onDeleteOldPhotoCache()
+        onUpdateRoverInfoCache()
         return START_STICKY
+    }
+
+    private fun onDeleteOldPhotoCache() = lifecycleScope.launch {
+        deleteOldCachedPhoto()
+        worked(key = DELETE_CACHE_KEY)
+        suspendDebugLog(tag = tag) { "deleteOldCachedPhoto" }
+    }
+
+    private fun onUpdateRoverInfoCache() = lifecycleScope.launch {
+        updateRoverInfoCache()
+        worked(key = UPDATE_CACHE_KEY)
+        suspendDebugLog(tag = tag) { "updateRoverInfoCache" }
+    }
+
+    private suspend fun worked(key: Int) = mutex.withLock {
+        workStates[key] = true
+        checkIsWorked()
+    }
+
+    private fun checkIsWorked() = lifecycleScope.launch {
+        if (workStates.values.all { it }) {
+            sendBroadcast(Intent(CACHE_BROADCAST_ACTION).putExtra(OK_RESULT, true))
+            stopSelf()
+        }
     }
 
     private fun getNotification(): Notification {
@@ -83,5 +108,7 @@ class CacheService : LifecycleService() {
     companion object {
         private const val CHANNEL_ID = "ForegroundService Update cache"
         private const val CHANNEL_NAME = "Foreground Service Channel"
+        private const val DELETE_CACHE_KEY = 1
+        private const val UPDATE_CACHE_KEY = 2
     }
 }

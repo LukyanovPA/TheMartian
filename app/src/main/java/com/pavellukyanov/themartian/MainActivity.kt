@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,10 +18,7 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
-import coil.annotation.ExperimentalCoilApi
-import coil.imageLoader
 import com.pavellukyanov.themartian.services.CacheService
 import com.pavellukyanov.themartian.ui.NavigationGraph
 import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
@@ -32,7 +30,6 @@ import com.pavellukyanov.themartian.utils.C.ERROR_MESSAGE
 import com.pavellukyanov.themartian.utils.C.OK_RESULT
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.checkSdkVersion
-import com.pavellukyanov.themartian.utils.ext.debug
 import com.pavellukyanov.themartian.utils.ext.log
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
 import org.koin.android.ext.android.inject
@@ -42,25 +39,20 @@ class MainActivity : ComponentActivity() {
     private val errorReceiver by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { initErrorBroadcastReceiver() }
     private val reducer by inject<MainActivityReducer>()
 
-    @OptIn(ExperimentalCoilApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         registrationBroadcastReceivers()
         updateCache()
-
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
         setContent {
             TheMartianTheme {
                 val navController = rememberNavController()
                 val hasError = remember { mutableStateOf(false) }
                 val error = remember { mutableStateOf(EMPTY_STRING) }
                 val configuration = LocalConfiguration.current
-
-                //Coil Cache
-                //context.imageLoader.diskCache?.clear()
-                //context.imageLoader.memoryCache?.clear()
-                val currentImageCacheSize = ((applicationContext.imageLoader.diskCache?.size ?: 0L) / 1024) / 1024
-                debug { "CACHE SIZE $currentImageCacheSize" }
 
                 Launch {
                     reducer.subscribeEffect { effect ->

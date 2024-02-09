@@ -1,5 +1,8 @@
 package com.pavellukyanov.themartian.ui.screens.gallery
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -74,7 +78,7 @@ fun GalleryScreen(
         reducer.subscribeEffect { effect ->
             when (effect) {
                 is GalleryEffect.OnBackClick -> navController.popBackStack()
-                is GalleryEffect.OnPhotoClick -> navController.navigate("ui/screens/photo")
+                is GalleryEffect.OnPhotoClick -> navController.navigate("ui/screens/photo/${effect.photoId}")
             }
         }
     }
@@ -83,14 +87,14 @@ fun GalleryScreen(
         content = { currentState ->
             Scaffold(
                 modifier = modifier,
-                bottomBar = { BottomFilterButton { showBottomSheet = true } }
+                bottomBar = { BottomFilterButton(visibility = !showBottomSheet) { showBottomSheet = true } }
             ) { padding ->
                 GalleryScreenContent(modifier = modifier, paddingValues = padding, state = currentState, onClick = reducer::sendAction)
 
                 if (showBottomSheet) BottomFilter(
                     currentDate = currentState.options.date,
                     isFavourites = isLocal,
-                    paddingValues = padding,
+                    modifier = modifier,
                     onShowBottomSheetState = { showBottomSheet = it },
                     onNewDate = {
                         reducer.sendAction(GalleryAction.OnSetNewDate(newDate = it))
@@ -114,10 +118,10 @@ private fun GalleryScreenContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(top = 24.dp, bottom = 25.dp)
+            .padding(top = 16.dp)
     ) {
         Row(
-            horizontalArrangement = Arrangement.Start,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
@@ -139,7 +143,7 @@ private fun GalleryScreenContent(
             }
             Text(
                 modifier = Modifier
-                    .weight(3f)
+                    .weight(1f)
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 text = state.options.roverName,
@@ -180,41 +184,49 @@ private fun GalleryScreenContent(
 
 @Composable
 private fun BottomFilterButton(
+    visibility: Boolean,
     onClick: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 25.dp)
-            .background(Color.Transparent)
-            .clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
+    AnimatedVisibility(
+        visible = visibility,
+        enter = fadeIn(),
+        exit = fadeOut()
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
+        Column(
             modifier = Modifier
-                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                .background(Color.White)
+                .fillMaxWidth()
+                .padding(bottom = 64.dp)
+                .background(Color.Transparent),
+            horizontalAlignment = Alignment.End
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .rotate(-90f)
+                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                    .background(Color.White)
+                    .clickable { onClick() }
             ) {
-                Spacer(
-                    modifier = Modifier
-                        .padding(6.dp)
-                        .background(Color.LightGray)
-                        .height(2.dp)
-                        .width(16.dp)
-                )
-                Text(
-                    modifier = Modifier
-                        .padding(horizontal = 6.dp)
-                        .padding(bottom = 4.dp),
-                    text = stringResource(id = R.string.filter_title),
-                    color = Color.LightGray,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(
+                        modifier = Modifier
+                            .padding(6.dp)
+                            .background(Color.LightGray)
+                            .height(2.dp)
+                            .width(16.dp)
+                    )
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = 6.dp)
+                            .padding(bottom = 4.dp),
+                        text = stringResource(id = R.string.filter_title),
+                        color = Color.LightGray,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }

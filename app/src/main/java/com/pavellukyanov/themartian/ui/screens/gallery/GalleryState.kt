@@ -2,6 +2,7 @@ package com.pavellukyanov.themartian.ui.screens.gallery
 
 import androidx.paging.PagingData
 import com.pavellukyanov.themartian.data.dto.Photo
+import com.pavellukyanov.themartian.domain.entity.Camera
 import com.pavellukyanov.themartian.domain.entity.PhotosOptions
 import com.pavellukyanov.themartian.ui.base.Action
 import com.pavellukyanov.themartian.ui.base.Effect
@@ -13,7 +14,8 @@ data class GalleryState(
     override val isLoading: Boolean = true,
     val photos: Flow<PagingData<Photo>> = flowOf(),
     val options: PhotosOptions = PhotosOptions(),
-    val isLocal: Boolean = false
+    val isLocal: Boolean = false,
+    val cameras: List<Camera> = listOf()
 ) : State()
 
 sealed class GalleryAction : Action() {
@@ -25,5 +27,5 @@ sealed class GalleryAction : Action() {
 
 sealed class GalleryEffect : Effect() {
     data object OnBackClick : GalleryEffect()
-    data object OnPhotoClick : GalleryEffect()
+    data class OnPhotoClick(val photoId: Int) : GalleryEffect()
 }

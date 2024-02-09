@@ -4,14 +4,11 @@ import com.pavellukyanov.themartian.data.cache.dao.PhotoDao
 import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.utils.ext.onIo
 
-class ChangeFavourites(
+class PhotoToCache(
     private val photoDao: PhotoDao
 ) {
-    suspend fun add(photo: Photo) = onIo {
-        photoDao.insert(photo.copy(isFavourites = true))
-    }
-
-    suspend fun delete(photo: Photo) = onIo {
-        photoDao.insert(photo.copy(isFavourites = false))
+    suspend operator fun invoke(photo: Photo) = onIo {
+        val cache = photoDao.getById(id = photo.id)
+        photoDao.insert(cache?.copy(isCache = true) ?: photo.copy(isCache = true))
     }
 }

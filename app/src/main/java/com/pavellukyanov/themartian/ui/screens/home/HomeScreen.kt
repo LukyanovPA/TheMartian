@@ -51,7 +51,7 @@ private fun HomeScreenContent(
 ) {
     LazyColumn(
         state = rememberLazyListState(),
-        modifier = modifier.padding(vertical = 30.dp)
+        modifier = modifier.padding(top = 24.dp)
     ) {
         //Rovers
         state.rovers.forEach { rover ->

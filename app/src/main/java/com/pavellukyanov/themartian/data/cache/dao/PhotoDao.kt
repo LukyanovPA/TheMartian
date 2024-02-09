@@ -9,12 +9,15 @@ import com.pavellukyanov.themartian.data.dto.Photo
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface FavouritesDao {
-    @Query("SELECT * FROM favourites")
+interface PhotoDao {
+    @Query("SELECT * FROM photo")
     fun observe(): Flow<List<Photo>>
 
-    @Query("SELECT * FROM favourites")
+    @Query("SELECT * FROM photo")
     suspend fun all(): List<Photo>
+
+    @Query("SELECT * FROM photo WHERE id = :id")
+    suspend fun getById(id: Int): Photo?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(photo: Photo)

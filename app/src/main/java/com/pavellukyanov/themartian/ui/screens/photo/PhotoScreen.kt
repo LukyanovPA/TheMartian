@@ -50,6 +50,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun PhotoScreen(
+    photoId: Int,
     modifier: Modifier,
     navController: NavHostController,
     reducer: PhotoReducer = koinViewModel()
@@ -57,7 +58,7 @@ fun PhotoScreen(
     val state by reducer.asState()
 
     Launch {
-        reducer.sendAction(PhotoAction.LoadPhoto)
+        reducer.sendAction(PhotoAction.LoadPhoto(photoId = photoId))
         reducer.subscribeEffect { effect ->
             when (effect) {
                 is PhotoEffect.OnBackClick -> navController.popBackStack()
@@ -218,7 +219,7 @@ fun PhotoScreenContent(
         Box(
             modifier = Modifier.run {
                 constrainAs(info) {
-                    bottom.linkTo(parent.bottom, margin = 30.dp)
+                    bottom.linkTo(parent.bottom, margin = 36.dp)
                     start.linkTo(parent.start, margin = 16.dp)
                     end.linkTo(parent.end, margin = 16.dp)
                 }

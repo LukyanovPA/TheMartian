@@ -1,19 +1,22 @@
 package com.pavellukyanov.themartian.di
 
-import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.domain.usecase.ChangeFavourites
-import com.pavellukyanov.themartian.domain.usecase.IsFavourites
+import com.pavellukyanov.themartian.domain.usecase.DeleteOldCachedPhoto
+import com.pavellukyanov.themartian.domain.usecase.GetCameras
+import com.pavellukyanov.themartian.domain.usecase.GetPhotoById
 import com.pavellukyanov.themartian.domain.usecase.LoadRovers
+import com.pavellukyanov.themartian.domain.usecase.PhotoToCache
+import com.pavellukyanov.themartian.domain.usecase.UpdateCamerasCache
 import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
-import com.pavellukyanov.themartian.domain.utils.PhotoStorage
-import com.pavellukyanov.themartian.domain.utils.Storage
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val domainModule = module {
     single { LoadRovers(roverInfoDao = get()) }
-    single { UpdateRoverInfoCache(roverInfoDao = get(), apiDataSource = get()) }
-    single<Storage<Photo?>>(named("PHOTO_STORAGE")) { PhotoStorage() }
-    single { IsFavourites(favouritesDao = get()) }
-    single { ChangeFavourites(favouritesDao = get()) }
+    single { UpdateRoverInfoCache(roverInfoDao = get(), apiDataSource = get(), camerasDao = get()) }
+    single { GetPhotoById(photoDao = get()) }
+    single { ChangeFavourites(photoDao = get()) }
+    single { PhotoToCache(photoDao = get()) }
+    single { DeleteOldCachedPhoto(photoDao = get()) }
+    single { GetCameras(camerasDao = get()) }
+    single { UpdateCamerasCache(camerasDao = get()) }
 }

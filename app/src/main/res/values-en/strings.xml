@@ -20,4 +20,5 @@
     <string name="filter_title">Filter</string>
     <string name="filter_current_date">Current date</string>
     <string name="any_screen_chancel">Chancel</string>
+    <string name="filter_camera_dialog_title">Select camera</string>
 </resources>

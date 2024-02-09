@@ -3,6 +3,9 @@ package com.pavellukyanov.themartian.utils.ext
 import android.os.Build
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
@@ -39,6 +42,11 @@ suspend fun <T> onIo(action: suspend () -> T) = withContext(Dispatchers.IO) { ac
 suspend fun <T> onCpu(action: suspend () -> T) = withContext(Dispatchers.Default) { action() }
 
 /** List */
-suspend fun <T, R> List<T>.onMap(transform: (T) -> R) = onCpu {
-    map(transform)
+suspend fun <T, R> List<T>.onMap(transform: suspend (T) -> R) = onCpu {
+    map { transform(it) }
 }
+
+/** Flow<List> */
+fun <T, R> Flow<List<T>>.onMap(transform: (List<T>) -> List<R>): Flow<List<R>> =
+    map(transform)
+        .flowOn(Dispatchers.Default)
