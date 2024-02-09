@@ -48,7 +48,7 @@ class CacheService : LifecycleService() {
             }
         )
 
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             updateRoverInfoCache().also {
                 sendBroadcast(Intent(CACHE_BROADCAST_ACTION).putExtra(OK_RESULT, true))
                 stopSelf()

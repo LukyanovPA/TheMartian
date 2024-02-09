@@ -8,7 +8,9 @@ import com.pavellukyanov.themartian.domain.usecase.ChangeFavourites
 import com.pavellukyanov.themartian.domain.usecase.IsFavourites
 import com.pavellukyanov.themartian.domain.utils.Storage
 import com.pavellukyanov.themartian.ui.base.Reducer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 
 class PhotoReducer(
@@ -26,24 +28,21 @@ class PhotoReducer(
         }
     }
 
-    private fun onSubscribeStorage() = cpu {
+    private fun onSubscribeStorage() = withState { currentState ->
         storage.observe()
             .filter { it != null }
             .map { it!! }
+            .flowOn(Dispatchers.Default)
             .collect { photo ->
                 onSubscribeIsFavourites(id = photo.id)
-                withState { currentState ->
-                    saveState(currentState.copy(photo = photo))
-                }
+                saveState(currentState.copy(photo = photo))
             }
     }
 
-    private fun onSubscribeIsFavourites(id: Int) = io {
+    private fun onSubscribeIsFavourites(id: Int) = withState { currentState ->
         isFavourites(id = id)
             .collect { state ->
-                withState { currentState ->
-                    saveState(currentState.copy(isFavourites = state))
-                }
+                saveState(currentState.copy(isFavourites = state))
             }
     }
 
@@ -60,7 +59,7 @@ class PhotoReducer(
         }
     }
 
-    private fun onChangeFavourites(isAdd: Boolean, photo: Photo) = io {
+    private suspend fun onChangeFavourites(isAdd: Boolean, photo: Photo) {
         if (isAdd) changeFavourites.add(photo)
         else changeFavourites.delete(photo)
     }

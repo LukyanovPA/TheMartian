@@ -31,7 +31,7 @@ class GalleryReducer(
         }
     }
 
-    private suspend fun onLoadPhotos(options: PhotosOptions, isLatest: Boolean) = io {
+    private suspend fun onLoadPhotos(options: PhotosOptions, isLatest: Boolean) = cpu {
         val pagedData = Pager(
             config = PagingConfig(pageSize = 25),
             initialKey = 1,
@@ -43,10 +43,8 @@ class GalleryReducer(
         }
     }
 
-    private fun handleCurrentDate(date: String) = cpu {
-        withState { currentState ->
-            saveState(currentState.copy(options = currentState.options.copy(date = date)))
-        }
+    private fun handleCurrentDate(date: String) = withState { currentState ->
+        saveState(currentState.copy(options = currentState.options.copy(date = date)))
     }
 
     private fun setPhotoToStorage(photo: Photo) = cpu {

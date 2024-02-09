@@ -6,23 +6,28 @@ import com.pavellukyanov.themartian.data.dto.RoverItemDto
 import com.pavellukyanov.themartian.data.dto.RoverName
 import com.pavellukyanov.themartian.data.dto.map
 import com.pavellukyanov.themartian.domain.entity.PhotosOptions
+import com.pavellukyanov.themartian.utils.ext.onIo
+import com.pavellukyanov.themartian.utils.ext.onMap
 
 class ApiDataSource(private val roverService: RoverService) {
-    suspend fun getRoversInfo(): List<RoverItemDto> =
+    suspend fun getRoversInfo(): List<RoverItemDto> = onIo {
         RoverName.entries
             .map { it.roverName }
             .map { name -> roverService.loadRoverInfo(roverName = name) }
-            .map { it.toData().roverItem }
+            .onMap { it.toData().roverItem }
+    }
 
-    suspend fun getLatest(roverName: String, page: Int): List<Photo> =
+    suspend fun getLatest(roverName: String, page: Int): List<Photo> = onIo {
         roverService.getLatestPhotos(roverName = roverName, page = page)
             .toData()
             .photoDtos
-            .map(PhotoDto::map)
+            .onMap(PhotoDto::map)
+    }
 
-    suspend fun getPhotosByOptions(options: PhotosOptions, page: Int): List<Photo> =
+    suspend fun getPhotosByOptions(options: PhotosOptions, page: Int): List<Photo> = onIo {
         roverService.getByOptions(roverName = options.roverName, earthDate = options.date, camera = options.camera, page = page)
             .toData()
             .photos
-            .map(PhotoDto::map)
+            .onMap(PhotoDto::map)
+    }
 }

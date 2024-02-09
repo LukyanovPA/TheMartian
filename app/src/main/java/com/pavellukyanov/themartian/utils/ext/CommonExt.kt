@@ -2,6 +2,8 @@ package com.pavellukyanov.themartian.utils.ext
 
 import android.os.Build
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
@@ -30,4 +32,13 @@ fun checkSdkVersion(less33: () -> Unit, more33: () -> Unit) {
     } else {
         more33()
     }
+}
+
+/** Coroutines */
+suspend fun <T> onIo(action: suspend () -> T) = withContext(Dispatchers.IO) { action() }
+suspend fun <T> onCpu(action: suspend () -> T) = withContext(Dispatchers.Default) { action() }
+
+/** List */
+suspend fun <T, R> List<T>.onMap(transform: (T) -> R) = onCpu {
+    map(transform)
 }
