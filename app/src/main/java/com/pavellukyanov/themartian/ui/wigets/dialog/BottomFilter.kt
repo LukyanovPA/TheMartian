@@ -71,7 +71,7 @@ fun BottomFilter(
         startDay = currentDateTriple.third,
         onShowDatePicker = { showDatePicker = it },
         onNewDate = {
-            currentOptions = currentOptions.copy(date = it)
+            currentOptions = currentOptions.copy(date = it, displayDate = DateFormatter.format(it))
         }
     )
 
@@ -151,7 +151,7 @@ fun BottomFilter(
                             colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                         ) {
                             Text(
-                                text = currentOptions.date,
+                                text = currentOptions.displayDate,
                                 color = Color.Black,
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center

@@ -19,8 +19,6 @@ import timber.log.Timber
 class MartianApp : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
-        initLogger()
-
         startKoin {
             androidLogger()
             androidContext(this@MartianApp)
@@ -31,6 +29,8 @@ class MartianApp : Application(), ImageLoaderFactory {
             modules(domainModule)
             modules(reducerModule)
         }
+
+        initLogger()
 
 //        this.applicationContext.deleteDatabase("MartianLocalDatabase.db")
     }

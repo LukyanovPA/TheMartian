@@ -75,7 +75,7 @@ fun PhotoScreen(
                 sol = currentState.photo?.sol?.toString().orEmpty(),
                 cameraName = currentState.photo?.cameraName.orEmpty(),
                 cameraFullName = currentState.photo?.cameraFullName.orEmpty(),
-                earthDate = currentState.photo?.earthDate.orEmpty(),
+                earthDate = currentState.photo?.earthFormattedDate.orEmpty(),
                 roverName = currentState.photo?.roverName.orEmpty(),
                 onBackClick = { reducer.sendAction(PhotoAction.OnBackClick) },
                 onDownloadClick = { reducer.sendAction(PhotoAction.DownloadPhoto(photo = currentState.photo)) },

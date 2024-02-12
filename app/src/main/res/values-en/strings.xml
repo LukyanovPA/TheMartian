@@ -22,4 +22,7 @@
     <string name="any_screen_chancel">Chancel</string>
     <string name="filter_camera_dialog_title">Select camera</string>
     <string name="filter_camera_dialog_all">All</string>
+    <string name="empty_state_icon_description">Empty response icon</string>
+    <string name="empty_response_title">Nothing found</string>
+    <string name="empty_response_body">Try changing filter settings</string>
 </resources>

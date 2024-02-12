@@ -4,6 +4,7 @@ import com.pavellukyanov.themartian.domain.usecase.ChangeFavourites
 import com.pavellukyanov.themartian.domain.usecase.DeleteOldCachedPhoto
 import com.pavellukyanov.themartian.domain.usecase.GetCameras
 import com.pavellukyanov.themartian.domain.usecase.GetPhotoById
+import com.pavellukyanov.themartian.domain.usecase.LoadPhotos
 import com.pavellukyanov.themartian.domain.usecase.LoadRovers
 import com.pavellukyanov.themartian.domain.usecase.PhotoToCache
 import com.pavellukyanov.themartian.domain.usecase.UpdateCamerasCache
@@ -19,4 +20,5 @@ val domainModule = module {
     single { DeleteOldCachedPhoto(photoDao = get()) }
     single { GetCameras(camerasDao = get()) }
     single { UpdateCamerasCache(camerasDao = get()) }
+    single { LoadPhotos(apiDataSource = get(), updateCamerasCache = get()) }
 }

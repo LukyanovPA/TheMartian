@@ -11,6 +11,9 @@ object C {
 
     //String
     const val EMPTY_STRING = ""
+    const val SPACE = " "
+    const val DASH = "-"
+    const val RU = "ru"
 
     //Broadcast
     const val OK_RESULT = "OK_RESULT"

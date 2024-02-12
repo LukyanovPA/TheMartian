@@ -30,7 +30,7 @@ fun DateDialog(
     onNewDate: (String) -> Unit
 ) {
     val calendar = Calendar.getInstance()
-    calendar.set(startYear, startMonth, startDay)
+    calendar.set(startYear, startMonth - 1, startDay)
 
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = calendar.timeInMillis)
     var selectedDate by remember { mutableLongStateOf(calendar.timeInMillis) }

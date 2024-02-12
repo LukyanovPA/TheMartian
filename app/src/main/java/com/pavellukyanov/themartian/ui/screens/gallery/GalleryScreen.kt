@@ -45,17 +45,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.pavellukyanov.themartian.R
-import com.pavellukyanov.themartian.data.dto.Photo
+import com.pavellukyanov.themartian.ui.wigets.EmptyResponse
 import com.pavellukyanov.themartian.ui.wigets.dialog.BottomFilter
 import com.pavellukyanov.themartian.ui.wigets.img.Picture
 import com.pavellukyanov.themartian.ui.wigets.loading.Loading
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
-import com.pavellukyanov.themartian.utils.ext.debug
-import com.pavellukyanov.themartian.utils.ext.itemsPaging
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
 import kotlinx.coroutines.launch
@@ -95,7 +91,7 @@ fun GalleryScreen(
                 modifier = modifier,
                 bottomBar = { BottomFilterButton(visibility = !showBottomSheet) { showBottomSheet = true } }
             ) { padding ->
-                GalleryScreenContent(modifier = modifier, paddingValues = padding, state = currentState, onClick = reducer::sendAction)
+                GalleryScreenContent(modifier = modifier, paddingValues = padding, state = currentState, onAction = reducer::sendAction)
 
                 if (showBottomSheet) BottomFilter(
                     cameras = currentState.cameras,
@@ -118,11 +114,8 @@ private fun GalleryScreenContent(
     modifier: Modifier,
     paddingValues: PaddingValues,
     state: GalleryState,
-    onClick: (GalleryAction) -> Unit
+    onAction: (GalleryAction) -> Unit
 ) {
-    val photos: LazyPagingItems<Photo> = state.photos.collectAsLazyPagingItems()
-
-    debug { "photos ${photos.itemCount}" }
 
     Column(
         modifier = modifier
@@ -139,7 +132,7 @@ private fun GalleryScreenContent(
             Button(
                 modifier = Modifier
                     .size(40.dp),
-                onClick = { onClick(GalleryAction.OnBackClick) },
+                onClick = { onAction(GalleryAction.OnBackClick) },
                 shape = CircleShape,
                 contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
@@ -161,7 +154,7 @@ private fun GalleryScreenContent(
                 fontSize = 28.sp
             )
         }
-        if (state.isLoading) {
+        if (state.isLoading)
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -169,25 +162,30 @@ private fun GalleryScreenContent(
             ) {
                 Loading(modifier = Modifier)
             }
-        } else {
+        else if (state.photos.isEmpty())
+            EmptyResponse(modifier = modifier)
+        else
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(2),
                 verticalItemSpacing = 1.dp,
                 horizontalArrangement = Arrangement.spacedBy(1.dp),
                 content = {
-                    itemsPaging(photos) { photo ->
+                    items(state.photos.size) { index ->
+                        val photo = state.photos[index]
+
+                        if (index >= state.photos.size - 1 && state.canPaginate) onAction(GalleryAction.LoadMore)
+
                         Picture(
-                            url = photo!!.src,
-                            contentDescription = null,
+                            url = photo.src,
+                            contentDescription = photo.cameraFullName,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
-                                .clickable { onClick(GalleryAction.OnPhotoClick(photo)) }
+                                .clickable { onAction(GalleryAction.OnPhotoClick(photo)) }
                         )
                     }
                 }
             )
-        }
     }
 }
 

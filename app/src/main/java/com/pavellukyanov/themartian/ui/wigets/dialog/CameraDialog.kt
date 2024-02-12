@@ -17,7 +17,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -61,7 +60,7 @@ fun CameraDialog(
             LazyColumn(
                 modifier = Modifier
                     .padding(top = 16.dp)
-                    .height(200.dp)
+                    .height(300.dp)
             ) {
                 item {
                     CameraContent(camera = null, onClick = { onSelect(it?.name) })
@@ -90,15 +89,13 @@ fun CameraContent(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp)
-            .background(Color.DarkGray.copy(alpha = 0.3f))
-            .clip(RoundedCornerShape(8.dp))
+            .background(shape = RoundedCornerShape(8.dp), color = Color.DarkGray.copy(alpha = 0.3f))
             .clickable { onClick(camera) },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             modifier = Modifier
-                .padding(horizontal = 6.dp)
-                .padding(bottom = 4.dp),
+                .padding(6.dp),
             text = camera?.name ?: stringResource(id = R.string.filter_camera_dialog_all),
             fontWeight = FontWeight.Bold,
             color = Color.White,
@@ -110,7 +107,7 @@ fun CameraContent(
             Text(
                 modifier = Modifier
                     .padding(horizontal = 6.dp)
-                    .padding(bottom = 4.dp),
+                    .padding(bottom = 6.dp),
                 text = it,
                 fontWeight = FontWeight.Normal,
                 color = Color.White,

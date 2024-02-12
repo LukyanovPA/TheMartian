@@ -27,7 +27,7 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
     private val tag = this::class.java.simpleName
     protected val context: Context by inject()
     private val mutex = Mutex()
-    private val _state: MutableStateFlow<STATE> = MutableStateFlow(initState)
+    protected val _state: MutableStateFlow<STATE> = MutableStateFlow(initState)
     private val errorHandler = CoroutineExceptionHandler { context, exception ->
         log.e(exception, "Context: ${context.dispatcher}, Exception: $exception")
         handledError(exception)
@@ -55,10 +55,8 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
         suspendDebugLog(tag) { "Reduce -> oldState: ${_state.value} | action: $action" }
     }
 
-    protected suspend fun saveState(newState: STATE) {
-        withLock {
-            _state.value = newState
-        }
+    protected fun saveState(newState: STATE) {
+        _state.value = newState
     }
 
     protected suspend fun sendEffect(newEffect: EFFECT) = ui {

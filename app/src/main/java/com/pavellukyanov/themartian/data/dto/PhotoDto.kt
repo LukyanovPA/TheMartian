@@ -23,6 +23,7 @@ data class Photo(
     val sol: Int,
     val cameraName: String,
     val cameraFullName: String,
+    val earthFormattedDate: String,
     val earthDate: String,
     val roverName: String,
     val src: String,
@@ -36,7 +37,8 @@ fun PhotoDto.map(): Photo =
         sol = sol,
         cameraName = cameraDto.name,
         cameraFullName = cameraDto.fullName,
-        earthDate = DateFormatter.format(earthDate),
+        earthFormattedDate = DateFormatter.format(earthDate),
+        earthDate = earthDate,
         roverName = roverDto.name,
         src = imgSrc
     )

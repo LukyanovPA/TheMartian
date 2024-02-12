@@ -1,9 +1,13 @@
 package com.pavellukyanov.themartian.utils
 
+import com.pavellukyanov.themartian.utils.C.DASH
+import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
+import com.pavellukyanov.themartian.utils.C.INT_ZERO
+import com.pavellukyanov.themartian.utils.C.RU
+import com.pavellukyanov.themartian.utils.C.SPACE
+import java.util.Locale
+
 object DateFormatter {
-    private const val DEFAULT = ""
-    private const val SPACE = " "
-    private const val DASH = "-"
 
     fun format(str: String): String {
         val year = str.substringBefore(DASH)
@@ -11,57 +15,57 @@ object DateFormatter {
         val month = listOf(
             str[5],
             str[6]
-        ).joinToString(separator = DEFAULT)
+        ).joinToString(separator = EMPTY_STRING)
 
         val day = listOf(
             SPACE,
             str[8],
             str[9],
-        ).joinToString(separator = DEFAULT)
+        ).joinToString(separator = EMPTY_STRING)
 
-        return listOf(year, SPACE, getMonth(month), day).joinToString(separator = DEFAULT)
+        return listOf(year, SPACE, getMonth(month), day).joinToString(separator = EMPTY_STRING)
     }
 
     //год, месяц, день
     fun parse(date: String): Triple<Int, Int, Int> =
         if (date.isNotEmpty()) {
-            val list = date.split(' ')
-            Triple(list.first().toInt(), getMonthInt(list[1]), list[2].toInt())
+            val list = date.split('-')
+            Triple(list.first().toInt(), list[1].toInt(), list[2].toInt())
         } else {
-            Triple(0, 0, 0)
+            Triple(INT_ZERO, INT_ZERO, INT_ZERO)
         }
 
     private fun getMonth(month: String): String =
-        when (month) {
-            "01" -> "Jan"
-            "02" -> "Feb"
-            "03" -> "Mar"
-            "04" -> "Apr"
-            "05" -> "May"
-            "06" -> "Jun"
-            "07" -> "Jul"
-            "08" -> "Aug"
-            "09" -> "Sep"
-            "10" -> "Okt"
-            "11" -> "Nov"
-            "12" -> "Dec"
-            else -> DEFAULT
-        }
-
-    private fun getMonthInt(month: String): Int =
-        when (month) {
-            "Jan" -> 0
-            "Feb" -> 1
-            "Mar" -> 2
-            "Apr" -> 3
-            "May" -> 4
-            "Jun" -> 5
-            "Jul" -> 6
-            "Aug" -> 7
-            "Sep" -> 8
-            "Okt" -> 9
-            "Nov" -> 10
-            "Dec" -> 11
-            else -> 0
-        }
+        if (Locale.getDefault().language == RU)
+            when (month) {
+                "01" -> "Янв"
+                "02" -> "Фев"
+                "03" -> "Мар"
+                "04" -> "Апр"
+                "05" -> "Мая"
+                "06" -> "Июн"
+                "07" -> "Июл"
+                "08" -> "Авг"
+                "09" -> "Сен"
+                "10" -> "Окт"
+                "11" -> "Ноя"
+                "12" -> "Дек"
+                else -> EMPTY_STRING
+            }
+        else
+            when (month) {
+                "01" -> "Jan"
+                "02" -> "Feb"
+                "03" -> "Mar"
+                "04" -> "Apr"
+                "05" -> "May"
+                "06" -> "Jun"
+                "07" -> "Jul"
+                "08" -> "Aug"
+                "09" -> "Sep"
+                "10" -> "Okt"
+                "11" -> "Nov"
+                "12" -> "Dec"
+                else -> EMPTY_STRING
+            }
 }

@@ -107,8 +107,4 @@ dependencies {
 
     //Timber
     implementation(libs.timber)
-
-    //Paging
-    implementation(libs.paging)
-    implementation(libs.paging.compose)
 }

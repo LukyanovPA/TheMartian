@@ -38,8 +38,8 @@ fun checkSdkVersion(less33: () -> Unit, more33: () -> Unit) {
 }
 
 /** Coroutines */
-suspend fun <T> onIo(action: suspend () -> T) = withContext(Dispatchers.IO) { action() }
-suspend fun <T> onCpu(action: suspend () -> T) = withContext(Dispatchers.Default) { action() }
+suspend fun <T> onIo(action: suspend CoroutineScope.() -> T) = withContext(Dispatchers.IO, action)
+suspend fun <T> onCpu(action: suspend CoroutineScope.() -> T) = withContext(Dispatchers.Default, action)
 
 /** List */
 suspend fun <T, R> List<T>.onMap(transform: suspend (T) -> R) = onCpu {
