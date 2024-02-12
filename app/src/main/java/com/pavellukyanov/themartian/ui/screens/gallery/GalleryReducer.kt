@@ -36,6 +36,7 @@ class GalleryReducer(
                         isLoading = true,
                         options = action.newOptions,
                         isLatest = false,
+                        photos = mutableListOf(),
                         page = 1
                     )
                 )
@@ -56,10 +57,7 @@ class GalleryReducer(
 
         val newList = _state.value.photos
         val canPaginate = photos.size == 25
-        newList.apply {
-            if (page == 1) clear()
-            addAll(photos)
-        }
+        newList.addAll(photos)
 
         saveState(
             _state.value.copy(

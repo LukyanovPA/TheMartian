@@ -4,4 +4,6 @@ plugins {
     alias(libs.plugins.kotlinAndroid) apply false
     alias(libs.plugins.kotlin.plugin.serialization) apply false
     alias(libs.plugins.devtools.ksp) apply false
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.google.crashlytics) apply false
 }

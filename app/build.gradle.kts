@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.devtools.ksp)
+    id(libs.plugins.google.services.get().pluginId)
+    id(libs.plugins.google.crashlytics.get().pluginId)
 }
 
 android {
@@ -14,7 +16,7 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0-alpha01"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -107,4 +109,9 @@ dependencies {
 
     //Timber
     implementation(libs.timber)
+
+    //Google Services
+    implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
+    implementation("com.google.firebase:firebase-crashlytics")
+    implementation("com.google.firebase:firebase-analytics")
 }
