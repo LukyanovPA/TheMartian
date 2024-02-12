@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
@@ -15,8 +17,10 @@ android {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
+        versionCode = 1001
         versionName = "1.0-alpha01"
+
+        archivesName = "TheMartian-$versionName"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

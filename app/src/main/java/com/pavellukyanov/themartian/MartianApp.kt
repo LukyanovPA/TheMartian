@@ -16,6 +16,8 @@ import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import timber.log.Timber
 
+private const val FIRST_START_KEY = "FIRST_START_KEY"
+
 class MartianApp : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
@@ -31,8 +33,21 @@ class MartianApp : Application(), ImageLoaderFactory {
         }
 
         initLogger()
+        if ((this.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0) checkFirstStart()
 
 //        this.applicationContext.deleteDatabase("MartianLocalDatabase.db")
+    }
+
+    //TODO убрать в релизе
+    private fun checkFirstStart() {
+        val preferences = applicationContext.getSharedPreferences("COMMON", MODE_PRIVATE)
+        val result = preferences.getBoolean(FIRST_START_KEY, false)
+        if (!result) {
+            if (applicationContext.getDatabasePath("MartianLocalDatabase.db").canRead())
+                applicationContext.deleteDatabase("MartianLocalDatabase.db")
+
+            preferences.edit().putBoolean(FIRST_START_KEY, true).apply()
+        }
     }
 
     private fun initLogger() {
