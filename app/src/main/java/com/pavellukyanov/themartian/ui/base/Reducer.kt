@@ -70,7 +70,7 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
         onAction(_state.value)
     }
 
-    private fun handledError(error: Throwable) {
+    protected fun handledError(error: Throwable) {
         log.w("handledError -> ${error.javaClass.simpleName}")
         context.sendBroadcast(Intent(ERROR_BROADCAST_ACTION).putExtra(ERROR_MESSAGE, error.message.orEmpty()))
     }

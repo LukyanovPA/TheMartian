@@ -34,6 +34,7 @@
 
     //Content Description
     <string name="empty_state_icon_description">Иконка пустого ответа</string>
+    <string name="default_image_description">Изображение</string>
 
     //Empty Response
     <string name="empty_response_title">Ничего не найдено</string>

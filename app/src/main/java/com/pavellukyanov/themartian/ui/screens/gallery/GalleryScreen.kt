@@ -181,7 +181,8 @@ private fun GalleryScreenContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
-                                .clickable { onAction(GalleryAction.OnPhotoClick(photo)) }
+                                .clickable { onAction(GalleryAction.OnPhotoClick(photo)) },
+                            onError = { onAction(GalleryAction.OnImageError(error = it)) }
                         )
                     }
                 }

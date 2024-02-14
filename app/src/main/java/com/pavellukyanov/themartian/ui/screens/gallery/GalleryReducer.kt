@@ -46,6 +46,8 @@ class GalleryReducer(
             is GalleryAction.LoadMore -> {
                 onLoadPhotos(options = oldState.options, page = oldState.page, isLatest = oldState.isLatest)
             }
+
+            is GalleryAction.OnImageError -> handledError(action.error)
         }
     }
 

@@ -33,7 +33,7 @@ class MartianApp : Application(), ImageLoaderFactory {
         }
 
         initLogger()
-        if ((this.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0) checkFirstStart()
+        if ((applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0) checkFirstStart()
 
 //        this.applicationContext.deleteDatabase("MartianLocalDatabase.db")
     }

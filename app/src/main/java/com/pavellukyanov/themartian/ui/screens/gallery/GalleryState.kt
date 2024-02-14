@@ -24,6 +24,7 @@ sealed class GalleryAction : Action() {
     data class OnPhotoClick(val photoDto: Photo) : GalleryAction()
     data class OnSetNewOptions(val newOptions: PhotosOptions) : GalleryAction()
     data object LoadMore : GalleryAction()
+    data class OnImageError(val error: Throwable) : GalleryAction()
 }
 
 sealed class GalleryEffect : Effect() {

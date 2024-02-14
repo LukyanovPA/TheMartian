@@ -16,6 +16,7 @@ sealed class PhotoAction : Action() {
     data object OnBackClick : PhotoAction()
     data class DownloadPhoto(val photo: Photo?) : PhotoAction()
     data class ChangeFavourites(val photo: Photo?) : PhotoAction()
+    data class OnImageError(val error: Throwable) : PhotoAction()
 }
 
 sealed class PhotoEffect : Effect() {

@@ -57,7 +57,6 @@ compose-icons = { module = "androidx.compose.material:material-icons-extended", 
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
 compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
-compose-material = { module = "androidx.compose.material:material", version.ref = "compose" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines-version" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin-version" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin-version" }

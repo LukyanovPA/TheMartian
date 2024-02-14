@@ -9,38 +9,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.CachePolicy
 import coil.request.ErrorResult
 import coil.request.ImageRequest
-import coil.request.SuccessResult
-import coil.size.Size
 import com.pavellukyanov.themartian.R
 import kotlinx.coroutines.Dispatchers
+import coil.size.Size as CoilSize
 
 @Composable
 fun Picture(
     modifier: Modifier,
     url: Any?,
     contentDescription: String? = null,
-    contentScale: ContentScale = ContentScale.None
+    contentScale: ContentScale = ContentScale.None,
+    onError: (Throwable) -> Unit
 ) {
     val context = LocalContext.current
 
     val listener = object : ImageRequest.Listener {
         override fun onError(request: ImageRequest, result: ErrorResult) {
             super.onError(request, result)
-        }
-
-        override fun onSuccess(request: ImageRequest, result: SuccessResult) {
-            super.onSuccess(request, result)
+            onError(result.throwable)
         }
     }
 
     val imageRequest = ImageRequest.Builder(context)
         .data(url)
-        .size(Size.ORIGINAL)
+        .size(CoilSize.ORIGINAL)
         .crossfade(true)
         .listener(listener)
         .dispatcher(Dispatchers.IO)
@@ -62,7 +60,7 @@ fun Picture(
                 color = Color.Red.copy(alpha = 0.7f)
             )
         },
-        contentDescription = contentDescription ?: "Изображение",
+        contentDescription = contentDescription ?: stringResource(id = R.string.default_image_description),
         contentScale = contentScale,
         modifier = modifier
     )

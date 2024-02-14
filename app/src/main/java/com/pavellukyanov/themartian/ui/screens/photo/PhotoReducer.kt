@@ -21,6 +21,7 @@ class PhotoReducer(
             is PhotoAction.OnBackClick -> sendEffect(PhotoEffect.OnBackClick)
             is PhotoAction.DownloadPhoto -> onDownloadPhoto(photo = action.photo)
             is PhotoAction.ChangeFavourites -> action.photo?.let { onChangeFavourites(isAdd = !oldState.isFavourites, photo = it) }
+            is PhotoAction.OnImageError -> handledError(action.error)
         }
     }
 

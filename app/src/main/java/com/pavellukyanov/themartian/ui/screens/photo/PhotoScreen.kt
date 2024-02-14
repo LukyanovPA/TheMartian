@@ -1,7 +1,8 @@
 package com.pavellukyanov.themartian.ui.screens.photo
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,14 +25,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -45,7 +46,6 @@ import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -79,7 +79,8 @@ fun PhotoScreen(
                 roverName = currentState.photo?.roverName.orEmpty(),
                 onBackClick = { reducer.sendAction(PhotoAction.OnBackClick) },
                 onDownloadClick = { reducer.sendAction(PhotoAction.DownloadPhoto(photo = currentState.photo)) },
-                onChangeFavouritesClick = { reducer.sendAction(PhotoAction.ChangeFavourites(photo = currentState.photo)) }
+                onChangeFavouritesClick = { reducer.sendAction(PhotoAction.ChangeFavourites(photo = currentState.photo)) },
+                onError = { reducer.sendAction(PhotoAction.OnImageError(error = it)) }
             )
         }
     )
@@ -97,11 +98,17 @@ fun PhotoScreenContent(
     roverName: String,
     onBackClick: () -> Unit,
     onDownloadClick: () -> Unit,
-    onChangeFavouritesClick: () -> Unit
+    onChangeFavouritesClick: () -> Unit,
+    onError: (Throwable) -> Unit
 ) {
     var scale by remember { mutableFloatStateOf(1f) }
-    var rotationState by remember { mutableFloatStateOf(0f) }
-    val scope = rememberCoroutineScope()
+    var rotation by remember { mutableFloatStateOf(0f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
+        scale *= zoomChange
+        rotation += rotationChange
+        offset += offsetChange
+    }
 
     ConstraintLayout(
         modifier = modifier
@@ -121,20 +128,15 @@ fun PhotoScreenContent(
                     end.linkTo(parent.end)
                 }
                 .fillMaxWidth()
-                .pointerInput(Unit) {
-                    detectTransformGestures { _, _, zoom, rotation ->
-                        scope.launch {
-                            scale *= zoom
-                            rotationState += rotation
-                        }
-                    }
-                }
                 .graphicsLayer(
-                    // adding some zoom limits (min 50%, max 200%)
-                    scaleX = maxOf(0.5f, minOf(10f, scale)),
-                    scaleY = maxOf(0.5f, minOf(10f, scale)),
-                    rotationZ = rotationState
+                    scaleX = scale,
+                    scaleY = scale,
+                    rotationZ = rotation,
+                    translationX = offset.x,
+                    translationY = offset.y
                 )
+                .transformable(state = state),
+            onError = onError
         )
 
         //Header
