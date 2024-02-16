@@ -13,6 +13,7 @@
     <string name="any_screen_ok">OK</string>
     <string name="any_screen_confirm">Подтвердить</string>
     <string name="any_screen_chancel">Отмена</string>
+    <string name="bad_internet_connection_error_message">Отсутствует соединение с интернетом</string>
 
     //Rover Info
     <string name="landing_date">Дата посадки:</string>

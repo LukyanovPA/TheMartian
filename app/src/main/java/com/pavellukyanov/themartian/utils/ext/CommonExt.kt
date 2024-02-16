@@ -1,6 +1,9 @@
 package com.pavellukyanov.themartian.utils.ext
 
 import android.os.Build
+import androidx.activity.ComponentActivity
+import androidx.lifecycle.LifecycleService
+import com.pavellukyanov.themartian.ui.base.Reducer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -11,7 +14,9 @@ import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
 /** Logging */
-val Any.log get() = Timber.tag(this::class.java.simpleName)
+val ComponentActivity.log get() = Timber.tag(this::class.java.simpleName)
+val LifecycleService.log get() = Timber.tag(this::class.java.simpleName)
+val Reducer<*, *, *>.log get() = Timber.tag(this::class.java.simpleName)
 
 fun debug(message: () -> String) {
     Timber.v("SMOTRIM -> ${message()}")
@@ -30,11 +35,7 @@ private fun splitContext(coroutineContext: CoroutineContext): String {
 
 /** Check current SDK */
 fun checkSdkVersion(less33: () -> Unit, more33: () -> Unit) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-        less33()
-    } else {
-        more33()
-    }
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) less33() else more33()
 }
 
 /** Coroutines */

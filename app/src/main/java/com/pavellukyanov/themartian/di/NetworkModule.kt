@@ -2,6 +2,7 @@ package com.pavellukyanov.themartian.di
 
 import android.content.pm.ApplicationInfo
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.pavellukyanov.themartian.data.api.HttpInterceptor
 import com.pavellukyanov.themartian.data.api.RoverService
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -9,6 +10,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidApplication
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import timber.log.Timber
@@ -16,7 +18,11 @@ import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalSerializationApi::class)
 val networkModule = module {
+    singleOf(::HttpInterceptor)
+
     single {
+        val httpInterceptor: HttpInterceptor by inject()
+
         val okHttpBuilder = OkHttpClient.Builder()
             .apply {
                 connectTimeout(30, TimeUnit.SECONDS)
@@ -39,6 +45,8 @@ val networkModule = module {
                 .build()
             it.proceed(request.newBuilder().url(url).build())
         }
+
+        okHttpBuilder.addInterceptor(httpInterceptor)
 
         val json = Json {
             coerceInputValues = true

@@ -1,5 +1,6 @@
 package com.pavellukyanov.themartian.data.api
 
+import com.pavellukyanov.themartian.common.NetworkMonitor
 import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.data.dto.PhotoDto
 import com.pavellukyanov.themartian.data.dto.RoverItemDto
@@ -9,25 +10,34 @@ import com.pavellukyanov.themartian.domain.entity.PhotosOptions
 import com.pavellukyanov.themartian.utils.ext.onIo
 import com.pavellukyanov.themartian.utils.ext.onMap
 
-class ApiDataSource(private val roverService: RoverService) {
+class ApiDataSource(
+    private val roverService: RoverService,
+    private val networkMonitor: NetworkMonitor
+) {
     suspend fun getRoversInfo(): List<RoverItemDto> = onIo {
-        RoverName.entries
-            .map { it.roverName }
-            .map { name -> roverService.loadRoverInfo(roverName = name) }
-            .onMap { it.toData().roverItem }
+        networkMonitor {
+            RoverName.entries
+                .map { it.roverName }
+                .map { name -> roverService.loadRoverInfo(roverName = name) }
+                .onMap { it.toData().roverItem }
+        }
     }
 
     suspend fun getLatest(roverName: String, page: Int): List<Photo> = onIo {
-        roverService.getLatestPhotos(roverName = roverName, page = page)
-            .toData()
-            .photoDtos
-            .onMap(PhotoDto::map)
+        networkMonitor {
+            roverService.getLatestPhotos(roverName = roverName, page = page)
+                .toData()
+                .photoDtos
+                .onMap(PhotoDto::map)
+        }
     }
 
     suspend fun getPhotosByOptions(options: PhotosOptions, page: Int): List<Photo> = onIo {
-        roverService.getByOptions(roverName = options.roverName, earthDate = options.date, camera = options.camera, page = page)
-            .toData()
-            .photos
-            .onMap(PhotoDto::map)
+        networkMonitor {
+            roverService.getByOptions(roverName = options.roverName, earthDate = options.date, camera = options.camera, page = page)
+                .toData()
+                .photos
+                .onMap(PhotoDto::map)
+        }
     }
 }

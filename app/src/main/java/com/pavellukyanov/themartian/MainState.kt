@@ -12,7 +12,7 @@ data class MainState(
 ) : State()
 
 sealed class MainAction : Action() {
-    data class Error(val errorMessage: String) : MainAction()
+    data class Error(val error: Throwable) : MainAction()
     data object CloseErrorDialog : MainAction()
 }
 

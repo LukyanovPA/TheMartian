@@ -7,6 +7,7 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.util.DebugLogger
+import com.pavellukyanov.themartian.di.commonModule
 import com.pavellukyanov.themartian.di.dataModule
 import com.pavellukyanov.themartian.di.domainModule
 import com.pavellukyanov.themartian.di.networkModule
@@ -30,6 +31,7 @@ class MartianApp : Application(), ImageLoaderFactory {
             modules(dataModule)
             modules(domainModule)
             modules(reducerModule)
+            modules(commonModule)
         }
 
         initLogger()

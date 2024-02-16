@@ -25,8 +25,8 @@ import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
 import com.pavellukyanov.themartian.ui.wigets.dialog.ErrorDialog
 import com.pavellukyanov.themartian.utils.C.CACHE_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
+import com.pavellukyanov.themartian.utils.C.ERROR
 import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
-import com.pavellukyanov.themartian.utils.C.ERROR_MESSAGE
 import com.pavellukyanov.themartian.utils.C.OK_RESULT
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.checkSdkVersion
@@ -115,7 +115,7 @@ class MainActivity : ComponentActivity() {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 intent?.getBooleanExtra(OK_RESULT, false)?.let { state ->
-                    log.w("onReceiveCache -> $state")
+                    log.d("onReceiveCache -> $state")
                     if (state) stopCacheService(); unregisterCacheBroadcastReceiver()
                 }
             }
@@ -124,9 +124,9 @@ class MainActivity : ComponentActivity() {
     private fun initErrorBroadcastReceiver(): BroadcastReceiver =
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                intent?.getStringExtra(ERROR_MESSAGE)?.let { errorMessage ->
-                    log.w("onReceiveError -> $errorMessage")
-                    reducer.sendAction(MainAction.Error(errorMessage = errorMessage))
+                (intent?.getSerializableExtra(ERROR) as? Throwable)?.let { error ->
+                    log.d("onReceiveError -> ${error.javaClass.simpleName}")
+                    reducer.sendAction(MainAction.Error(error = error))
                 }
             }
         }

@@ -15,12 +15,16 @@ import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.domain.usecase.DeleteOldCachedPhoto
 import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
 import com.pavellukyanov.themartian.utils.C.CACHE_BROADCAST_ACTION
+import com.pavellukyanov.themartian.utils.C.ERROR
+import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.C.INT_ONE
 import com.pavellukyanov.themartian.utils.C.INT_ZERO
 import com.pavellukyanov.themartian.utils.C.OK_RESULT
 import com.pavellukyanov.themartian.utils.ext.checkSdkVersion
 import com.pavellukyanov.themartian.utils.ext.log
 import com.pavellukyanov.themartian.utils.ext.suspendDebugLog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -32,6 +36,17 @@ class CacheService : LifecycleService() {
     private val tag = this::class.java.simpleName
     private val workStates = hashMapOf(UPDATE_CACHE_KEY to false, DELETE_CACHE_KEY to false)
     private val mutex = Mutex()
+
+    private fun launch(action: suspend CoroutineScope.() -> Unit) =
+        lifecycleScope.launch(Dispatchers.Default) {
+            try {
+                action()
+            } catch (throwable: Throwable) {
+                log.e(throwable)
+                sendBroadcast(Intent(ERROR_BROADCAST_ACTION).putExtra(ERROR, throwable))
+                stopSelf()
+            }
+        }
 
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
@@ -59,13 +74,13 @@ class CacheService : LifecycleService() {
         return START_STICKY
     }
 
-    private fun onDeleteOldPhotoCache() = lifecycleScope.launch {
+    private fun onDeleteOldPhotoCache() = launch {
         deleteOldCachedPhoto()
         worked(key = DELETE_CACHE_KEY)
         suspendDebugLog(tag = tag) { "deleteOldCachedPhoto" }
     }
 
-    private fun onUpdateRoverInfoCache() = lifecycleScope.launch {
+    private fun onUpdateRoverInfoCache() = launch {
         updateRoverInfoCache()
         worked(key = UPDATE_CACHE_KEY)
         suspendDebugLog(tag = tag) { "updateRoverInfoCache" }

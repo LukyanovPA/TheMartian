@@ -20,7 +20,7 @@ class MainActivityReducer : Reducer<MainState, MainAction, MainEffect>(MainState
 
     override suspend fun reduce(oldState: MainState, action: MainAction) {
         when (action) {
-            is MainAction.Error -> sendEffect(MainEffect.ShowError(errorMessage = action.errorMessage))
+            is MainAction.Error -> sendEffect(MainEffect.ShowError(errorMessage = action.error.message.orEmpty()))
             is MainAction.CloseErrorDialog -> sendEffect(MainEffect.CloseErrorDialog)
         }
     }

@@ -6,6 +6,7 @@
     <string name="cache_updated">Cache updated successfully</string>
     <string name="loading_title">Loading data</string>
     <string name="any_screen_confirm">Confirm</string>
+    <string name="bad_internet_connection_error_message">No internet connection</string>
     <string name="landing_date">Landing date:</string>
     <string name="launch_date">Launch date:</string>
     <string name="last_photo_date">Last photo:</string>
