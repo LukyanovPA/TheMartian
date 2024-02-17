@@ -32,4 +32,7 @@ object C {
     //SharedPreference
     const val COMMON = "COMMON"
     const val CACHE_SIZE = "CACHE_SIZE"
+
+    //Cache
+    const val DEFAULT_CACHE_SIZE = 100F
 }

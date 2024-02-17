@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pavellukyanov.themartian.utils.C.COMMON
 import com.pavellukyanov.themartian.utils.C.ERROR
 import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.ext.dispatcher
@@ -23,6 +24,7 @@ import org.koin.core.component.inject
 abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initState: STATE) : ViewModel(), KoinComponent {
     protected val context: Context by inject()
     protected val _state: MutableStateFlow<STATE> = MutableStateFlow(initState)
+    protected val prefs = context.getSharedPreferences(COMMON, Context.MODE_PRIVATE)
     private val errorHandler = CoroutineExceptionHandler { context, exception ->
         log.e(exception, "Context: ${context.dispatcher}, Exception: $exception")
         handledError(exception)

@@ -1,6 +1,5 @@
 package com.pavellukyanov.themartian
 
-import android.content.Context.MODE_PRIVATE
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import com.pavellukyanov.themartian.domain.entity.CacheItem
@@ -12,31 +11,33 @@ import com.pavellukyanov.themartian.ui.base.Reducer
 import com.pavellukyanov.themartian.ui.theme.DbPink
 import com.pavellukyanov.themartian.ui.theme.MediaRed
 import com.pavellukyanov.themartian.utils.C.CACHE_SIZE
-import com.pavellukyanov.themartian.utils.C.COMMON
 import com.pavellukyanov.themartian.utils.C.DB_NAME
+import com.pavellukyanov.themartian.utils.C.DEFAULT_CACHE_SIZE
 import java.io.File
 
-@OptIn(ExperimentalCoilApi::class)
 class MainActivityReducer(
     private val deleteOldCachedPhoto: DeleteOldCachedPhoto,
     private val deleteRoverInfoCache: DeleteRoverInfoCache,
     private val deleteCameraCache: DeleteCameraCache,
     private val updateRoverInfoCache: UpdateRoverInfoCache
 ) : Reducer<MainState, MainAction, MainEffect>(MainState()) {
-    private val prefs = context.getSharedPreferences(COMMON, MODE_PRIVATE)
-
     init {
         updateSettings()
     }
 
     override suspend fun reduce(oldState: MainState, action: MainAction) {
         when (action) {
-            is MainAction.Error -> sendEffect(MainEffect.ShowError(errorMessage = action.error.message.orEmpty()))
+            is MainAction.Error -> sendEffect(MainEffect.ShowError(errorMessage = action.error.message ?: action.error.javaClass.simpleName))
             is MainAction.CloseErrorDialog -> sendEffect(MainEffect.CloseErrorDialog)
             is MainAction.OnDeleteCache -> deleteCache()
             is MainAction.OnUpdateSettings -> updateSettings()
             is MainAction.OnCacheSizeChange -> onChangeCacheSize(size = action.size)
+            is MainAction.CheckCacheOverSize -> onCheckCacheIverSize()
         }
+    }
+
+    private fun onCheckCacheIverSize() = io {
+        if (getImageCacheSize() > prefs.getFloat(CACHE_SIZE, DEFAULT_CACHE_SIZE).toLong()) onDeleteCache()
     }
 
     private fun onChangeCacheSize(size: Float) = io {
@@ -55,12 +56,13 @@ class MainActivityReducer(
     }
 
     @OptIn(ExperimentalCoilApi::class)
-    private fun getImageCache(): Long =
+    private fun getImageCacheSize(): Long =
         ((context.imageLoader.diskCache?.size ?: 0L) / 1024) / 1024
 
     private fun updateSettings() = io {
-        val mediaSize = getImageCache()
+        val mediaSize = getImageCacheSize()
         val dbSize = getRoomDatabaseSize()
+        val cacheSize = prefs.getFloat(CACHE_SIZE, DEFAULT_CACHE_SIZE)
 
         withState { currentState ->
             saveState(
@@ -86,20 +88,24 @@ class MainActivityReducer(
                             )
                         )
                     },
-                    currentCacheSize = prefs.getFloat(CACHE_SIZE, 100F)
+                    currentCacheSize = cacheSize
                 )
             )
         }
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     private fun deleteCache() = cpu {
+        onDeleteCache()
+        updateSettings()
+        updateRoverInfoCache()
+    }
+
+    @OptIn(ExperimentalCoilApi::class)
+    private fun onDeleteCache() = io {
         context.imageLoader.diskCache?.clear()
         context.imageLoader.memoryCache?.clear()
-        updateSettings()
         deleteOldCachedPhoto()
         deleteRoverInfoCache()
         deleteCameraCache()
-        updateRoverInfoCache()
     }
 }

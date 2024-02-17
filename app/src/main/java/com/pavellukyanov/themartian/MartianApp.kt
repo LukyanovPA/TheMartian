@@ -13,6 +13,7 @@ import com.pavellukyanov.themartian.di.networkModule
 import com.pavellukyanov.themartian.di.reducerModule
 import com.pavellukyanov.themartian.utils.C.CACHE_SIZE
 import com.pavellukyanov.themartian.utils.C.COMMON
+import com.pavellukyanov.themartian.utils.C.DEFAULT_CACHE_SIZE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.koin.androidContext
@@ -25,6 +26,14 @@ private const val FIRST_START_KEY = "FIRST_START_KEY"
 class MartianApp : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
+        initDi()
+        initLogger()
+        if (BuildConfig.DEBUG) checkFirstStart()
+
+//        this.applicationContext.deleteDatabase("MartianLocalDatabase.db")
+    }
+
+    private fun initDi() {
         startKoin {
             androidLogger()
             androidContext(this@MartianApp)
@@ -36,14 +45,8 @@ class MartianApp : Application(), ImageLoaderFactory {
             modules(reducerModule)
             modules(commonModule)
         }
-
-        initLogger()
-        if (BuildConfig.DEBUG) checkFirstStart()
-
-//        this.applicationContext.deleteDatabase("MartianLocalDatabase.db")
     }
 
-    //TODO убрать в релизе
     private fun checkFirstStart() = runBlocking(Dispatchers.IO) {
         val preferences = applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE)
         val result = preferences.getBoolean(FIRST_START_KEY, false)
@@ -68,7 +71,7 @@ class MartianApp : Application(), ImageLoaderFactory {
             }
             .diskCache {
                 val size = runBlocking(Dispatchers.IO) {
-                    applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE).getFloat(CACHE_SIZE, 100F).toLong()
+                    applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE).getFloat(CACHE_SIZE, DEFAULT_CACHE_SIZE).toLong()
                 }
 
                 DiskCache.Builder()
