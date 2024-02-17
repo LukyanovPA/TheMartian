@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -116,18 +115,16 @@ private fun GalleryScreenContent(
     state: GalleryState,
     onAction: (GalleryAction) -> Unit
 ) {
-
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(top = 16.dp)
+            .padding(top = 32.dp)
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
+            contentAlignment = Alignment.CenterStart
         ) {
             Button(
                 modifier = Modifier
@@ -145,7 +142,6 @@ private fun GalleryScreenContent(
             }
             Text(
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 text = state.options.roverName,
