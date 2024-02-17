@@ -10,11 +10,11 @@ fun <T> Response<T>.toData(): T =
     if (isSuccessful) {
         body()!!
     } else {
-        throw ApiException.ServerException(exceptionCode = code(), message = errorBody()?.string())
+        throw ApiException.ServerException(message = errorBody()?.string())
     }
 
 sealed class ApiException(message: String? = null) : Exception(message) {
-    class ServerException(val exceptionCode: Int, message: String? = null) : ApiException(message)
+    class ServerException(message: String? = null) : ApiException(message)
     class ClientException(message: String?) : ApiException(message)
     class ConnectionException(message: String?) : ApiException(message)
     class UndefinedException(throwable: Throwable) : ApiException(throwable.message) {
@@ -25,27 +25,25 @@ sealed class ApiException(message: String? = null) : Exception(message) {
 }
 
 class HttpInterceptor : Interceptor {
-    override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
+    override fun intercept(chain: Interceptor.Chain): okhttp3.Response =
         try {
-            return safeHandleResponse(chain)
+            safeHandleResponse(chain)
         } catch (apiException: ApiException) {
             throw apiException
         } catch (e: Exception) {
             if (e is ConnectException || e is UnknownHostException || e is SocketTimeoutException) {
-                throw ApiException.ConnectionException(e.message)
+                throw ApiException.ConnectionException(message = e.message)
             }
             throw ApiException.UndefinedException(e)
         }
-    }
 
     private fun safeHandleResponse(chain: Interceptor.Chain): okhttp3.Response {
-        val initialRequest = chain.request()
-        val initialResponse = chain.proceed(initialRequest)
+        val initialResponse = chain.proceed(chain.request())
 
         return when (initialResponse.code) {
             in HttpResponseCode.OK.errorCode -> initialResponse
-            in HttpResponseCode.SERVER_ERROR.errorCode -> initialResponse
-            in HttpResponseCode.BAD_REQUEST.errorCode -> throw ApiException.ClientException(initialResponse.message)
+            in HttpResponseCode.SERVER_ERROR.errorCode -> throw ApiException.ServerException(message = initialResponse.message)
+            in HttpResponseCode.BAD_REQUEST.errorCode -> throw ApiException.ClientException(message = initialResponse.message)
             else -> throw IllegalStateException("Unexpected response with code: ${initialResponse.code} and body: ${initialResponse.body}")
         }
     }

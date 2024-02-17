@@ -1,7 +1,7 @@
 package com.pavellukyanov.themartian.di
 
-import android.content.pm.ApplicationInfo
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.pavellukyanov.themartian.BuildConfig
 import com.pavellukyanov.themartian.data.api.HttpInterceptor
 import com.pavellukyanov.themartian.data.api.RoverService
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -9,7 +9,6 @@ import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -30,7 +29,7 @@ val networkModule = module {
                 writeTimeout(30, TimeUnit.SECONDS)
             }
 
-        if ((androidApplication().applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+        if (BuildConfig.DEBUG) {
             val httpLoggingInterceptor =
                 HttpLoggingInterceptor { message -> Timber.tag("OkHttp").d(message) }
             httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY

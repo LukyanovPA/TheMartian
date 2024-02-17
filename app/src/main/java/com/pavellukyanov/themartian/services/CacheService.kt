@@ -21,7 +21,6 @@ import com.pavellukyanov.themartian.utils.C.INT_ZERO
 import com.pavellukyanov.themartian.utils.C.OK_RESULT
 import com.pavellukyanov.themartian.utils.ext.checkSdkVersion
 import com.pavellukyanov.themartian.utils.ext.log
-import com.pavellukyanov.themartian.utils.ext.suspendDebugLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,7 +28,6 @@ import org.koin.android.ext.android.inject
 
 class CacheService : LifecycleService() {
     private val updateRoverInfoCache: UpdateRoverInfoCache by inject()
-    private val tag = this::class.java.simpleName
 
     private fun launch(action: suspend CoroutineScope.() -> Unit) =
         lifecycleScope.launch(Dispatchers.Default) {
@@ -70,7 +68,7 @@ class CacheService : LifecycleService() {
         updateRoverInfoCache()
         sendBroadcast(Intent(CACHE_BROADCAST_ACTION).putExtra(OK_RESULT, true))
         stopSelf()
-        suspendDebugLog(tag = tag) { "updateRoverInfoCache" }
+        log.w("updateRoverInfoCache")
     }
 
     private fun getNotification(): Notification {
@@ -86,19 +84,17 @@ class CacheService : LifecycleService() {
     }
 
     private fun createNotificationChannel() {
-        log.w("createNotificationChannel")
         val serviceChannel = NotificationChannel(
             CHANNEL_ID, CHANNEL_NAME,
             NotificationManager.IMPORTANCE_DEFAULT
         )
         val manager = getSystemService(NotificationManager::class.java)
         manager!!.createNotificationChannel(serviceChannel)
+        log.w("createNotificationChannel")
     }
 
     companion object {
         private const val CHANNEL_ID = "ForegroundService Update cache"
         private const val CHANNEL_NAME = "Foreground Service Channel"
-        private const val DELETE_CACHE_KEY = 1
-        private const val UPDATE_CACHE_KEY = 2
     }
 }
