@@ -8,7 +8,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val reducerModule = module {
-    viewModel { MainActivityReducer() }
+    viewModel { MainActivityReducer(deleteOldCachedPhoto = get(), deleteRoverInfoCache = get(), deleteCameraCache = get(), updateRoverInfoCache = get()) }
     viewModel { HomeReducer(loadRovers = get()) }
     viewModel { GalleryReducer(photoToCache = get(), getCameras = get(), loadPhotos = get()) }
     viewModel { PhotoReducer(getPhotoById = get(), changeFavourites = get()) }

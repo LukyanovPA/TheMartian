@@ -9,29 +9,54 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.pavellukyanov.themartian.services.CacheService
 import com.pavellukyanov.themartian.ui.NavigationGraph
 import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
 import com.pavellukyanov.themartian.ui.wigets.dialog.ErrorDialog
+import com.pavellukyanov.themartian.ui.wigets.drawer.SettingsDrawer
 import com.pavellukyanov.themartian.utils.C.CACHE_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
 import com.pavellukyanov.themartian.utils.C.ERROR
 import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.C.OK_RESULT
 import com.pavellukyanov.themartian.utils.ext.Launch
+import com.pavellukyanov.themartian.utils.ext.asState
 import com.pavellukyanov.themartian.utils.ext.checkSdkVersion
 import com.pavellukyanov.themartian.utils.ext.log
+import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
@@ -49,10 +74,15 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             TheMartianTheme {
+                val state by reducer.asState()
                 val navController = rememberNavController()
                 val hasError = remember { mutableStateOf(false) }
                 val error = remember { mutableStateOf(EMPTY_STRING) }
                 val configuration = LocalConfiguration.current
+                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                val scope = rememberCoroutineScope()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val isHomeScreen = navBackStackEntry?.destination?.route == "ui/screens/home"
 
                 Launch {
                     reducer.subscribeEffect { effect ->
@@ -70,22 +100,71 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Scaffold { padding ->
-                    NavigationGraph(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .paint(
-                                painterResource(id = R.drawable.main_background),
-                                contentScale = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) ContentScale.Crop else ContentScale.FillHeight
-                            ),
-                        navController = navController
-                    )
+                state.receive<MainState> { currentState ->
+                    Scaffold(
+                        floatingActionButton = {
+                            AnimatedVisibility(
+                                visible = !drawerState.isOpen && isHomeScreen,
+                                enter = fadeIn(),
+                                exit = fadeOut()
+                            ) {
+                                Button(
+                                    modifier = Modifier
+                                        .padding(bottom = 16.dp),
+                                    onClick = {
+                                        scope.launch {
+                                            if (drawerState.isOpen) drawerState.close() else drawerState.open()
+                                        }
+                                    },
+                                    shape = CircleShape,
+                                    contentPadding = PaddingValues(0.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                                ) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .size(40.dp),
+                                        tint = Color.White,
+                                        imageVector = Icons.Filled.Settings,
+                                        contentDescription = stringResource(id = R.string.settings_button_description)
+                                    )
+                                }
+                            }
+                        }
+                    ) { padding ->
+                        ModalNavigationDrawer(
+                            modifier = Modifier
+                                .padding(padding),
+                            drawerState = drawerState.also {
+                                if (it.isOpen) reducer.sendAction(MainAction.OnUpdateSettings)
+                            },
+                            gesturesEnabled = true,
+                            drawerContent = {
+                                SettingsDrawer(
+                                    items = currentState.cacheItems,
+                                    paddingValues = padding,
+                                    currentCacheSize = currentState.currentCacheSize,
+                                    onDeleteCache = { reducer.sendAction(MainAction.OnDeleteCache) },
+                                    onCacheSizeChange = { reducer.sendAction(MainAction.OnCacheSizeChange(size = it)) }
+                                )
+                            }
+                        ) {
+                            NavigationGraph(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .paint(
+                                        painterResource(id = R.drawable.main_background),
+                                        contentScale = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) ContentScale.Crop else ContentScale.FillHeight
+                                    ),
+                                navController = navController
+                            )
 
-                    if (hasError.value) ErrorDialog(
-                        errorText = error.value,
-                        padding = padding,
-                        onClose = { reducer.sendAction(MainAction.CloseErrorDialog) }
-                    )
+                            if (hasError.value) ErrorDialog(
+                                errorText = error.value,
+                                padding = padding,
+                                onClose = { reducer.sendAction(MainAction.CloseErrorDialog) }
+                            )
+                        }
+                    }
                 }
             }
         }

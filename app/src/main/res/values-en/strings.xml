@@ -27,4 +27,12 @@
     <string name="default_image_description">Image</string>
     <string name="empty_response_title">Nothing found</string>
     <string name="empty_response_body">Try changing filter settings</string>
+    <string name="cache_images_title">Media</string>
+    <string name="cache_db_title">Database</string>
+    <string name="settings_title">Settings</string>
+    <string name="cache_size_mb">%d MB</string>
+    <string name="cache_size_mb_small">less than 1 MB</string>
+    <string name="delete_cache_button_title">Delete cache</string>
+    <string name="cache_change_description">Set cache size</string>
+    <string name="settings_button_description">Settings</string>
 </resources>

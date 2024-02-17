@@ -28,4 +28,8 @@ object C {
 
     //Database
     const val DB_NAME = "MartianLocalDatabase.db"
+
+    //SharedPreference
+    const val COMMON = "COMMON"
+    const val CACHE_SIZE = "CACHE_SIZE"
 }

@@ -1,7 +1,6 @@
 package com.pavellukyanov.themartian
 
 import android.app.Application
-import android.content.pm.ApplicationInfo
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -12,6 +11,10 @@ import com.pavellukyanov.themartian.di.dataModule
 import com.pavellukyanov.themartian.di.domainModule
 import com.pavellukyanov.themartian.di.networkModule
 import com.pavellukyanov.themartian.di.reducerModule
+import com.pavellukyanov.themartian.utils.C.CACHE_SIZE
+import com.pavellukyanov.themartian.utils.C.COMMON
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -35,7 +38,7 @@ class MartianApp : Application(), ImageLoaderFactory {
         }
 
         initLogger()
-        if ((applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0) checkFirstStart()
+        if (BuildConfig.DEBUG) checkFirstStart()
 
 //        this.applicationContext.deleteDatabase("MartianLocalDatabase.db")
     }
@@ -53,7 +56,7 @@ class MartianApp : Application(), ImageLoaderFactory {
     }
 
     private fun initLogger() {
-        if ((this.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0) Timber.plant(Timber.DebugTree())
+        if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
     }
 
     override fun newImageLoader(): ImageLoader =
@@ -64,9 +67,15 @@ class MartianApp : Application(), ImageLoaderFactory {
                     .build()
             }
             .diskCache {
+                val size = runBlocking(Dispatchers.IO) {
+                    getSharedPreferences(COMMON, MODE_PRIVATE)
+                        .getFloat(CACHE_SIZE, 100F)
+                        .toLong()
+                }
+
                 DiskCache.Builder()
                     .directory(cacheDir.resolve("image_cache"))
-                    .maxSizeBytes(5 * 1024 * 1024)
+                    .maxSizeBytes(size * 1024 * 1024)
                     .build()
             }
             .logger(DebugLogger())

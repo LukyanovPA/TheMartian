@@ -36,8 +36,18 @@
     //Content Description
     <string name="empty_state_icon_description">Иконка пустого ответа</string>
     <string name="default_image_description">Изображение</string>
+    <string name="settings_button_description">Настройки</string>
 
     //Empty Response
     <string name="empty_response_title">Ничего не найдено</string>
     <string name="empty_response_body">Попробуйте изменить параметры фильтра</string>
+
+    //Settings
+    <string name="settings_title">Настройки</string>
+    <string name="cache_images_title">Медиа</string>
+    <string name="cache_db_title">База данных</string>
+    <string name="cache_size_mb">%d МБ</string>
+    <string name="cache_size_mb_small">меньше 1 МБ</string>
+    <string name="delete_cache_button_title">Удалить кэш</string>
+    <string name="cache_change_description">Установите размер кэша</string>
 </resources>

@@ -12,7 +12,6 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.pavellukyanov.themartian.MainActivity
 import com.pavellukyanov.themartian.R
-import com.pavellukyanov.themartian.domain.usecase.DeleteOldCachedPhoto
 import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
 import com.pavellukyanov.themartian.utils.C.CACHE_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.C.ERROR
@@ -26,16 +25,11 @@ import com.pavellukyanov.themartian.utils.ext.suspendDebugLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.koin.android.ext.android.inject
 
 class CacheService : LifecycleService() {
     private val updateRoverInfoCache: UpdateRoverInfoCache by inject()
-    private val deleteOldCachedPhoto: DeleteOldCachedPhoto by inject()
     private val tag = this::class.java.simpleName
-    private val workStates = hashMapOf(UPDATE_CACHE_KEY to false, DELETE_CACHE_KEY to false)
-    private val mutex = Mutex()
 
     private fun launch(action: suspend CoroutineScope.() -> Unit) =
         lifecycleScope.launch(Dispatchers.Default) {
@@ -68,34 +62,15 @@ class CacheService : LifecycleService() {
                 log.w("startForeground API > 33")
             }
         )
-
-        onDeleteOldPhotoCache()
         onUpdateRoverInfoCache()
         return START_STICKY
     }
 
-    private fun onDeleteOldPhotoCache() = launch {
-        deleteOldCachedPhoto()
-        worked(key = DELETE_CACHE_KEY)
-        suspendDebugLog(tag = tag) { "deleteOldCachedPhoto" }
-    }
-
     private fun onUpdateRoverInfoCache() = launch {
         updateRoverInfoCache()
-        worked(key = UPDATE_CACHE_KEY)
+        sendBroadcast(Intent(CACHE_BROADCAST_ACTION).putExtra(OK_RESULT, true))
+        stopSelf()
         suspendDebugLog(tag = tag) { "updateRoverInfoCache" }
-    }
-
-    private suspend fun worked(key: Int) = mutex.withLock {
-        workStates[key] = true
-        checkIsWorked()
-    }
-
-    private fun checkIsWorked() = lifecycleScope.launch {
-        if (workStates.values.all { it }) {
-            sendBroadcast(Intent(CACHE_BROADCAST_ACTION).putExtra(OK_RESULT, true))
-            stopSelf()
-        }
     }
 
     private fun getNotification(): Notification {

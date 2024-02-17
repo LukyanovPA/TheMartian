@@ -1,19 +1,22 @@
 package com.pavellukyanov.themartian
 
+import com.pavellukyanov.themartian.domain.entity.CacheItem
 import com.pavellukyanov.themartian.ui.base.Action
 import com.pavellukyanov.themartian.ui.base.Effect
 import com.pavellukyanov.themartian.ui.base.State
-import com.pavellukyanov.themartian.utils.C.LONG_ZERO
 
 data class MainState(
     override val isLoading: Boolean = false,
-    val imageCacheSize: Long = LONG_ZERO,
-    val databaseSize: Long = LONG_ZERO
+    val cacheItems: List<CacheItem> = listOf(),
+    val currentCacheSize: Float = 0f
 ) : State()
 
 sealed class MainAction : Action() {
     data class Error(val error: Throwable) : MainAction()
     data object CloseErrorDialog : MainAction()
+    data object OnDeleteCache : MainAction()
+    data object OnUpdateSettings : MainAction()
+    data class OnCacheSizeChange(val size: Float) : MainAction()
 }
 
 sealed class MainEffect : Effect() {

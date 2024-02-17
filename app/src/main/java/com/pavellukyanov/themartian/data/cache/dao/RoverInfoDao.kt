@@ -14,4 +14,7 @@ interface RoverInfoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(rovers: List<Rover>)
+
+    @Query("DELETE FROM rover_info")
+    suspend fun deleteAll()
 }

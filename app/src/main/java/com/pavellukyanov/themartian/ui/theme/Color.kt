@@ -11,3 +11,6 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val RedRibbon = Color(0xFFFF2950)
+val GrayBac = Color(0xFFE4E4E4)
+val MediaRed = Color(0xFFbe1558)
+val DbPink = Color(0xFFfbcbc9)

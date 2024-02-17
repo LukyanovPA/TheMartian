@@ -63,7 +63,14 @@ fun CameraDialog(
                     .height(300.dp)
             ) {
                 item {
-                    CameraContent(camera = null, onClick = { onSelect(it?.name) })
+                    CameraContent(
+                        camera = null,
+                        onClick = {
+                            onSelect(it?.name)
+                            showDialog.value = false
+                            onClose()
+                        }
+                    )
                     cameras.forEach { camera ->
                         CameraContent(
                             camera = camera,

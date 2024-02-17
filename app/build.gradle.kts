@@ -17,8 +17,8 @@ android {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1002
-        versionName = "1.0-alpha02"
+        versionCode = 1003
+        versionName = "1.0-alpha03"
 
         archivesName = "${rootProject.name}-$versionName"
 
@@ -51,6 +51,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
