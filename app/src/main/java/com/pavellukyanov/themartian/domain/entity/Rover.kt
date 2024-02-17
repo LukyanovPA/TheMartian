@@ -49,7 +49,7 @@ data class Rover(
             modifier = Modifier
                 .padding(vertical = 8.dp, horizontal = 16.dp)
                 .fillMaxWidth()
-                .background(color = Color.LightGray.copy(alpha = 0.1f), shape = RoundedCornerShape(16.dp))
+                .background(color = Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(16.dp))
                 .clickable { onClick(this) }
         ) {
             Column(

@@ -9,20 +9,9 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberDrawerState
@@ -32,17 +21,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.pavellukyanov.themartian.services.CacheService
 import com.pavellukyanov.themartian.ui.NavigationGraph
 import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
+import com.pavellukyanov.themartian.ui.wigets.SettingsButton
 import com.pavellukyanov.themartian.ui.wigets.dialog.ErrorDialog
 import com.pavellukyanov.themartian.ui.wigets.drawer.SettingsDrawer
 import com.pavellukyanov.themartian.utils.C.CACHE_BROADCAST_ACTION
@@ -103,32 +90,14 @@ class MainActivity : ComponentActivity() {
                 state.receive<MainState> { currentState ->
                     Scaffold(
                         floatingActionButton = {
-                            AnimatedVisibility(
-                                visible = !drawerState.isOpen && isHomeScreen,
-                                enter = fadeIn(),
-                                exit = fadeOut()
-                            ) {
-                                Button(
-                                    modifier = Modifier
-                                        .padding(bottom = 16.dp),
-                                    onClick = {
-                                        scope.launch {
-                                            if (drawerState.isOpen) drawerState.close() else drawerState.open()
-                                        }
-                                    },
-                                    shape = CircleShape,
-                                    contentPadding = PaddingValues(0.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-                                ) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .size(40.dp),
-                                        tint = Color.White,
-                                        imageVector = Icons.Filled.Settings,
-                                        contentDescription = stringResource(id = R.string.settings_button_description)
-                                    )
+                            SettingsButton(
+                                isVisible = !drawerState.isOpen && isHomeScreen,
+                                onClick = {
+                                    scope.launch {
+                                        if (drawerState.isOpen) drawerState.close() else drawerState.open()
+                                    }
                                 }
-                            }
+                            )
                         }
                     ) { padding ->
                         ModalNavigationDrawer(

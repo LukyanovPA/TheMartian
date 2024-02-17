@@ -44,8 +44,8 @@ class MartianApp : Application(), ImageLoaderFactory {
     }
 
     //TODO убрать в релизе
-    private fun checkFirstStart() {
-        val preferences = applicationContext.getSharedPreferences("COMMON", MODE_PRIVATE)
+    private fun checkFirstStart() = runBlocking(Dispatchers.IO) {
+        val preferences = applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE)
         val result = preferences.getBoolean(FIRST_START_KEY, false)
         if (!result) {
             if (applicationContext.getDatabasePath("MartianLocalDatabase.db").canRead())
@@ -68,9 +68,7 @@ class MartianApp : Application(), ImageLoaderFactory {
             }
             .diskCache {
                 val size = runBlocking(Dispatchers.IO) {
-                    getSharedPreferences(COMMON, MODE_PRIVATE)
-                        .getFloat(CACHE_SIZE, 100F)
-                        .toLong()
+                    applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE).getFloat(CACHE_SIZE, 100F).toLong()
                 }
 
                 DiskCache.Builder()
