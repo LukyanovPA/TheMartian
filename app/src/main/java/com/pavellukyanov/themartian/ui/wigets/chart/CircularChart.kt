@@ -31,14 +31,14 @@ import com.pavellukyanov.themartian.domain.entity.CacheItem
 @Composable
 fun CircularChart(
     items: List<CacheItem>,
+    currentSize: Float,
     backgroundCircleColor: Color = Color.LightGray.copy(alpha = 0.3f),
     size: Dp = 280.dp,
     thickness: Dp = 16.dp,
     gapBetweenCircles: Dp = 42.dp
 ) {
-    // Convert each value to angle
     val sweepAngles = items.map { item ->
-        360 * if (item.chartValue <= 0) 0.01f else item.chartValue / 100
+        360 * if (item.chartValue <= 0) 0.01f else item.chartValue / currentSize
     }
 
     Canvas(
@@ -48,7 +48,6 @@ fun CircularChart(
         var arcRadius = size.toPx()
 
         items.forEachIndexed { index, cacheItem ->
-
             arcRadius -= gapBetweenCircles.toPx()
 
             drawCircle(
@@ -58,7 +57,7 @@ fun CircularChart(
             )
 
             drawArc(
-                color = cacheItem.chartColor,
+                color = if (sweepAngles[index] > 360) Color.Red else cacheItem.chartColor,
                 startAngle = -90f,
                 sweepAngle = sweepAngles[index],
                 useCenter = false,

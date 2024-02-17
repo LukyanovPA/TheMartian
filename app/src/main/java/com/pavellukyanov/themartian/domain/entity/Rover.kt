@@ -26,6 +26,7 @@ import androidx.room.PrimaryKey
 import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.data.dto.RoverItemDto
 import com.pavellukyanov.themartian.data.dto.RoverName
+import com.pavellukyanov.themartian.ui.theme.MediaRed
 import com.pavellukyanov.themartian.utils.DateFormatter
 
 @Entity(tableName = "rover_info")
@@ -75,7 +76,7 @@ data class Rover(
                     //Status
                     Text(
                         text = status,
-                        color = Color.Green,
+                        color = if (status == "active") Color.Green else MediaRed,
                         fontSize = 12.sp,
                         letterSpacing = 1.sp,
                         textAlign = TextAlign.End

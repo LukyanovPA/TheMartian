@@ -78,7 +78,7 @@ fun SettingsDrawer(
 
                 //Cache Chart
                 item {
-                    CircularChart(items = items)
+                    CircularChart(items = items, currentSize = currentCacheSize)
                 }
 
                 //Delete Cache Button
