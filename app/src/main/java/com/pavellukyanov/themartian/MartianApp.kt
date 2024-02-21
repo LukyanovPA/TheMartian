@@ -13,6 +13,7 @@ import com.pavellukyanov.themartian.di.networkModule
 import com.pavellukyanov.themartian.di.reducerModule
 import com.pavellukyanov.themartian.utils.C.CACHE_SIZE
 import com.pavellukyanov.themartian.utils.C.COMMON
+import com.pavellukyanov.themartian.utils.C.DB_NAME
 import com.pavellukyanov.themartian.utils.C.DEFAULT_CACHE_SIZE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -52,8 +53,8 @@ class MartianApp : Application(), ImageLoaderFactory {
             val preferences = applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE)
             val result = preferences.getBoolean(FIRST_START_KEY, false)
             if (!result) {
-                if (applicationContext.getDatabasePath("MartianLocalDatabase.db").canRead())
-                    applicationContext.deleteDatabase("MartianLocalDatabase.db")
+                if (applicationContext.getDatabasePath(DB_NAME).canRead())
+                    applicationContext.deleteDatabase(DB_NAME)
 
                 preferences.edit().putBoolean(FIRST_START_KEY, true).apply()
             }
