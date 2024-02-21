@@ -18,7 +18,7 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = 1003
-        versionName = "1.0-alpha03"
+        versionName = "1.0-beta01"
 
         archivesName = "${rootProject.name}-$versionName"
 
