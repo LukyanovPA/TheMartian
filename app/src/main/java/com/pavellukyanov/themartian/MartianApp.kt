@@ -48,13 +48,17 @@ class MartianApp : Application(), ImageLoaderFactory {
     }
 
     private fun checkFirstStart() = runBlocking(Dispatchers.IO) {
-        val preferences = applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE)
-        val result = preferences.getBoolean(FIRST_START_KEY, false)
-        if (!result) {
-            if (applicationContext.getDatabasePath("MartianLocalDatabase.db").canRead())
-                applicationContext.deleteDatabase("MartianLocalDatabase.db")
+        try {
+            val preferences = applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE)
+            val result = preferences.getBoolean(FIRST_START_KEY, false)
+            if (!result) {
+                if (applicationContext.getDatabasePath("MartianLocalDatabase.db").canRead())
+                    applicationContext.deleteDatabase("MartianLocalDatabase.db")
 
-            preferences.edit().putBoolean(FIRST_START_KEY, true).apply()
+                preferences.edit().putBoolean(FIRST_START_KEY, true).apply()
+            }
+        } catch (e: Throwable) {
+            Timber.e(e)
         }
     }
 
