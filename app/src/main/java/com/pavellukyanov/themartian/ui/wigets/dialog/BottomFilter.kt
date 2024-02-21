@@ -38,30 +38,36 @@ import com.pavellukyanov.themartian.domain.entity.Camera
 import com.pavellukyanov.themartian.domain.entity.PhotosOptions
 import com.pavellukyanov.themartian.utils.DateFormatter
 import com.pavellukyanov.themartian.utils.ext.Launch
-import com.pavellukyanov.themartian.utils.ext.suspendDebugLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomFilter(
+    rovers: List<String>?,
+    chooseRover: String?,
     cameras: List<Camera>,
     options: PhotosOptions,
     isFavourites: Boolean,
     modifier: Modifier,
     onShowBottomSheetState: (Boolean) -> Unit,
-    onNewOptions: (PhotosOptions) -> Unit
+    onNewOptions: (PhotosOptions) -> Unit,
+    onChooseRover: (String?) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
     var showDatePicker by remember { mutableStateOf(false) }
     var showCameraDialog by remember { mutableStateOf(false) }
+    var showRoverDialog by remember { mutableStateOf(false) }
     var currentDateTriple by remember { mutableStateOf(Triple(0, 0, 0)) }
     var currentOptions by remember { mutableStateOf(options) }
+    var currentRover by remember { mutableStateOf<String?>(null) }
+    var currentRovers by remember { mutableStateOf(listOf<String>()) }
 
     Launch {
         launch(Dispatchers.Default) {
             currentDateTriple = DateFormatter.parse(options.date)
-            suspendDebugLog { "date -> $currentDateTriple" }
+            currentRover = chooseRover
+            currentRovers = rovers ?: listOf()
         }
     }
 
@@ -79,6 +85,11 @@ fun BottomFilter(
         cameras = cameras,
         onSelect = { currentOptions = currentOptions.copy(camera = it) },
         onClose = { showCameraDialog = false })
+
+    if (showRoverDialog) RoverDialog(
+        rovers = currentRovers,
+        onSelect = { currentRover = it },
+        onClose = { showRoverDialog = false })
 
     ModalBottomSheet(
         modifier = Modifier
@@ -122,7 +133,7 @@ fun BottomFilter(
                 }
             }
 
-            //Date and camera
+            //Date and camera or Rover
             item {
                 Row(
                     horizontalArrangement = Arrangement.SpaceAround,
@@ -131,59 +142,89 @@ fun BottomFilter(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    //Date
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            text = stringResource(id = R.string.filter_current_date),
-                            color = Color.White.copy(alpha = 0.7f),
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Button(
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            onClick = {
-                                showDatePicker = true
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    if (isFavourites) {
+                        //Rover
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = currentOptions.displayDate,
-                                color = Color.Black,
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                text = stringResource(id = R.string.rover_name),
+                                color = Color.White.copy(alpha = 0.7f),
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center
                             )
+
+                            Button(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                onClick = {
+                                    showRoverDialog = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                            ) {
+                                Text(
+                                    text = currentRover ?: stringResource(id = R.string.filter_camera_dialog_all),
+                                    color = Color.Black,
+                                    fontSize = 12.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
-                    }
-
-                    //Camera
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            text = stringResource(id = R.string.camera_name),
-                            color = Color.White.copy(alpha = 0.7f),
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Button(
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            onClick = {
-                                showCameraDialog = true
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    } else {
+                        //Date
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = currentOptions.camera ?: stringResource(id = R.string.filter_camera_dialog_all),
-                                color = Color.Black,
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                text = stringResource(id = R.string.filter_current_date),
+                                color = Color.White.copy(alpha = 0.7f),
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center
                             )
+
+                            Button(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                onClick = {
+                                    showDatePicker = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                            ) {
+                                Text(
+                                    text = currentOptions.displayDate,
+                                    color = Color.Black,
+                                    fontSize = 12.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+
+                        //Camera
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                text = stringResource(id = R.string.camera_name),
+                                color = Color.White.copy(alpha = 0.7f),
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Button(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                onClick = {
+                                    showCameraDialog = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                            ) {
+                                Text(
+                                    text = currentOptions.camera ?: stringResource(id = R.string.filter_camera_dialog_all),
+                                    color = Color.Black,
+                                    fontSize = 12.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
                 }
@@ -201,7 +242,10 @@ fun BottomFilter(
                     Button(
                         modifier = Modifier.padding(vertical = 8.dp),
                         onClick = {
-                            onNewOptions(currentOptions)
+                            if (isFavourites)
+                                onChooseRover(currentRover)
+                            else
+                                onNewOptions(currentOptions)
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Green.copy(alpha = 0.5f))
                     ) {

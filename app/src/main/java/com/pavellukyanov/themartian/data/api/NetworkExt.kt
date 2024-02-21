@@ -1,7 +1,9 @@
 package com.pavellukyanov.themartian.data.api
 
+import com.pavellukyanov.themartian.utils.ext.debug
 import okhttp3.Interceptor
 import retrofit2.Response
+import timber.log.Timber
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -31,6 +33,7 @@ class HttpInterceptor : Interceptor {
         } catch (apiException: ApiException) {
             throw apiException
         } catch (e: Exception) {
+            Timber.e(e)
             if (e is ConnectException || e is UnknownHostException || e is SocketTimeoutException) {
                 throw ApiException.ConnectionException(message = e.message)
             }

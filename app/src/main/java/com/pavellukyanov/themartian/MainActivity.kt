@@ -27,38 +27,47 @@ import androidx.compose.ui.res.painterResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.pavellukyanov.themartian.services.CacheService
+import com.pavellukyanov.themartian.services.CacheServiceLifecycle
 import com.pavellukyanov.themartian.ui.NavigationGraph
 import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
 import com.pavellukyanov.themartian.ui.wigets.SettingsButton
 import com.pavellukyanov.themartian.ui.wigets.dialog.ErrorDialog
 import com.pavellukyanov.themartian.ui.wigets.drawer.SettingsDrawer
 import com.pavellukyanov.themartian.utils.C.CACHE_BROADCAST_ACTION
+import com.pavellukyanov.themartian.utils.C.CACHE_SERVICE_STATUS
 import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
 import com.pavellukyanov.themartian.utils.C.ERROR
 import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
-import com.pavellukyanov.themartian.utils.C.OK_RESULT
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
 import com.pavellukyanov.themartian.utils.ext.checkSdkVersion
+import com.pavellukyanov.themartian.utils.ext.debug
 import com.pavellukyanov.themartian.utils.ext.log
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
+
 class MainActivity : ComponentActivity() {
-    private val cacheReceiver by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { initCacheBroadcastReceiver() }
-    private val errorReceiver by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { initErrorBroadcastReceiver() }
+    private val cacheReceiver by lazy { initCacheBroadcastReceiver() }
+    private val errorReceiver by lazy { initErrorBroadcastReceiver() }
     private val reducer by inject<MainActivityReducer>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        registrationBroadcastReceivers()
-        updateCache()
+        registrationErrorBroadcastReceivers()
+
+        if (savedInstanceState == null) {
+            registrationCacheBroadcastReceivers()
+            updateCache()
+        }
+
         window.setFlags(
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         )
+
         setContent {
             TheMartianTheme {
                 val state by reducer.asState()
@@ -83,6 +92,8 @@ class MainActivity : ComponentActivity() {
                                 hasError.value = false
                                 error.value = EMPTY_STRING
                             }
+
+                            is MainEffect.OpenFavourites -> navController.navigate("ui/screens/gallery/${getString(R.string.favourites_title)}/${true}")
                         }
                     }
                 }
@@ -113,7 +124,13 @@ class MainActivity : ComponentActivity() {
                                     paddingValues = padding,
                                     currentCacheSize = currentState.currentCacheSize,
                                     onDeleteCache = { reducer.sendAction(MainAction.OnDeleteCache) },
-                                    onCacheSizeChange = { reducer.sendAction(MainAction.OnCacheSizeChange(size = it)) }
+                                    onCacheSizeChange = { reducer.sendAction(MainAction.OnCacheSizeChange(size = it)) },
+                                    onFavouritesClick = {
+                                        reducer.sendAction(MainAction.OnFavouritesClick)
+                                        scope.launch {
+                                            drawerState.close()
+                                        }
+                                    }
                                 )
                             }
                         ) {
@@ -139,17 +156,28 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun registrationBroadcastReceivers() {
+    private fun registrationErrorBroadcastReceivers() {
         checkSdkVersion(
             less33 = {
                 registerReceiver(errorReceiver, IntentFilter(ERROR_BROADCAST_ACTION))
-                registerReceiver(cacheReceiver, IntentFilter(CACHE_BROADCAST_ACTION))
-                log.w("registrationBroadcastReceivers API < 33")
+                log.w("registrationErrorBroadcastReceivers API < 33")
             },
             more33 = {
                 registerReceiver(errorReceiver, IntentFilter(ERROR_BROADCAST_ACTION), RECEIVER_NOT_EXPORTED)
+                log.w("registrationErrorBroadcastReceivers API > 33")
+            }
+        )
+    }
+
+    private fun registrationCacheBroadcastReceivers() {
+        checkSdkVersion(
+            less33 = {
+                registerReceiver(cacheReceiver, IntentFilter(CACHE_BROADCAST_ACTION))
+                log.w("registrationCacheBroadcastReceivers API < 33")
+            },
+            more33 = {
                 registerReceiver(cacheReceiver, IntentFilter(CACHE_BROADCAST_ACTION), RECEIVER_NOT_EXPORTED)
-                log.w("registrationBroadcastReceivers API > 33")
+                log.w("registrationCacheBroadcastReceivers API > 33")
             }
         )
     }
@@ -162,10 +190,19 @@ class MainActivity : ComponentActivity() {
     private fun initCacheBroadcastReceiver(): BroadcastReceiver =
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                intent?.getBooleanExtra(OK_RESULT, false)?.let { state ->
-                    log.d("onReceiveCache -> $state")
-                    if (state) stopCacheService(); unregisterCacheBroadcastReceiver()
+                debug { "onRecive" }
+                intent?.getStringExtra(CACHE_SERVICE_STATUS)?.let { status ->
+                    log.d("onReceiveCache -> $status")
+                    val serviceStatus = CacheServiceLifecycle.entries.find { it.name == status } ?: CacheServiceLifecycle.DIDNT_START
+                    reducer.sendAction(MainAction.OnCacheServiceStatus(cacheServiceStatus = serviceStatus))
+                    if (serviceStatus == CacheServiceLifecycle.FINISH || serviceStatus == CacheServiceLifecycle.FINISH_WITH_ERROR) stopCacheService(); unregisterCacheBroadcastReceiver()
                 }
+
+//                (intent?.getSerializableExtra(CACHE_SERVICE_STATUS) as? CacheServiceLifecycle)?.let { status ->
+//                    log.d("onReceiveCache -> $status")
+//                    reducer.sendAction(MainAction.OnCacheServiceStatus(cacheServiceStatus = status))
+//                    if (status == CacheServiceLifecycle.FINISH || status == CacheServiceLifecycle.FINISH_WITH_ERROR) stopCacheService(); unregisterCacheBroadcastReceiver()
+//                }
             }
         }
 

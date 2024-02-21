@@ -15,7 +15,9 @@ data class GalleryState(
     val canPaginate: Boolean = false,
     val photos: MutableList<Photo> = mutableListOf(),
     val isLatest: Boolean = false,
-    val page: Int = 1
+    val page: Int = 1,
+    val rovers: List<String>? = null,
+    val chooseRover: String? = null
 ) : State()
 
 sealed class GalleryAction : Action() {
@@ -25,6 +27,7 @@ sealed class GalleryAction : Action() {
     data class OnSetNewOptions(val newOptions: PhotosOptions) : GalleryAction()
     data object LoadMore : GalleryAction()
     data class OnImageError(val error: Throwable) : GalleryAction()
+    data class OnChooseRover(val rover: String?) : GalleryAction()
 }
 
 sealed class GalleryEffect : Effect() {

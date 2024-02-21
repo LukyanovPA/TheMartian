@@ -14,11 +14,11 @@ import com.pavellukyanov.themartian.MainActivity
 import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
 import com.pavellukyanov.themartian.utils.C.CACHE_BROADCAST_ACTION
+import com.pavellukyanov.themartian.utils.C.CACHE_SERVICE_STATUS
 import com.pavellukyanov.themartian.utils.C.ERROR
 import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.C.INT_ONE
 import com.pavellukyanov.themartian.utils.C.INT_ZERO
-import com.pavellukyanov.themartian.utils.C.OK_RESULT
 import com.pavellukyanov.themartian.utils.ext.checkSdkVersion
 import com.pavellukyanov.themartian.utils.ext.log
 import kotlinx.coroutines.CoroutineScope
@@ -36,6 +36,7 @@ class CacheService : LifecycleService() {
             } catch (throwable: Throwable) {
                 log.e(throwable)
                 sendBroadcast(Intent(ERROR_BROADCAST_ACTION).putExtra(ERROR, throwable))
+                sendBroadcast(Intent(CACHE_BROADCAST_ACTION).putExtra(CACHE_SERVICE_STATUS, CacheServiceLifecycle.FINISH_WITH_ERROR.name))
                 stopSelf()
             }
         }
@@ -60,15 +61,17 @@ class CacheService : LifecycleService() {
                 log.w("startForeground API > 33")
             }
         )
+
+        sendBroadcast(Intent(CACHE_BROADCAST_ACTION).putExtra(CACHE_SERVICE_STATUS, CacheServiceLifecycle.STARTED.name))
         onUpdateRoverInfoCache()
         return START_STICKY
     }
 
     private fun onUpdateRoverInfoCache() = launch {
         updateRoverInfoCache()
-        sendBroadcast(Intent(CACHE_BROADCAST_ACTION).putExtra(OK_RESULT, true))
-        stopSelf()
+        this@CacheService.sendBroadcast(Intent(CACHE_BROADCAST_ACTION).putExtra(CACHE_SERVICE_STATUS, CacheServiceLifecycle.FINISH.name))
         log.w("updateRoverInfoCache")
+        stopSelf()
     }
 
     private fun getNotification(): Notification {
@@ -97,4 +100,11 @@ class CacheService : LifecycleService() {
         private const val CHANNEL_ID = "ForegroundService Update cache"
         private const val CHANNEL_NAME = "Foreground Service Channel"
     }
+}
+
+enum class CacheServiceLifecycle {
+    DIDNT_START,
+    STARTED,
+    FINISH,
+    FINISH_WITH_ERROR
 }

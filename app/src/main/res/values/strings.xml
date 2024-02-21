@@ -14,6 +14,7 @@
     <string name="any_screen_confirm">Подтвердить</string>
     <string name="any_screen_chancel">Отмена</string>
     <string name="bad_internet_connection_error_message">Отсутствует соединение с интернетом</string>
+    <string name="favourites_title">Избранное</string>
 
     //Rover Info
     <string name="landing_date">Дата посадки:</string>
@@ -32,6 +33,7 @@
     <string name="filter_current_date">Текущая дата</string>
     <string name="filter_camera_dialog_title">Выберите камеру</string>
     <string name="filter_camera_dialog_all">Все</string>
+    <string name="filter_rover_dialog_title">Выберите ровер</string>
 
     //Content Description
     <string name="empty_state_icon_description">Иконка пустого ответа</string>

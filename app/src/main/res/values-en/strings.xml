@@ -23,6 +23,7 @@
     <string name="any_screen_chancel">Chancel</string>
     <string name="filter_camera_dialog_title">Select camera</string>
     <string name="filter_camera_dialog_all">All</string>
+    <string name="filter_rover_dialog_title">Select rover</string>
     <string name="empty_state_icon_description">Empty response icon</string>
     <string name="default_image_description">Image</string>
     <string name="empty_response_title">Nothing found</string>
@@ -35,4 +36,5 @@
     <string name="delete_cache_button_title">Delete cache</string>
     <string name="cache_change_description">Set cache size</string>
     <string name="settings_button_description">Settings</string>
+    <string name="favourites_title">Favourites</string>
 </resources>

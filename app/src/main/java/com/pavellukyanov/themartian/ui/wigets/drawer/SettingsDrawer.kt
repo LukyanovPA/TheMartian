@@ -5,12 +5,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Slider
@@ -29,7 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.pavellukyanov.themartian.BuildConfig
 import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.domain.entity.CacheItem
 import com.pavellukyanov.themartian.ui.theme.DbPink
@@ -43,7 +46,8 @@ fun SettingsDrawer(
     currentCacheSize: Float,
     paddingValues: PaddingValues,
     onDeleteCache: () -> Unit,
-    onCacheSizeChange: (Float) -> Unit
+    onCacheSizeChange: (Float) -> Unit,
+    onFavouritesClick: () -> Unit
 ) {
     var sliderPosition by remember { mutableFloatStateOf(0F) }
     sliderPosition = currentCacheSize
@@ -124,14 +128,38 @@ fun SettingsDrawer(
                         )
                     }
                 }
-            }
 
-            //Version
-            Text(
-                modifier = Modifier
-                    .padding(bottom = 36.dp),
-                text = "version ${BuildConfig.VERSION_NAME}"
-            )
+                //Favourites
+                item {
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp),
+                        onClick = {
+                            onFavouritesClick()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Yellow.copy(alpha = 0.7f), contentColor = Color.White)
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color.Transparent)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.favourites_title),
+                                color = Color.DarkGray
+                            )
+                            Icon(
+                                tint = Color.DarkGray,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowRightAlt,
+                                contentDescription = stringResource(id = R.string.favourites_title)
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

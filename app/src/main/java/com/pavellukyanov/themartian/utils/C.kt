@@ -16,8 +16,8 @@ object C {
     const val RU = "ru"
 
     //Broadcast
-    const val OK_RESULT = "OK_RESULT"
     const val ERROR = "ERROR"
+    const val CACHE_SERVICE_STATUS = "com.pavellukyanov.themartian.CACHE_SERVICE_STATUS"
     const val CACHE_BROADCAST_ACTION = "com.pavellukyanov.themartian.CACHE_ACTION"
     const val ERROR_BROADCAST_ACTION = "com.pavellukyanov.themartian.ERROR_ACTION"
 

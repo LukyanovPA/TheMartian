@@ -24,12 +24,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pavellukyanov.themartian.R
-import com.pavellukyanov.themartian.domain.entity.Camera
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CameraDialog(
-    cameras: List<Camera>,
+fun RoverDialog(
+    rovers: List<String>,
     onSelect: (String?) -> Unit,
     onClose: () -> Unit
 ) {
@@ -54,7 +53,7 @@ fun CameraDialog(
         ) {
             Text(
                 color = Color.DarkGray,
-                text = stringResource(R.string.filter_camera_dialog_title)
+                text = stringResource(R.string.filter_rover_dialog_title)
             )
 
             LazyColumn(
@@ -63,19 +62,19 @@ fun CameraDialog(
                     .height(300.dp)
             ) {
                 item {
-                    CameraContent(
-                        camera = null,
+                    RoverContent(
+                        rover = null,
                         onClick = {
-                            onSelect(it?.name)
+                            onSelect(it)
                             showDialog.value = false
                             onClose()
                         }
                     )
-                    cameras.forEach { camera ->
-                        CameraContent(
-                            camera = camera,
+                    rovers.forEach { rover ->
+                        RoverContent(
+                            rover = rover,
                             onClick = {
-                                onSelect(it?.name)
+                                onSelect(it)
                                 showDialog.value = false
                                 onClose()
                             }
@@ -88,39 +87,26 @@ fun CameraDialog(
 }
 
 @Composable
-private fun CameraContent(
-    camera: Camera?,
-    onClick: (Camera?) -> Unit
+private fun RoverContent(
+    rover: String?,
+    onClick: (String?) -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .background(shape = RoundedCornerShape(8.dp), color = Color.DarkGray.copy(alpha = 0.3f))
-            .clickable { onClick(camera) },
+            .clickable { onClick(rover) },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             modifier = Modifier
                 .padding(6.dp),
-            text = camera?.name ?: stringResource(id = R.string.filter_camera_dialog_all),
+            text = rover ?: stringResource(id = R.string.filter_camera_dialog_all),
             fontWeight = FontWeight.Bold,
             color = Color.White,
             fontSize = 16.sp,
             textAlign = TextAlign.Center
         )
-
-        camera?.cameraFullName?.let {
-            Text(
-                modifier = Modifier
-                    .padding(horizontal = 6.dp)
-                    .padding(bottom = 6.dp),
-                text = it,
-                fontWeight = FontWeight.Normal,
-                color = Color.White,
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center
-            )
-        }
     }
 }

@@ -33,6 +33,8 @@ class MainActivityReducer(
             is MainAction.OnUpdateSettings -> updateSettings()
             is MainAction.OnCacheSizeChange -> onChangeCacheSize(size = action.size)
             is MainAction.CheckCacheOverSize -> onCheckCacheIverSize()
+            is MainAction.OnFavouritesClick -> sendEffect(MainEffect.OpenFavourites)
+            is MainAction.OnCacheServiceStatus -> saveState(oldState.copy(cacheServiceStatus = action.cacheServiceStatus))
         }
     }
 

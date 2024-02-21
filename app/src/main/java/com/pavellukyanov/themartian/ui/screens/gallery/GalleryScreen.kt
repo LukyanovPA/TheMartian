@@ -93,6 +93,8 @@ fun GalleryScreen(
                 GalleryScreenContent(modifier = modifier, paddingValues = padding, state = currentState, onAction = reducer::sendAction)
 
                 if (showBottomSheet) BottomFilter(
+                    rovers = currentState.rovers,
+                    chooseRover = currentState.chooseRover,
                     cameras = currentState.cameras,
                     options = currentState.options,
                     isFavourites = isLocal,
@@ -100,6 +102,10 @@ fun GalleryScreen(
                     onShowBottomSheetState = { showBottomSheet = it },
                     onNewOptions = {
                         reducer.sendAction(GalleryAction.OnSetNewOptions(newOptions = it))
+                        showBottomSheet = false
+                    },
+                    onChooseRover = {
+                        reducer.sendAction(GalleryAction.OnChooseRover(rover = it))
                         showBottomSheet = false
                     }
                 )
@@ -144,7 +150,7 @@ private fun GalleryScreenContent(
                 modifier = Modifier
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center,
-                text = state.options.roverName,
+                text = if (state.isLocal) stringResource(id = R.string.favourites_title) else state.options.roverName,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp

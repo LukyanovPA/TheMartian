@@ -3,29 +3,45 @@ package com.pavellukyanov.themartian.ui.screens.gallery
 import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.domain.entity.PhotosOptions
 import com.pavellukyanov.themartian.domain.usecase.GetCameras
+import com.pavellukyanov.themartian.domain.usecase.GetFavourites
+import com.pavellukyanov.themartian.domain.usecase.GetRoversOnFavourites
 import com.pavellukyanov.themartian.domain.usecase.LoadPhotos
 import com.pavellukyanov.themartian.domain.usecase.PhotoToCache
 import com.pavellukyanov.themartian.ui.base.Reducer
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapMerge
 
 class GalleryReducer(
     private val photoToCache: PhotoToCache,
     private val getCameras: GetCameras,
-    private val loadPhotos: LoadPhotos
+    private val loadPhotos: LoadPhotos,
+    private val getFavourites: GetFavourites,
+    private val getRoversOnFavourites: GetRoversOnFavourites
 ) : Reducer<GalleryState, GalleryAction, GalleryEffect>(GalleryState()) {
 
     override suspend fun reduce(oldState: GalleryState, action: GalleryAction) {
         when (action) {
             is GalleryAction.LoadLatestPhotos -> {
-                saveState(
-                    oldState.copy(
-                        isLoading = true,
-                        options = oldState.options.copy(roverName = action.roverName),
-                        isLocal = action.isLocal,
-                        isLatest = true
+                if (action.isLocal) {
+                    onLoadFavouritesRovers()
+                    onSubscribeFavourites()
+                    saveState(
+                        oldState.copy(
+                            isLoading = true,
+                            isLocal = action.isLocal
+                        )
                     )
-                )
-
-                onLoadPhotos(options = oldState.options.copy(roverName = action.roverName), page = oldState.page, isLatest = true)
+                } else {
+                    saveState(
+                        oldState.copy(
+                            isLoading = true,
+                            options = oldState.options.copy(roverName = action.roverName),
+                            isLocal = action.isLocal,
+                            isLatest = true
+                        )
+                    )
+                    onLoadPhotos(options = oldState.options.copy(roverName = action.roverName), page = oldState.page, isLatest = true)
+                }
             }
 
             is GalleryAction.OnBackClick -> sendEffect(GalleryEffect.OnBackClick)
@@ -43,11 +59,9 @@ class GalleryReducer(
                 onLoadPhotos(options = action.newOptions, page = 1, isLatest = false)
             }
 
-            is GalleryAction.LoadMore -> {
-                onLoadPhotos(options = oldState.options, page = oldState.page, isLatest = oldState.isLatest)
-            }
-
+            is GalleryAction.LoadMore -> onLoadPhotos(options = oldState.options, page = oldState.page, isLatest = oldState.isLatest)
             is GalleryAction.OnImageError -> handledError(action.error)
+            is GalleryAction.OnChooseRover -> saveState(oldState.copy(chooseRover = action.rover))
         }
     }
 
@@ -82,5 +96,24 @@ class GalleryReducer(
             .collect { cameras ->
                 saveState(_state.value.copy(cameras = cameras))
             }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun onSubscribeFavourites() = io {
+        _state
+            .flatMapMerge { state ->
+                getFavourites(roverName = state.chooseRover.orEmpty())
+            }
+            .collect { photos ->
+                withState { currentState ->
+                    saveState(currentState.copy(isLoading = false, photos = photos.toMutableList()))
+                }
+            }
+    }
+
+    private fun onLoadFavouritesRovers() = cpu {
+        withState { currentState ->
+            saveState(currentState.copy(rovers = getRoversOnFavourites()))
+        }
     }
 }
