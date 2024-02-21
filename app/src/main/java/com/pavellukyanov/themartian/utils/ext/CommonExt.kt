@@ -24,18 +24,9 @@ fun debug(message: () -> String) {
 
 val CoroutineContext.dispatcher get() = splitContext(this)
 
-fun CoroutineScope.suspendDebugLog(tag: String? = null, message: () -> String = { "" }) {
-    Timber.tag(tag ?: "SMOTRIM").w("${coroutineContext.dispatcher} -> ${message()}")
-}
-
 private fun splitContext(coroutineContext: CoroutineContext): String {
     val list = coroutineContext.toString().split(',')
     return "[${list[list.lastIndex].trim()}"
-}
-
-/** Check current SDK */
-fun checkSdkVersion(less33: () -> Unit, more33: () -> Unit) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) less33() else more33()
 }
 
 /** Coroutines */

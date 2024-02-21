@@ -13,6 +13,7 @@ import com.pavellukyanov.themartian.ui.theme.MediaRed
 import com.pavellukyanov.themartian.utils.C.CACHE_SIZE
 import com.pavellukyanov.themartian.utils.C.DB_NAME
 import com.pavellukyanov.themartian.utils.C.DEFAULT_CACHE_SIZE
+import com.pavellukyanov.themartian.utils.ext.log
 import java.io.File
 
 class MainActivityReducer(
@@ -21,12 +22,14 @@ class MainActivityReducer(
     private val deleteCameraCache: DeleteCameraCache,
     private val updateRoverInfoCache: UpdateRoverInfoCache
 ) : Reducer<MainState, MainAction, MainEffect>(MainState()) {
+
     init {
         updateSettings()
     }
 
     override suspend fun reduce(oldState: MainState, action: MainAction) {
         when (action) {
+            is MainAction.OnUpdateRoverInfoCache -> onUpdateRoverInfoCache()
             is MainAction.Error -> sendEffect(MainEffect.ShowError(errorMessage = action.error.message ?: action.error.javaClass.simpleName))
             is MainAction.CloseErrorDialog -> sendEffect(MainEffect.CloseErrorDialog)
             is MainAction.OnDeleteCache -> deleteCache()
@@ -34,7 +37,6 @@ class MainActivityReducer(
             is MainAction.OnCacheSizeChange -> onChangeCacheSize(size = action.size)
             is MainAction.CheckCacheOverSize -> onCheckCacheIverSize()
             is MainAction.OnFavouritesClick -> sendEffect(MainEffect.OpenFavourites)
-            is MainAction.OnCacheServiceStatus -> saveState(oldState.copy(cacheServiceStatus = action.cacheServiceStatus))
         }
     }
 
@@ -99,7 +101,7 @@ class MainActivityReducer(
     private fun deleteCache() = cpu {
         onDeleteCache()
         updateSettings()
-        updateRoverInfoCache()
+        onUpdateRoverInfoCache()
     }
 
     @OptIn(ExperimentalCoilApi::class)
@@ -109,5 +111,10 @@ class MainActivityReducer(
         deleteOldCachedPhoto()
         deleteRoverInfoCache()
         deleteCameraCache()
+    }
+
+    private fun onUpdateRoverInfoCache() = io {
+        updateRoverInfoCache()
+        log.v("onUpdateRoverInfoCache")
     }
 }

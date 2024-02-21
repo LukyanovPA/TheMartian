@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.pavellukyanov.themartian.utils.C.COMMON
 import com.pavellukyanov.themartian.utils.C.ERROR
 import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
@@ -65,6 +66,6 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
 
     protected fun handledError(error: Throwable) {
         log.w("handledError -> ${error.javaClass.simpleName}")
-        context.sendBroadcast(Intent(ERROR_BROADCAST_ACTION).putExtra(ERROR, error))
+        LocalBroadcastManager.getInstance(context).sendBroadcast(Intent(ERROR_BROADCAST_ACTION).putExtra(ERROR, error))
     }
 }

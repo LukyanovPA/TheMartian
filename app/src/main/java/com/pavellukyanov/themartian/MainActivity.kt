@@ -24,24 +24,19 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.pavellukyanov.themartian.services.CacheService
-import com.pavellukyanov.themartian.services.CacheServiceLifecycle
 import com.pavellukyanov.themartian.ui.NavigationGraph
 import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
 import com.pavellukyanov.themartian.ui.wigets.SettingsButton
 import com.pavellukyanov.themartian.ui.wigets.dialog.ErrorDialog
 import com.pavellukyanov.themartian.ui.wigets.drawer.SettingsDrawer
-import com.pavellukyanov.themartian.utils.C.CACHE_BROADCAST_ACTION
-import com.pavellukyanov.themartian.utils.C.CACHE_SERVICE_STATUS
 import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
 import com.pavellukyanov.themartian.utils.C.ERROR
 import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
-import com.pavellukyanov.themartian.utils.ext.checkSdkVersion
-import com.pavellukyanov.themartian.utils.ext.debug
 import com.pavellukyanov.themartian.utils.ext.log
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
@@ -50,18 +45,12 @@ import org.koin.android.ext.android.inject
 
 
 class MainActivity : ComponentActivity() {
-    private val cacheReceiver by lazy { initCacheBroadcastReceiver() }
     private val errorReceiver by lazy { initErrorBroadcastReceiver() }
     private val reducer by inject<MainActivityReducer>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         registrationErrorBroadcastReceivers()
-
-        if (savedInstanceState == null) {
-            registrationCacheBroadcastReceivers()
-            updateCache()
-        }
 
         window.setFlags(
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -81,6 +70,7 @@ class MainActivity : ComponentActivity() {
                 val isHomeScreen = navBackStackEntry?.destination?.route == "ui/screens/home"
 
                 Launch {
+                    if (savedInstanceState == null) reducer.sendAction(MainAction.OnUpdateRoverInfoCache)
                     reducer.subscribeEffect { effect ->
                         when (effect) {
                             is MainEffect.ShowError -> {
@@ -157,54 +147,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun registrationErrorBroadcastReceivers() {
-        checkSdkVersion(
-            less33 = {
-                registerReceiver(errorReceiver, IntentFilter(ERROR_BROADCAST_ACTION))
-                log.w("registrationErrorBroadcastReceivers API < 33")
-            },
-            more33 = {
-                registerReceiver(errorReceiver, IntentFilter(ERROR_BROADCAST_ACTION), RECEIVER_NOT_EXPORTED)
-                log.w("registrationErrorBroadcastReceivers API > 33")
-            }
-        )
+        LocalBroadcastManager.getInstance(this).registerReceiver(errorReceiver, IntentFilter(ERROR_BROADCAST_ACTION)/*, RECEIVER_NOT_EXPORTED*/)
+        log.w("registrationErrorBroadcastReceivers")
     }
-
-    private fun registrationCacheBroadcastReceivers() {
-        checkSdkVersion(
-            less33 = {
-                registerReceiver(cacheReceiver, IntentFilter(CACHE_BROADCAST_ACTION))
-                log.w("registrationCacheBroadcastReceivers API < 33")
-            },
-            more33 = {
-                registerReceiver(cacheReceiver, IntentFilter(CACHE_BROADCAST_ACTION), RECEIVER_NOT_EXPORTED)
-                log.w("registrationCacheBroadcastReceivers API > 33")
-            }
-        )
-    }
-
-    private fun updateCache() {
-        log.w("updateCache")
-        startForegroundService(Intent(this@MainActivity, CacheService::class.java))
-    }
-
-    private fun initCacheBroadcastReceiver(): BroadcastReceiver =
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                debug { "onRecive" }
-                intent?.getStringExtra(CACHE_SERVICE_STATUS)?.let { status ->
-                    log.d("onReceiveCache -> $status")
-                    val serviceStatus = CacheServiceLifecycle.entries.find { it.name == status } ?: CacheServiceLifecycle.DIDNT_START
-                    reducer.sendAction(MainAction.OnCacheServiceStatus(cacheServiceStatus = serviceStatus))
-                    if (serviceStatus == CacheServiceLifecycle.FINISH || serviceStatus == CacheServiceLifecycle.FINISH_WITH_ERROR) stopCacheService(); unregisterCacheBroadcastReceiver()
-                }
-
-//                (intent?.getSerializableExtra(CACHE_SERVICE_STATUS) as? CacheServiceLifecycle)?.let { status ->
-//                    log.d("onReceiveCache -> $status")
-//                    reducer.sendAction(MainAction.OnCacheServiceStatus(cacheServiceStatus = status))
-//                    if (status == CacheServiceLifecycle.FINISH || status == CacheServiceLifecycle.FINISH_WITH_ERROR) stopCacheService(); unregisterCacheBroadcastReceiver()
-//                }
-            }
-        }
 
     private fun initErrorBroadcastReceiver(): BroadcastReceiver =
         object : BroadcastReceiver() {
@@ -215,16 +160,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-    private fun stopCacheService() {
-        log.w("stopCacheService")
-        stopService(Intent(this@MainActivity, CacheService::class.java))
-    }
-
-    private fun unregisterCacheBroadcastReceiver() {
-        log.w("unregisterCacheBroadcastReceiver")
-        unregisterReceiver(cacheReceiver)
-    }
 
     override fun onDestroy() {
         unregisterReceiver(errorReceiver)
