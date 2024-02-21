@@ -147,7 +147,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun registrationErrorBroadcastReceivers() {
-        LocalBroadcastManager.getInstance(this).registerReceiver(errorReceiver, IntentFilter(ERROR_BROADCAST_ACTION)/*, RECEIVER_NOT_EXPORTED*/)
+        LocalBroadcastManager.getInstance(this).registerReceiver(errorReceiver, IntentFilter(ERROR_BROADCAST_ACTION))
         log.w("registrationErrorBroadcastReceivers")
     }
 
