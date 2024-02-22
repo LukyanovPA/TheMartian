@@ -15,8 +15,6 @@ import com.pavellukyanov.themartian.utils.C.CACHE_SIZE
 import com.pavellukyanov.themartian.utils.C.COMMON
 import com.pavellukyanov.themartian.utils.C.DB_NAME
 import com.pavellukyanov.themartian.utils.C.DEFAULT_CACHE_SIZE
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -48,7 +46,7 @@ class MartianApp : Application(), ImageLoaderFactory {
         }
     }
 
-    private fun checkFirstStart() = runBlocking(Dispatchers.IO) {
+    private fun checkFirstStart() {
         try {
             val preferences = applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE)
             val result = preferences.getBoolean(FIRST_START_KEY, false)
@@ -71,20 +69,22 @@ class MartianApp : Application(), ImageLoaderFactory {
         ImageLoader.Builder(this)
             .memoryCache {
                 MemoryCache.Builder(this)
-                    .maxSizePercent(0.20)
+                    .maxSizePercent(0.25)
                     .build()
             }
-            .diskCache {
-                val size = runBlocking(Dispatchers.IO) {
-                    applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE).getFloat(CACHE_SIZE, DEFAULT_CACHE_SIZE).toLong()
-                }
+            .apply {
+                val size = applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE).getFloat(CACHE_SIZE, DEFAULT_CACHE_SIZE).toLong()
 
-                DiskCache.Builder()
-                    .directory(cacheDir.resolve("image_cache"))
-                    .maxSizeBytes(size * 1024 * 1024)
-                    .build()
+                if (size > 0) {
+                    diskCache {
+                        DiskCache.Builder()
+                            .directory(cacheDir.resolve("image_cache"))
+                            .maxSizeBytes(size * 1024 * 1024)
+                            .build()
+                    }
+                }
             }
             .logger(DebugLogger())
-            .respectCacheHeaders(false)
+            .respectCacheHeaders(true)
             .build()
 }

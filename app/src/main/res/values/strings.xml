@@ -42,6 +42,7 @@
 
     //Empty Response
     <string name="empty_response_title">Ничего не найдено</string>
+    <string name="empty_response_title_favourites">В избранном ничего нет</string>
     <string name="empty_response_body">Попробуйте изменить параметры фильтра</string>
 
     //Settings

@@ -28,7 +28,7 @@ class GalleryReducer(
                     saveState(
                         oldState.copy(
                             isLoading = true,
-                            isLocal = action.isLocal
+                            isLocal = true
                         )
                     )
                 } else {
@@ -36,7 +36,7 @@ class GalleryReducer(
                         oldState.copy(
                             isLoading = true,
                             options = oldState.options.copy(roverName = action.roverName),
-                            isLocal = action.isLocal,
+                            isLocal = false,
                             isLatest = true
                         )
                     )

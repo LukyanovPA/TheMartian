@@ -18,7 +18,6 @@ sealed class MainAction : Action() {
     data object OnDeleteCache : MainAction()
     data object OnUpdateSettings : MainAction()
     data class OnCacheSizeChange(val size: Float) : MainAction()
-    data object CheckCacheOverSize : MainAction()
     data object OnFavouritesClick : MainAction()
 }
 

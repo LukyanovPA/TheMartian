@@ -22,7 +22,8 @@ import com.pavellukyanov.themartian.R
 
 @Composable
 fun EmptyResponse(
-    modifier: Modifier
+    modifier: Modifier,
+    isFavourites: Boolean
 ) {
     Box(
         modifier = modifier,
@@ -43,21 +44,23 @@ fun EmptyResponse(
                     .fillMaxWidth()
                     .padding(top = 16.dp),
                 textAlign = TextAlign.Center,
-                text = stringResource(id = R.string.empty_response_title),
+                text = if (isFavourites) stringResource(id = R.string.empty_response_title_favourites) else stringResource(id = R.string.empty_response_title),
                 color = Color.White,
                 fontWeight = FontWeight.Normal,
                 fontSize = 16.sp
             )
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                textAlign = TextAlign.Center,
-                text = stringResource(id = R.string.empty_response_body),
-                color = Color.White,
-                fontWeight = FontWeight.Normal,
-                fontSize = 12.sp
-            )
+            if (!isFavourites) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    textAlign = TextAlign.Center,
+                    text = stringResource(id = R.string.empty_response_body),
+                    color = Color.White,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 12.sp
+                )
+            }
         }
     }
 }

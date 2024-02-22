@@ -35,13 +35,8 @@ class MainActivityReducer(
             is MainAction.OnDeleteCache -> deleteCache()
             is MainAction.OnUpdateSettings -> updateSettings()
             is MainAction.OnCacheSizeChange -> onChangeCacheSize(size = action.size)
-            is MainAction.CheckCacheOverSize -> onCheckCacheIverSize()
             is MainAction.OnFavouritesClick -> sendEffect(MainEffect.OpenFavourites)
         }
-    }
-
-    private fun onCheckCacheIverSize() = io {
-        if (getImageCacheSize() > prefs.getFloat(CACHE_SIZE, DEFAULT_CACHE_SIZE).toLong()) onDeleteCache()
     }
 
     private fun onChangeCacheSize(size: Float) = io {
@@ -50,14 +45,23 @@ class MainActivityReducer(
     }
 
     @Throws(Exception::class)
-    private fun getRoomDatabaseSize(): Long {
-        val dbFolderPath = context.filesDir.absolutePath.replace("files", "databases")
-        val dbFile = File("$dbFolderPath/$DB_NAME")
+    private fun getRoomDatabaseSize(): Long =
+        try {
+            if (context.getDatabasePath(DB_NAME).canRead()) {
+                val dbFolderPath = context.filesDir.absolutePath.replace("files", "databases")
+                val dbFile = File("$dbFolderPath/$DB_NAME")
 
-        if (!dbFile.exists()) throw Exception("${dbFile.absolutePath} doesn't exist")
+                if (!dbFile.exists()) throw Exception("${dbFile.absolutePath} doesn't exist")
 
-        return (dbFile.length() / 1024) / 1024
-    }
+                (dbFile.length() / 1024) / 1024
+            } else {
+                0
+            }
+        } catch (e: Throwable) {
+            log.e(e)
+            0
+        }
+
 
     @OptIn(ExperimentalCoilApi::class)
     private fun getImageCacheSize(): Long =

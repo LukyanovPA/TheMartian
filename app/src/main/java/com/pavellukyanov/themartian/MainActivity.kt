@@ -162,8 +162,7 @@ class MainActivity : ComponentActivity() {
         }
 
     override fun onDestroy() {
-        unregisterReceiver(errorReceiver)
-        reducer.sendAction(MainAction.CheckCacheOverSize)
         super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(errorReceiver)
     }
 }

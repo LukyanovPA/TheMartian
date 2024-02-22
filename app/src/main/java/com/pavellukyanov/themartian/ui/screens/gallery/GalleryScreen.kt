@@ -90,7 +90,7 @@ fun GalleryScreen(
                 modifier = modifier,
                 bottomBar = { BottomFilterButton(visibility = !showBottomSheet) { showBottomSheet = true } }
             ) { padding ->
-                GalleryScreenContent(modifier = modifier, paddingValues = padding, state = currentState, onAction = reducer::sendAction)
+                GalleryScreenContent(modifier = modifier, isLocal = currentState.isLocal, paddingValues = padding, state = currentState, onAction = reducer::sendAction)
 
                 if (showBottomSheet) BottomFilter(
                     rovers = currentState.rovers,
@@ -117,6 +117,7 @@ fun GalleryScreen(
 @Composable
 private fun GalleryScreenContent(
     modifier: Modifier,
+    isLocal: Boolean,
     paddingValues: PaddingValues,
     state: GalleryState,
     onAction: (GalleryAction) -> Unit
@@ -165,7 +166,7 @@ private fun GalleryScreenContent(
                 Loading(modifier = Modifier)
             }
         else if (state.photos.isEmpty())
-            EmptyResponse(modifier = modifier)
+            EmptyResponse(modifier = modifier, isFavourites = isLocal)
         else
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(2),
