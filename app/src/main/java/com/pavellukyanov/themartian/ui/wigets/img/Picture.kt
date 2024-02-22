@@ -17,6 +17,7 @@ import coil.request.ErrorResult
 import coil.request.ImageRequest
 import com.pavellukyanov.themartian.R
 import kotlinx.coroutines.Dispatchers
+import timber.log.Timber
 import coil.size.Size as CoilSize
 
 @Composable
@@ -32,7 +33,12 @@ fun Picture(
     val listener = object : ImageRequest.Listener {
         override fun onError(request: ImageRequest, result: ErrorResult) {
             super.onError(request, result)
-            onError(result.throwable)
+            Timber.e(result.throwable)
+            if (result.throwable is IllegalStateException) {
+                if (result.throwable.message?.contains("Unable to create a fetcher that supports", ignoreCase = true) == false) onError(result.throwable)
+            } else {
+                onError(result.throwable)
+            }
         }
     }
 
