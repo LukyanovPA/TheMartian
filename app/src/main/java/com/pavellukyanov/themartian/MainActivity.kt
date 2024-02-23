@@ -24,7 +24,6 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.pavellukyanov.themartian.ui.NavigationGraph
@@ -37,6 +36,7 @@ import com.pavellukyanov.themartian.utils.C.ERROR
 import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
+import com.pavellukyanov.themartian.utils.ext.localBroadcast
 import com.pavellukyanov.themartian.utils.ext.log
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
@@ -147,7 +147,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun registrationErrorBroadcastReceivers() {
-        LocalBroadcastManager.getInstance(this).registerReceiver(errorReceiver, IntentFilter(ERROR_BROADCAST_ACTION))
+        localBroadcast().registerReceiver(errorReceiver, IntentFilter(ERROR_BROADCAST_ACTION))
         log.w("registrationErrorBroadcastReceivers")
     }
 
@@ -155,14 +155,14 @@ class MainActivity : ComponentActivity() {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 (intent?.getSerializableExtra(ERROR) as? Throwable)?.let { error ->
-                    log.d("onReceiveError -> ${error.javaClass.simpleName}")
                     reducer.sendAction(MainAction.Error(error = error))
+                    log.w("onReceiveError -> ${error.javaClass.simpleName}")
                 }
             }
         }
 
     override fun onDestroy() {
         super.onDestroy()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(errorReceiver)
+        localBroadcast().unregisterReceiver(errorReceiver)
     }
 }

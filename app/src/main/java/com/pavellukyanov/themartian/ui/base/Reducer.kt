@@ -4,11 +4,10 @@ import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.pavellukyanov.themartian.utils.C.COMMON
 import com.pavellukyanov.themartian.utils.C.ERROR
 import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.ext.dispatcher
+import com.pavellukyanov.themartian.utils.ext.localBroadcast
 import com.pavellukyanov.themartian.utils.ext.log
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -25,7 +24,6 @@ import org.koin.core.component.inject
 abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initState: STATE) : ViewModel(), KoinComponent {
     protected val context: Context by inject()
     protected val _state: MutableStateFlow<STATE> = MutableStateFlow(initState)
-    protected val prefs = context.getSharedPreferences(COMMON, Context.MODE_PRIVATE)
     private val errorHandler = CoroutineExceptionHandler { context, exception ->
         log.e(exception, "Context: ${context.dispatcher}, Exception: $exception")
         handledError(exception)
@@ -66,6 +64,6 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
 
     protected fun handledError(error: Throwable) {
         log.w("handledError -> ${error.javaClass.simpleName}")
-        LocalBroadcastManager.getInstance(context).sendBroadcast(Intent(ERROR_BROADCAST_ACTION).putExtra(ERROR, error))
+        context.localBroadcast().sendBroadcast(Intent(ERROR_BROADCAST_ACTION).putExtra(ERROR, error))
     }
 }

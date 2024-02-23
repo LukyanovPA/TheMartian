@@ -1,6 +1,5 @@
 package com.pavellukyanov.themartian.data.api
 
-import com.pavellukyanov.themartian.utils.ext.debug
 import okhttp3.Interceptor
 import retrofit2.Response
 import timber.log.Timber

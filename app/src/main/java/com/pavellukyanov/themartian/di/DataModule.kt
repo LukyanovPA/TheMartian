@@ -23,6 +23,7 @@ val dataModule = module {
             .build()
     }
 
+    //Dao
     single { get<MartianLocalDatabase>().roverInfo() }
     single { get<MartianLocalDatabase>().favourites() }
     single { get<MartianLocalDatabase>().cameras() }

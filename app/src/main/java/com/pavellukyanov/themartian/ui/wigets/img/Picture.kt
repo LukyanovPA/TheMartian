@@ -28,8 +28,6 @@ fun Picture(
     contentScale: ContentScale = ContentScale.None,
     onError: (Throwable) -> Unit
 ) {
-    val context = LocalContext.current
-
     val listener = object : ImageRequest.Listener {
         override fun onError(request: ImageRequest, result: ErrorResult) {
             super.onError(request, result)
@@ -42,7 +40,7 @@ fun Picture(
         }
     }
 
-    val imageRequest = ImageRequest.Builder(context)
+    val imageRequest = ImageRequest.Builder(LocalContext.current)
         .data(url)
         .size(CoilSize.ORIGINAL)
         .crossfade(true)

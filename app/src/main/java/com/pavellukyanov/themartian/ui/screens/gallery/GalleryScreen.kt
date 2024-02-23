@@ -98,7 +98,6 @@ fun GalleryScreen(
                     cameras = currentState.cameras,
                     options = currentState.options,
                     isFavourites = isLocal,
-                    modifier = modifier,
                     onShowBottomSheetState = { showBottomSheet = it },
                     onNewOptions = {
                         reducer.sendAction(GalleryAction.OnSetNewOptions(newOptions = it))

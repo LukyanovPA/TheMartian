@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavHostController
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.ui.wigets.img.Picture
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
@@ -69,14 +70,9 @@ fun PhotoScreen(
     state.receive<PhotoState>(
         content = { currentState ->
             PhotoScreenContent(
-                photoSrc = currentState.photo?.src.orEmpty(),
                 modifier = modifier,
                 isFavourites = currentState.isFavourites,
-                sol = currentState.photo?.sol?.toString().orEmpty(),
-                cameraName = currentState.photo?.cameraName.orEmpty(),
-                cameraFullName = currentState.photo?.cameraFullName.orEmpty(),
-                earthDate = currentState.photo?.earthFormattedDate.orEmpty(),
-                roverName = currentState.photo?.roverName.orEmpty(),
+                photo = currentState.photo,
                 onBackClick = { reducer.sendAction(PhotoAction.OnBackClick) },
                 onDownloadClick = { reducer.sendAction(PhotoAction.DownloadPhoto(photo = currentState.photo)) },
                 onChangeFavouritesClick = { reducer.sendAction(PhotoAction.ChangeFavourites(photo = currentState.photo)) },
@@ -87,15 +83,10 @@ fun PhotoScreen(
 }
 
 @Composable
-fun PhotoScreenContent(
-    photoSrc: String?,
+private fun PhotoScreenContent(
     modifier: Modifier,
     isFavourites: Boolean,
-    sol: String,
-    cameraName: String,
-    cameraFullName: String,
-    earthDate: String,
-    roverName: String,
+    photo: Photo?,
     onBackClick: () -> Unit,
     onDownloadClick: () -> Unit,
     onChangeFavouritesClick: () -> Unit,
@@ -118,7 +109,7 @@ fun PhotoScreenContent(
 
         //Photo
         Picture(
-            url = photoSrc,
+            url = photo?.src.orEmpty(),
             contentDescription = null,
             modifier = Modifier
                 .constrainAs(photoBox) {
@@ -253,7 +244,7 @@ fun PhotoScreenContent(
                     )
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = sol,
+                        text = photo?.sol?.toString().orEmpty(),
                         color = Color.White,
                         fontSize = 12.sp,
                         letterSpacing = 1.sp,
@@ -278,7 +269,7 @@ fun PhotoScreenContent(
                     )
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = earthDate,
+                        text = photo?.earthFormattedDate.orEmpty(),
                         color = Color.White,
                         fontSize = 12.sp,
                         letterSpacing = 1.sp,
@@ -303,7 +294,7 @@ fun PhotoScreenContent(
                     )
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = roverName,
+                        text = photo?.roverName.orEmpty(),
                         color = Color.White,
                         fontSize = 12.sp,
                         letterSpacing = 1.sp,
@@ -328,7 +319,7 @@ fun PhotoScreenContent(
                     )
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = "$cameraFullName (${cameraName})",
+                        text = "${photo?.cameraFullName.orEmpty()} (${photo?.cameraName.orEmpty()})",
                         color = Color.White,
                         fontSize = 12.sp,
                         letterSpacing = 1.sp,

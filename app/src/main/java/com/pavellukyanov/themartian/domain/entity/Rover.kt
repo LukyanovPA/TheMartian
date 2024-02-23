@@ -76,7 +76,7 @@ data class Rover(
                     //Status
                     Text(
                         text = status,
-                        color = if (status == "active") Color.Green else MediaRed,
+                        color = if (status == STATUS) Color.Green else MediaRed,
                         fontSize = 12.sp,
                         letterSpacing = 1.sp,
                         textAlign = TextAlign.End
@@ -182,6 +182,10 @@ data class Rover(
                 }
             }
         }
+    }
+
+    companion object {
+        private const val STATUS = "active"
     }
 }
 

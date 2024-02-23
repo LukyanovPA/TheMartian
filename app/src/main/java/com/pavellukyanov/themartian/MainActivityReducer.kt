@@ -1,5 +1,6 @@
 package com.pavellukyanov.themartian
 
+import android.content.Context
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import com.pavellukyanov.themartian.domain.entity.CacheItem
@@ -10,6 +11,7 @@ import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
 import com.pavellukyanov.themartian.ui.base.Reducer
 import com.pavellukyanov.themartian.ui.theme.DbPink
 import com.pavellukyanov.themartian.ui.theme.MediaRed
+import com.pavellukyanov.themartian.utils.C
 import com.pavellukyanov.themartian.utils.C.CACHE_SIZE
 import com.pavellukyanov.themartian.utils.C.DB_NAME
 import com.pavellukyanov.themartian.utils.C.DEFAULT_CACHE_SIZE
@@ -22,6 +24,7 @@ class MainActivityReducer(
     private val deleteCameraCache: DeleteCameraCache,
     private val updateRoverInfoCache: UpdateRoverInfoCache
 ) : Reducer<MainState, MainAction, MainEffect>(MainState()) {
+    private val prefs = context.getSharedPreferences(C.COMMON, Context.MODE_PRIVATE)
 
     init {
         updateSettings()

@@ -21,47 +21,49 @@ class GalleryReducer(
 
     override suspend fun reduce(oldState: GalleryState, action: GalleryAction) {
         when (action) {
-            is GalleryAction.LoadLatestPhotos -> {
-                if (action.isLocal) {
-                    onLoadFavouritesRovers()
-                    onSubscribeFavourites()
-                    saveState(
-                        oldState.copy(
-                            isLoading = true,
-                            isLocal = true
-                        )
-                    )
-                } else {
-                    saveState(
-                        oldState.copy(
-                            isLoading = true,
-                            options = oldState.options.copy(roverName = action.roverName),
-                            isLocal = false,
-                            isLatest = true
-                        )
-                    )
-                    onLoadPhotos(options = oldState.options.copy(roverName = action.roverName), page = oldState.page, isLatest = true)
-                }
-            }
-
-            is GalleryAction.OnBackClick -> sendEffect(GalleryEffect.OnBackClick)
-            is GalleryAction.OnPhotoClick -> onSaveSelectedPhoto(action.photoDto)
-            is GalleryAction.OnSetNewOptions -> {
-                saveState(
-                    oldState.copy(
-                        isLoading = true,
-                        options = action.newOptions,
-                        isLatest = false,
-                        photos = mutableListOf(),
-                        page = 1
-                    )
-                )
-                onLoadPhotos(options = action.newOptions, page = 1, isLatest = false)
-            }
-
+            is GalleryAction.LoadLatestPhotos -> handleLoadLatestPhotosAction(oldState = oldState, roverName = action.roverName, isLocal = action.isLocal)
+            is GalleryAction.OnBackClick -> sendEffect(newEffect = GalleryEffect.OnBackClick)
+            is GalleryAction.OnPhotoClick -> onSaveSelectedPhoto(photo = action.photoDto)
+            is GalleryAction.OnSetNewOptions -> handleOnSetNewOptionsAction(oldState = oldState, action.newOptions)
             is GalleryAction.LoadMore -> onLoadPhotos(options = oldState.options, page = oldState.page, isLatest = oldState.isLatest)
-            is GalleryAction.OnImageError -> handledError(action.error)
+            is GalleryAction.OnImageError -> handledError(error = action.error)
             is GalleryAction.OnChooseRover -> saveState(oldState.copy(chooseRover = action.rover))
+        }
+    }
+
+    private suspend fun handleOnSetNewOptionsAction(oldState: GalleryState, newOptions: PhotosOptions) {
+        saveState(
+            oldState.copy(
+                isLoading = true,
+                options = newOptions,
+                isLatest = false,
+                photos = mutableListOf(),
+                page = 1
+            )
+        )
+        onLoadPhotos(options = newOptions, page = 1, isLatest = false)
+    }
+
+    private suspend fun handleLoadLatestPhotosAction(oldState: GalleryState, roverName: String, isLocal: Boolean) {
+        if (isLocal) {
+            onLoadFavouritesRovers()
+            onSubscribeFavourites()
+            saveState(
+                oldState.copy(
+                    isLoading = true,
+                    isLocal = true
+                )
+            )
+        } else {
+            saveState(
+                oldState.copy(
+                    isLoading = true,
+                    options = oldState.options.copy(roverName = roverName),
+                    isLocal = false,
+                    isLatest = true
+                )
+            )
+            onLoadPhotos(options = oldState.options.copy(roverName = roverName), page = oldState.page, isLatest = true)
         }
     }
 

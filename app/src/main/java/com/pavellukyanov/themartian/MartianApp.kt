@@ -21,6 +21,7 @@ import org.koin.core.context.startKoin
 import timber.log.Timber
 
 private const val FIRST_START_KEY = "FIRST_START_KEY"
+private const val IMAGE_CACHE = "image_cache"
 
 class MartianApp : Application(), ImageLoaderFactory {
     override fun onCreate() {
@@ -78,7 +79,7 @@ class MartianApp : Application(), ImageLoaderFactory {
                 if (size > 0) {
                     diskCache {
                         DiskCache.Builder()
-                            .directory(cacheDir.resolve("image_cache"))
+                            .directory(cacheDir.resolve(IMAGE_CACHE))
                             .maxSizeBytes(size * 1024 * 1024)
                             .build()
                     }

@@ -49,7 +49,6 @@ fun BottomFilter(
     cameras: List<Camera>,
     options: PhotosOptions,
     isFavourites: Boolean,
-    modifier: Modifier,
     onShowBottomSheetState: (Boolean) -> Unit,
     onNewOptions: (PhotosOptions) -> Unit,
     onChooseRover: (String?) -> Unit

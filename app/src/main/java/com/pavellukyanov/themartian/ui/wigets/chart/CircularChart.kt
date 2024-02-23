@@ -84,7 +84,7 @@ fun CircularChart(
 }
 
 @Composable
-fun DisplayLegend(
+private fun DisplayLegend(
     color: Color,
     title: Int,
     size: Long

@@ -1,8 +1,8 @@
 package com.pavellukyanov.themartian.utils.ext
 
-import android.os.Build
+import android.content.Context
 import androidx.activity.ComponentActivity
-import androidx.lifecycle.LifecycleService
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.pavellukyanov.themartian.ui.base.Reducer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,7 +15,6 @@ import kotlin.coroutines.CoroutineContext
 
 /** Logging */
 val ComponentActivity.log get() = Timber.tag(this::class.java.simpleName)
-val LifecycleService.log get() = Timber.tag(this::class.java.simpleName)
 val Reducer<*, *, *>.log get() = Timber.tag(this::class.java.simpleName)
 
 fun debug(message: () -> String) {
@@ -38,7 +37,10 @@ suspend fun <T, R> List<T>.onMap(transform: suspend (T) -> R) = onCpu {
     map { transform(it) }
 }
 
-/** Flow<List> */
-fun <T, R> Flow<List<T>>.onMap(transform: (List<T>) -> List<R>): Flow<List<R>> =
+/** Flow */
+fun <T, R> Flow<T>.onMap(transform: (T) -> R): Flow<R> =
     map(transform)
         .flowOn(Dispatchers.Default)
+
+/** Context */
+fun Context.localBroadcast(): LocalBroadcastManager = LocalBroadcastManager.getInstance(this)

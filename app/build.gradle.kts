@@ -11,9 +11,6 @@ plugins {
     id(libs.plugins.google.crashlytics.get().pluginId)
 }
 
-val localProperties = Properties()
-localProperties.load(FileInputStream(rootProject.file("local.properties")))
-
 android {
     namespace = "com.pavellukyanov.themartian"
     compileSdk = 34
@@ -31,6 +28,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val localProperties = Properties()
+        localProperties.load(FileInputStream(rootProject.file("local.properties")))
 
         buildConfigField("String", "API_KEY", localProperties["apiKey"].toString())
     }
