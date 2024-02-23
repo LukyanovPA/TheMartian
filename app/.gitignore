@@ -1,2 +1,7 @@
 /build
 google-services.json
+.release/
+.release/*
+/.release/
+.release
+/.release
