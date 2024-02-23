@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -8,6 +10,9 @@ plugins {
     id(libs.plugins.google.services.get().pluginId)
     id(libs.plugins.google.crashlytics.get().pluginId)
 }
+
+val localProperties = Properties()
+localProperties.load(FileInputStream(rootProject.file("local.properties")))
 
 android {
     namespace = "com.pavellukyanov.themartian"
@@ -26,6 +31,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "API_KEY", localProperties["apiKey"].toString())
     }
 
     buildTypes {

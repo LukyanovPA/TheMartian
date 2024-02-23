@@ -15,6 +15,10 @@ import retrofit2.Retrofit
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
+private const val BASE_URL = "https://api.nasa.gov/mars-photos/api/v1/"
+private const val API_KEY = "api_key"
+private const val TAG = "OkHttp"
+
 @OptIn(ExperimentalSerializationApi::class)
 val networkModule = module {
     singleOf(::HttpInterceptor)
@@ -31,7 +35,7 @@ val networkModule = module {
 
         if (BuildConfig.DEBUG) {
             val httpLoggingInterceptor =
-                HttpLoggingInterceptor { message -> Timber.tag("OkHttp").d(message) }
+                HttpLoggingInterceptor { message -> Timber.tag(TAG).d(message) }
             httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
             okHttpBuilder.addInterceptor(httpLoggingInterceptor)
         }
@@ -40,7 +44,7 @@ val networkModule = module {
             val request = it.request()
             val url = request.url
                 .newBuilder()
-                .addQueryParameter("api_key", "f8FYngXOCFmWPVOgmcugDO5JwAsPB238oee4wh6V")
+                .addQueryParameter(API_KEY, BuildConfig.API_KEY)
                 .build()
             it.proceed(request.newBuilder().url(url).build())
         }
@@ -54,7 +58,7 @@ val networkModule = module {
         }
 
         Retrofit.Builder()
-            .baseUrl("https://api.nasa.gov/mars-photos/api/v1/")
+            .baseUrl(BASE_URL)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .client(okHttpBuilder.build())
             .build()
