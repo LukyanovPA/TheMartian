@@ -1,10 +1,7 @@
 package com.pavellukyanov.themartian.data.dto
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class PhotosDto(
-    @SerialName("photos")
-    val photos: List<PhotoDto>
+    @SerializedName("photos") val photos: List<PhotoDto>
 )

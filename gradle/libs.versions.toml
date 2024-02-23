@@ -8,7 +8,6 @@ compose-theme-adapter = "1.2.1"
 compose-compiler = "1.5.10"
 compose-material3 = "1.2.0"
 androidx-activityCompose = "1.8.2"
-serialization-version = "1.6.2"
 koin-version = "3.5.0"
 koin-android-compose-version = "3.5.0"
 coroutines-version = "1.7.3"
@@ -24,7 +23,6 @@ retrofit_version = "2.9.0"
 converter_gson_version = "2.9.0"
 interceptor_version = "4.11.0"
 converter_scalars_version = "2.4.0"
-serialization-version-jw = "0.8.0"
 dev-tools = "1.9.10-1.0.13"
 google-services-version = "4.4.1"
 firebase-crashlytics-gradle = "2.9.9"
@@ -35,7 +33,6 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 converterGson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converter_gson_version" }
 interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "interceptor_version" }
 converterScalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converter_scalars_version" }
-retrofitSerializations = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter", version.ref = "serialization-version-jw" }
 constraint_layout = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraint_version" }
 coil = { module = "io.coil-kt:coil-compose", version.ref = "coil-version" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
@@ -63,12 +60,10 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin-version" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin-version" }
 koin-android-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin-android-compose-version" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization-version" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "dev-tools" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services-version" }
 google-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }

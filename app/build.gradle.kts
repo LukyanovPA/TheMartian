@@ -5,7 +5,6 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
-    alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.devtools.ksp)
     id(libs.plugins.google.services.get().pluginId)
     id(libs.plugins.google.crashlytics.get().pluginId)
@@ -93,9 +92,6 @@ dependencies {
     coreLibraryDesugaring(libs.android.tools.desugar)
     implementation(libs.constraint.layout)
 
-    //Serialization
-    implementation(libs.kotlinx.serialization.json)
-
     //Accompanist
     implementation(libs.accompanist.systemuicontroller)
 
@@ -112,7 +108,6 @@ dependencies {
     implementation(libs.converterGson)
     implementation(libs.interceptor)
     implementation(libs.converterScalars)
-    implementation(libs.retrofitSerializations)
 
     //Room
     implementation(libs.androidx.room.runtime)

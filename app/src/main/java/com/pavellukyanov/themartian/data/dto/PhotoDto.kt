@@ -2,18 +2,16 @@ package com.pavellukyanov.themartian.data.dto
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 import com.pavellukyanov.themartian.utils.DateFormatter
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 
-@Serializable
 data class PhotoDto(
-    @SerialName("id") val id: Int,
-    @SerialName("sol") val sol: Int,
-    @SerialName("camera") val cameraDto: CameraDto,
-    @SerialName("img_src") val imgSrc: String,
-    @SerialName("earth_date") val earthDate: String,
-    @SerialName("rover") val roverDto: RoverDto
+    @SerializedName("id") val id: Int,
+    @SerializedName("sol") val sol: Int,
+    @SerializedName("camera") val cameraDto: CameraDto,
+    @SerializedName("img_src") val imgSrc: String,
+    @SerializedName("earth_date") val earthDate: String,
+    @SerializedName("rover") val roverDto: RoverDto
 )
 
 @Entity(tableName = "photo")

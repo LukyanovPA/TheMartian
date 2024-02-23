@@ -1,31 +1,27 @@
 package com.pavellukyanov.themartian.data.dto
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 class RoverManifestDto(
-    @SerialName("photo_manifest") val roverItem: RoverItemDto
+    @SerializedName("photo_manifest") val roverItem: RoverItemDto
 )
 
-@Serializable
 class RoverItemDto(
-    @SerialName("name") val name: String,
-    @SerialName("landing_date") val landingDate: String,
-    @SerialName("launch_date") val launchDate: String,
-    @SerialName("status") val status: String,
-    @SerialName("max_sol") val maxSol: Int,
-    @SerialName("max_date") val maxDate: String,
-    @SerialName("total_photos") val totalPhotos: Int,
-    @SerialName("photos") val roverManifestPhotos: List<RoverManifestPhotoDto>
+    @SerializedName("name") val name: String,
+    @SerializedName("landing_date") val landingDate: String,
+    @SerializedName("launch_date") val launchDate: String,
+    @SerializedName("status") val status: String,
+    @SerializedName("max_sol") val maxSol: Int,
+    @SerializedName("max_date") val maxDate: String,
+    @SerializedName("total_photos") val totalPhotos: Int,
+    @SerializedName("photos") val roverManifestPhotos: List<RoverManifestPhotoDto>
 )
 
-@Serializable
 class RoverManifestPhotoDto(
-    @SerialName("sol") val sol: Int,
-    @SerialName("earth_date") val earthDate: String,
-    @SerialName("total_photos") val totalPhotos: Int,
-    @SerialName("cameras") val cameras: List<String>
+    @SerializedName("sol") val sol: Int,
+    @SerializedName("earth_date") val earthDate: String,
+    @SerializedName("total_photos") val totalPhotos: Int,
+    @SerializedName("cameras") val cameras: List<String>
 )
 
 enum class RoverName(val roverName: String) {

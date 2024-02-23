@@ -1,17 +1,15 @@
 package com.pavellukyanov.themartian.di
 
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.google.gson.GsonBuilder
 import com.pavellukyanov.themartian.BuildConfig
 import com.pavellukyanov.themartian.data.api.HttpInterceptor
 import com.pavellukyanov.themartian.data.api.RoverService
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -19,7 +17,6 @@ private const val BASE_URL = "https://api.nasa.gov/mars-photos/api/v1/"
 private const val API_KEY = "api_key"
 private const val TAG = "OkHttp"
 
-@OptIn(ExperimentalSerializationApi::class)
 val networkModule = module {
     singleOf(::HttpInterceptor)
 
@@ -51,15 +48,9 @@ val networkModule = module {
 
         okHttpBuilder.addInterceptor(httpInterceptor)
 
-        val json = Json {
-            coerceInputValues = true
-            explicitNulls = false
-            ignoreUnknownKeys = true
-        }
-
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
             .client(okHttpBuilder.build())
             .build()
     }

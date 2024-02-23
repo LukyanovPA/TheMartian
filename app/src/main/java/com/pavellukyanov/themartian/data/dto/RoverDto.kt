@@ -1,14 +1,12 @@
 package com.pavellukyanov.themartian.data.dto
 
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class RoverDto(
-    @SerialName("id") val id: Int,
-    @SerialName("name") val name: String,
-    @SerialName("landing_date") val landingDate: String,
-    @SerialName("launch_date") val launchDate: String,
-    @SerialName("status") val status: String
+    @SerializedName("id") val id: Int,
+    @SerializedName("name") val name: String,
+    @SerializedName("landing_date") val landingDate: String,
+    @SerializedName("launch_date") val launchDate: String,
+    @SerializedName("status") val status: String
 )
