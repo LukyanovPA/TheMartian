@@ -25,8 +25,12 @@ class RoverManifestPhotoDto(
 )
 
 enum class RoverName(val roverName: String) {
+    @SerializedName("roverName")
     PERSEVERANCE("Perseverance"),
+    @SerializedName("roverName")
     CURIOSITY("Curiosity"),
+    @SerializedName("roverName")
     OPPORTUNITY("Opportunity"),
+    @SerializedName("roverName")
     SPIRIT("Spirit")
 }

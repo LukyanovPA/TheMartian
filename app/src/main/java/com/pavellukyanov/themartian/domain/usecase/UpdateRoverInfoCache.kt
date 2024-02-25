@@ -7,7 +7,6 @@ import com.pavellukyanov.themartian.data.dto.RoverItemDto
 import com.pavellukyanov.themartian.domain.entity.Camera
 import com.pavellukyanov.themartian.domain.entity.toRover
 import com.pavellukyanov.themartian.utils.ext.onIo
-import com.pavellukyanov.themartian.utils.ext.onMap
 
 class UpdateRoverInfoCache(
     private val roverInfoDao: RoverInfoDao,
@@ -17,8 +16,8 @@ class UpdateRoverInfoCache(
     suspend operator fun invoke() = onIo {
         roverInfoDao.insert(
             apiDataSource.getRoversInfo()
-                .onMap(::updateCameras)
-                .onMap(RoverItemDto::toRover)
+                .map { updateCameras(it) }
+                .map(RoverItemDto::toRover)
         )
     }
 

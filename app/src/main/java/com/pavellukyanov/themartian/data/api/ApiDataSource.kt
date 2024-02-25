@@ -8,7 +8,6 @@ import com.pavellukyanov.themartian.data.dto.RoverName
 import com.pavellukyanov.themartian.data.dto.map
 import com.pavellukyanov.themartian.domain.entity.PhotosOptions
 import com.pavellukyanov.themartian.utils.ext.onIo
-import com.pavellukyanov.themartian.utils.ext.onMap
 
 class ApiDataSource(
     private val roverService: RoverService,
@@ -19,7 +18,7 @@ class ApiDataSource(
             RoverName.entries
                 .map { it.roverName }
                 .map { name -> roverService.loadRoverInfo(roverName = name) }
-                .onMap { it.toData().roverItem }
+                .map { it.toData().roverItem }
         }
     }
 
@@ -28,7 +27,7 @@ class ApiDataSource(
             roverService.getLatestPhotos(roverName = roverName, page = page)
                 .toData()
                 .photoDtos
-                .onMap(PhotoDto::map)
+                .map(PhotoDto::map)
         }
     }
 
@@ -37,7 +36,7 @@ class ApiDataSource(
             roverService.getByOptions(roverName = options.roverName, earthDate = options.date, camera = options.camera, page = page)
                 .toData()
                 .photos
-                .onMap(PhotoDto::map)
+                .map(PhotoDto::map)
         }
     }
 }

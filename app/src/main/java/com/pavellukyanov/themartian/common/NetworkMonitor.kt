@@ -9,7 +9,7 @@ import com.pavellukyanov.themartian.data.api.ApiException
 class NetworkMonitor(
     private val context: Context
 ) {
-    suspend operator fun <T> invoke(onAction: suspend () -> T): T =
+    suspend operator fun <T : Any> invoke(onAction: suspend () -> T): T =
         if (isNetworkAvailable()) onAction()
         else throw ApiException.ConnectionException(message = context.getString(R.string.bad_internet_connection_error_message))
 

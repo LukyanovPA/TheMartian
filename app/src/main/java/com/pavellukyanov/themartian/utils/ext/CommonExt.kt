@@ -6,9 +6,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.pavellukyanov.themartian.ui.base.Reducer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
@@ -31,16 +28,6 @@ private fun splitContext(coroutineContext: CoroutineContext): String {
 /** Coroutines */
 suspend fun <T> onIo(action: suspend CoroutineScope.() -> T) = withContext(Dispatchers.IO, action)
 suspend fun <T> onCpu(action: suspend CoroutineScope.() -> T) = withContext(Dispatchers.Default, action)
-
-/** List */
-suspend fun <T, R> List<T>.onMap(transform: suspend (T) -> R) = onCpu {
-    map { transform(it) }
-}
-
-/** Flow */
-fun <T, R> Flow<T>.onMap(transform: (T) -> R): Flow<R> =
-    map(transform)
-        .flowOn(Dispatchers.Default)
 
 /** Context */
 fun Context.localBroadcast(): LocalBroadcastManager = LocalBroadcastManager.getInstance(this)
