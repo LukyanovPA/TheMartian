@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pavellukyanov.themartian.data.api.ApiException
 import com.pavellukyanov.themartian.utils.C.ERROR
 import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.ext.dispatcher
@@ -26,7 +27,7 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
     protected val _state: MutableStateFlow<STATE> = MutableStateFlow(initState)
     private val errorHandler = CoroutineExceptionHandler { context, exception ->
         log.e(exception, "Context: ${context.dispatcher}, Exception: $exception")
-        handledError(exception)
+        if (exception !is ApiException.UndefinedException) handledError(exception)
     }
 
     val state: StateFlow<STATE> = _state.asStateFlow()
