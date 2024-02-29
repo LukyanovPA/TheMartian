@@ -7,4 +7,7 @@
 
 Окунитесь в неповторимую атмосферу красной планеты. Приятного полета!
 
-![Screenshot of a comment on a GitHub issue showing an image, added in the Markdown, of an Octocat smiling and raising a tentacle.](screens/screen_1.jpg)
+<a href='https://apps.rustore.ru/app/com.pavellukyanov.themartian' target='_blanck'><img src='screens/white.svg' width='150'></a>
+
+# Screenshots
+<img src='screens/screen_1.jpg' width='200'> <img src='screens/screen_2.jpg' width='200'> <img src='screens/screen_3.jpg' width='200'> <img src='screens/screen_4.jpg' width='200'>
