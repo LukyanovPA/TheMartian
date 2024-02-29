@@ -11,3 +11,13 @@
 
 # Screenshots
 <img src='screens/screen_1.jpg' width='200'> <img src='screens/screen_2.jpg' width='200'> <img src='screens/screen_3.jpg' width='200'> <img src='screens/screen_4.jpg' width='200'>
+
+# Technology
+- Kotlin
+- Kotlin Coroutines/Flow
+- MVI
+- Jetpack Compose
+- Jetpack Navigation Component
+- Koin
+- Retrofit
+- Room
