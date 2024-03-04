@@ -18,11 +18,7 @@ sealed class ApiException(message: String? = null) : Exception(message) {
     class ServerException(message: String? = null) : ApiException(message)
     class ClientException(message: String?) : ApiException(message)
     class ConnectionException(message: String?) : ApiException(message)
-    class UndefinedException(throwable: Throwable) : ApiException(throwable.message) {
-        init {
-            addSuppressed(throwable)
-        }
-    }
+    class UndefinedException(message: String?) : ApiException(message)
 }
 
 class HttpInterceptor : Interceptor {
@@ -36,7 +32,7 @@ class HttpInterceptor : Interceptor {
             if (e is ConnectException || e is UnknownHostException || e is SocketTimeoutException) {
                 throw ApiException.ConnectionException(message = e.message)
             }
-            throw ApiException.UndefinedException(e)
+            throw ApiException.UndefinedException(e.message)
         }
 
     private fun safeHandleResponse(chain: Interceptor.Chain): okhttp3.Response {

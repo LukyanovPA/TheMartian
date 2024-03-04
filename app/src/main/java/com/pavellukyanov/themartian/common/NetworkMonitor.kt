@@ -4,14 +4,13 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.pavellukyanov.themartian.R
-import com.pavellukyanov.themartian.data.api.ApiException
 
 class NetworkMonitor(
     private val context: Context
 ) {
     suspend operator fun <T : Any> invoke(onAction: suspend () -> T): T =
         if (isNetworkAvailable()) onAction()
-        else throw ApiException.ConnectionException(message = context.getString(R.string.bad_internet_connection_error_message))
+        else throw NetworkStateException(message = context.getString(R.string.bad_internet_connection_error_message))
 
     private fun isNetworkAvailable(): Boolean {
         val connectivityManager =
@@ -27,3 +26,5 @@ class NetworkMonitor(
         }
     }
 }
+
+class NetworkStateException(message: String) : Exception(message)

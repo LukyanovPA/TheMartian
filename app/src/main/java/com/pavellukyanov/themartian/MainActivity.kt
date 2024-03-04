@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +32,6 @@ import androidx.navigation.compose.rememberNavController
 import com.pavellukyanov.themartian.ui.NavigationGraph
 import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
 import com.pavellukyanov.themartian.ui.wigets.SettingsButton
-import com.pavellukyanov.themartian.ui.wigets.dialog.ErrorDialog
 import com.pavellukyanov.themartian.ui.wigets.drawer.SettingsDrawer
 import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
 import com.pavellukyanov.themartian.utils.C.ERROR
@@ -68,6 +70,7 @@ class MainActivity : ComponentActivity() {
                 val scope = rememberCoroutineScope()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val isHomeScreen = navBackStackEntry?.destination?.route == "ui/screens/home"
+                val snackbarHostState = remember { SnackbarHostState() }
 
                 Launch {
                     if (savedInstanceState == null) reducer.sendAction(MainAction.OnUpdateRoverInfoCache)
@@ -90,6 +93,9 @@ class MainActivity : ComponentActivity() {
 
                 state.receive<MainState> { currentState ->
                     Scaffold(
+                        snackbarHost = {
+                            SnackbarHost(hostState = snackbarHostState)
+                        },
                         floatingActionButton = {
                             SettingsButton(
                                 isVisible = !drawerState.isOpen && isHomeScreen,
@@ -134,11 +140,13 @@ class MainActivity : ComponentActivity() {
                                 navController = navController
                             )
 
-                            if (hasError.value) ErrorDialog(
-                                errorText = error.value,
-                                padding = padding,
-                                onClose = { reducer.sendAction(MainAction.CloseErrorDialog) }
-                            )
+                            if (hasError.value) scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = error.value,
+                                    withDismissAction = true,
+                                    duration = SnackbarDuration.Indefinite
+                                )
+                            }
                         }
                     }
                 }
