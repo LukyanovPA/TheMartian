@@ -1,18 +1,20 @@
 package com.pavellukyanov.themartian.data.api
 
 import okhttp3.Interceptor
-import retrofit2.Response
+import retrofit2.Call
 import timber.log.Timber
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
-fun <T> Response<T>.toData(): T =
-    if (isSuccessful) {
-        body()!!
+fun <T> Call<T>.toData(): T {
+    val response = execute()
+    if (response.isSuccessful) {
+        return response.body()!!
     } else {
-        throw ApiException.ServerException(message = errorBody()?.string())
+        throw ApiException.ServerException(message = response.errorBody()?.string())
     }
+}
 
 sealed class ApiException(message: String? = null) : Exception(message) {
     class ServerException(message: String? = null) : ApiException(message)

@@ -18,7 +18,7 @@ android {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
         targetSdk = 34
-        versionCode = 11002
+        versionCode = 11003
         versionName = "1.1"
 
         archivesName = "${rootProject.name}-$versionName"
