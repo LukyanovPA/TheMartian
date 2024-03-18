@@ -7,6 +7,7 @@ import com.pavellukyanov.themartian.domain.entity.CacheItem
 import com.pavellukyanov.themartian.domain.usecase.DeleteCameraCache
 import com.pavellukyanov.themartian.domain.usecase.DeleteOldCachedPhoto
 import com.pavellukyanov.themartian.domain.usecase.DeleteRoverInfoCache
+import com.pavellukyanov.themartian.domain.usecase.IsEmptyRoverCache
 import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
 import com.pavellukyanov.themartian.ui.base.Reducer
 import com.pavellukyanov.themartian.ui.theme.DbPink
@@ -16,23 +17,28 @@ import com.pavellukyanov.themartian.utils.C.CACHE_SIZE
 import com.pavellukyanov.themartian.utils.C.DB_NAME
 import com.pavellukyanov.themartian.utils.C.DEFAULT_CACHE_SIZE
 import com.pavellukyanov.themartian.utils.ext.log
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 
 class MainActivityReducer(
     private val deleteOldCachedPhoto: DeleteOldCachedPhoto,
     private val deleteRoverInfoCache: DeleteRoverInfoCache,
     private val deleteCameraCache: DeleteCameraCache,
-    private val updateRoverInfoCache: UpdateRoverInfoCache
+    private val updateRoverInfoCache: UpdateRoverInfoCache,
+    private val isEmptyRoverCache: IsEmptyRoverCache
 ) : Reducer<MainState, MainAction, MainEffect>(MainState()) {
     private val prefs = context.getSharedPreferences(C.COMMON, Context.MODE_PRIVATE)
-
-    init {
-        updateSettings()
-    }
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading = _isLoading.asStateFlow()
 
     override suspend fun reduce(oldState: MainState, action: MainAction) {
         when (action) {
-            is MainAction.OnUpdateRoverInfoCache -> onUpdateRoverInfoCache()
+            is MainAction.OnUpdateRoverInfoCache -> {
+                onHandleCacheState()
+                onUpdateRoverInfoCache()
+            }
+
             is MainAction.Error -> sendEffect(MainEffect.ShowError(errorMessage = action.error.message ?: action.error.javaClass.simpleName))
             is MainAction.CloseErrorDialog -> sendEffect(MainEffect.CloseErrorDialog)
             is MainAction.OnDeleteCache -> deleteCache()
@@ -40,6 +46,10 @@ class MainActivityReducer(
             is MainAction.OnCacheSizeChange -> onChangeCacheSize(size = action.size)
             is MainAction.OnFavouritesClick -> sendEffect(MainEffect.OpenFavourites)
         }
+    }
+
+    private fun onHandleCacheState() = io {
+        _isLoading.value = isEmptyRoverCache()
     }
 
     private fun onChangeCacheSize(size: Float) = io {
@@ -122,6 +132,7 @@ class MainActivityReducer(
 
     private fun onUpdateRoverInfoCache() = io {
         updateRoverInfoCache()
+        _isLoading.value = false
         log.v("onUpdateRoverInfoCache")
     }
 }

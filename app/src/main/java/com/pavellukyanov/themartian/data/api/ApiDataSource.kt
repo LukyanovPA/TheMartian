@@ -13,13 +13,11 @@ class ApiDataSource(
     private val roverService: RoverService,
     private val networkMonitor: NetworkMonitor
 ) {
-    suspend fun getRoversInfo(): List<RoverItemDto> = onIo {
-        networkMonitor {
-            RoverName.entries
-                .map { it.roverName }
-                .map { name -> roverService.loadRoverInfo(roverName = name) }
-                .map { it.toData().roverItem }
-        }
+    suspend fun getRoversInfo(): List<RoverItemDto> = networkMonitor {
+        RoverName.entries
+            .map { it.roverName }
+            .map { name -> roverService.loadRoverInfo(roverName = name) }
+            .map { it.toData().roverItem }
     }
 
     suspend fun getLatest(roverName: String, page: Int): List<Photo> = onIo {

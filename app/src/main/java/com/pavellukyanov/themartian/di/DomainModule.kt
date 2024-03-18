@@ -8,6 +8,7 @@ import com.pavellukyanov.themartian.domain.usecase.GetCameras
 import com.pavellukyanov.themartian.domain.usecase.GetFavourites
 import com.pavellukyanov.themartian.domain.usecase.GetPhotoById
 import com.pavellukyanov.themartian.domain.usecase.GetRoversOnFavourites
+import com.pavellukyanov.themartian.domain.usecase.IsEmptyRoverCache
 import com.pavellukyanov.themartian.domain.usecase.LoadPhotos
 import com.pavellukyanov.themartian.domain.usecase.LoadRovers
 import com.pavellukyanov.themartian.domain.usecase.PhotoToCache
@@ -29,4 +30,5 @@ val domainModule = module {
     single { DeleteCameraCache(camerasDao = get()) }
     single { GetFavourites(photoDao = get()) }
     single { GetRoversOnFavourites(photoDao = get()) }
+    single { IsEmptyRoverCache(roverInfoDao = get()) }
 }

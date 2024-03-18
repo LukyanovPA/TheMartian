@@ -18,7 +18,7 @@ android {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
         targetSdk = 34
-        versionCode = 11003
+        versionCode = 11004
         versionName = "1.1"
 
         archivesName = "${rootProject.name}-$versionName"
@@ -91,6 +91,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     coreLibraryDesugaring(libs.android.tools.desugar)
     implementation(libs.constraint.layout)
+    implementation(libs.androidx.core.splashscreen)
 
     //Accompanist
     implementation(libs.accompanist.systemuicontroller)

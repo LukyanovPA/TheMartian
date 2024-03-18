@@ -38,4 +38,5 @@
     <string name="cache_change_description">Set cache size</string>
     <string name="settings_button_description">Settings</string>
     <string name="favourites_title">Favourites</string>
+    <string name="privacy_policy">Privacy Policy</string>
 </resources>

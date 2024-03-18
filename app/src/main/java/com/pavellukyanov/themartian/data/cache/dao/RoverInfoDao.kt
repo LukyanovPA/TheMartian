@@ -12,6 +12,9 @@ interface RoverInfoDao {
     @Query("SELECT * FROM rover_info")
     fun subscribeAll(): Flow<List<Rover>>
 
+    @Query("SELECT * FROM rover_info")
+    suspend fun all(): List<Rover>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(rovers: List<Rover>)
 

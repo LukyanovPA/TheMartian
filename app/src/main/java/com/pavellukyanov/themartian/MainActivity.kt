@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -27,6 +28,7 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.pavellukyanov.themartian.ui.NavigationGraph
@@ -52,7 +54,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) reducer.sendAction(MainAction.OnUpdateRoverInfoCache)
         registrationErrorBroadcastReceivers()
+
+        var startDestination = "ui/screens/splash"
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            startDestination = "ui/screens/home"
+            val splashScreen = installSplashScreen()
+            splashScreen.setKeepOnScreenCondition { reducer.isLoading.value }
+        }
 
         window.setFlags(
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -73,7 +84,6 @@ class MainActivity : ComponentActivity() {
                 val snackbarHostState = remember { SnackbarHostState() }
 
                 Launch {
-                    if (savedInstanceState == null) reducer.sendAction(MainAction.OnUpdateRoverInfoCache)
                     reducer.subscribeEffect { effect ->
                         when (effect) {
                             is MainEffect.ShowError -> {
@@ -137,7 +147,8 @@ class MainActivity : ComponentActivity() {
                                         painterResource(id = R.drawable.main_background),
                                         contentScale = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) ContentScale.Crop else ContentScale.FillHeight
                                     ),
-                                navController = navController
+                                navController = navController,
+                                start = startDestination
                             )
 
                             if (hasError.value) scope.launch {

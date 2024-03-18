@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.pavellukyanov.themartian.ui.screens.gallery.GalleryScreen
 import com.pavellukyanov.themartian.ui.screens.home.HomeScreen
 import com.pavellukyanov.themartian.ui.screens.photo.PhotoScreen
+import com.pavellukyanov.themartian.ui.screens.splash.SplashScreen
 import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
 import com.pavellukyanov.themartian.utils.C.INT_MINUS_ONE
 import com.pavellukyanov.themartian.utils.C.IS_LOCAL_ARG
@@ -19,12 +20,16 @@ import com.pavellukyanov.themartian.utils.C.ROVER_NAME_ARG
 @Composable
 fun NavigationGraph(
     modifier: Modifier,
-    navController: NavHostController
+    navController: NavHostController,
+    start: String
 ) {
     NavHost(
         navController = navController,
-        startDestination = "ui/screens/home"
+        startDestination = start/*"ui/screens/home"*/
     ) {
+        composable(route = "ui/screens/splash") {
+            SplashScreen(modifier = modifier, navController = navController)
+        }
         composable(route = "ui/screens/home") {
             HomeScreen(modifier = modifier, navController = navController)
         }

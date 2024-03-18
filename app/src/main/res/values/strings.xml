@@ -15,6 +15,7 @@
     <string name="any_screen_chancel">Отмена</string>
     <string name="bad_internet_connection_error_message">Отсутствует соединение с интернетом</string>
     <string name="favourites_title">Избранное</string>
+    <string name="privacy_policy">Политика конфиденциальности</string>
 
     //Rover Info
     <string name="landing_date">Дата посадки:</string>

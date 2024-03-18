@@ -13,7 +13,7 @@ class UpdateRoverInfoCache(
     private val apiDataSource: ApiDataSource,
     private val camerasDao: CamerasDao
 ) {
-    suspend operator fun invoke() = onIo {
+    suspend operator fun invoke() {
         roverInfoDao.insert(
             apiDataSource.getRoversInfo()
                 .map { updateCameras(it) }
