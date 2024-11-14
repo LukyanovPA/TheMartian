@@ -1,6 +1,8 @@
 package com.pavellukyanov.themartian.di
 
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonParser
+import com.google.gson.JsonSyntaxException
 import com.pavellukyanov.themartian.BuildConfig
 import com.pavellukyanov.themartian.data.api.HttpInterceptor
 import com.pavellukyanov.themartian.data.api.RoverService
@@ -31,9 +33,29 @@ val networkModule = module {
             }
 
         if (BuildConfig.DEBUG) {
-            val httpLoggingInterceptor =
-                HttpLoggingInterceptor { message -> Timber.tag(TAG).d(message) }
-            httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+            val apiLogger = object : HttpLoggingInterceptor.Logger {
+                override fun log(message: String) {
+                    if (message.startsWith("{") || message.startsWith("[")) {
+                        try {
+                            val prettyPrintJson = GsonBuilder().setPrettyPrinting()
+                                .create().toJson(JsonParser().parse(message))
+
+                            prettyPrintJson.lines().forEach { print ->
+                                Timber.tag(TAG).w(print)
+                            }
+                        } catch (m: JsonSyntaxException) {
+                            Timber.tag(TAG).w(message)
+                        }
+                    } else {
+                        Timber.tag(TAG).w(message)
+                        return
+                    }
+                }
+            }
+
+            val httpLoggingInterceptor = HttpLoggingInterceptor(apiLogger).apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }
             okHttpBuilder.addInterceptor(httpLoggingInterceptor)
         }
 

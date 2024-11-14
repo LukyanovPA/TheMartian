@@ -9,7 +9,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface RoverService {
-    @GET("manifests/{rover}/?")
+    @GET("rovers/{rover}/?")
     fun loadRoverInfo(
         @Path("rover") roverName: String
     ): Call<RoverManifestDto>

@@ -3,10 +3,11 @@ package com.pavellukyanov.themartian.data.dto
 import com.google.gson.annotations.SerializedName
 
 class RoverManifestDto(
-    @SerializedName("photo_manifest") val roverItem: RoverItemDto
+    @SerializedName("rover") val roverItem: RoverItemDto
 )
 
 class RoverItemDto(
+    @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String,
     @SerializedName("landing_date") val landingDate: String,
     @SerializedName("launch_date") val launchDate: String,
@@ -14,23 +15,24 @@ class RoverItemDto(
     @SerializedName("max_sol") val maxSol: Int,
     @SerializedName("max_date") val maxDate: String,
     @SerializedName("total_photos") val totalPhotos: Int,
-    @SerializedName("photos") val roverManifestPhotos: List<RoverManifestPhotoDto>
+    @SerializedName("cameras") val cameras: List<CameraItemDto>
 )
 
-class RoverManifestPhotoDto(
-    @SerializedName("sol") val sol: Int,
-    @SerializedName("earth_date") val earthDate: String,
-    @SerializedName("total_photos") val totalPhotos: Int,
-    @SerializedName("cameras") val cameras: List<String>
+data class CameraItemDto(
+    @SerializedName("name") val name: String,
+    @SerializedName("full_name") val fullName: String
 )
 
 enum class RoverName(val roverName: String) {
     @SerializedName("roverName")
     PERSEVERANCE("Perseverance"),
+
     @SerializedName("roverName")
     CURIOSITY("Curiosity"),
+
     @SerializedName("roverName")
     OPPORTUNITY("Opportunity"),
+
     @SerializedName("roverName")
     SPIRIT("Spirit")
 }

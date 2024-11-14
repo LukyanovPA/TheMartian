@@ -22,13 +22,8 @@ class UpdateRoverInfoCache(
     }
 
     private suspend fun updateCameras(roverItem: RoverItemDto): RoverItemDto {
-        mutableSetOf<String>().apply {
-            roverItem.roverManifestPhotos.forEach { photo ->
-                addAll(photo.cameras)
-            }
-            forEach {
-                insertCamera(Camera(roverName = roverItem.name, name = it))
-            }
+        roverItem.cameras.forEach { cameraItemDto ->
+            insertCamera(Camera(roverName = roverItem.name, name = cameraItemDto.name, cameraFullName = cameraItemDto.fullName))
         }
         return roverItem
     }
