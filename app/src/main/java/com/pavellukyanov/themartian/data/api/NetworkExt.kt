@@ -12,7 +12,6 @@ fun <T> Call<T>.toData(): T {
     if (response.isSuccessful) {
         return response.body()!!
     } else {
-        Timber.d("SMOTRIM ${response.errorBody()?.string()}")
         throw ApiException.ServerException(message = response.errorBody()?.string())
     }
 }
