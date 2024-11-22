@@ -6,6 +6,7 @@ import com.pavellukyanov.themartian.data.cache.dao.RoverInfoDao
 import com.pavellukyanov.themartian.data.dto.RoverItemDto
 import com.pavellukyanov.themartian.domain.entity.Camera
 import com.pavellukyanov.themartian.domain.entity.toRover
+import com.pavellukyanov.themartian.utils.ext.onCpu
 import com.pavellukyanov.themartian.utils.ext.onIo
 
 class UpdateRoverInfoCache(
@@ -13,7 +14,7 @@ class UpdateRoverInfoCache(
     private val apiDataSource: ApiDataSource,
     private val camerasDao: CamerasDao
 ) {
-    suspend operator fun invoke() {
+    suspend operator fun invoke() = onIo {
         roverInfoDao.insert(
             apiDataSource.getRoversInfo()
                 .map { updateCameras(it) }
@@ -21,11 +22,11 @@ class UpdateRoverInfoCache(
         )
     }
 
-    private suspend fun updateCameras(roverItem: RoverItemDto): RoverItemDto {
+    private suspend fun updateCameras(roverItem: RoverItemDto): RoverItemDto = onCpu {
         roverItem.cameras.forEach { cameraItemDto ->
             insertCamera(Camera(roverName = roverItem.name, name = cameraItemDto.name, cameraFullName = cameraItemDto.fullName))
         }
-        return roverItem
+        return@onCpu roverItem
     }
 
     private suspend fun insertCamera(camera: Camera) = onIo {

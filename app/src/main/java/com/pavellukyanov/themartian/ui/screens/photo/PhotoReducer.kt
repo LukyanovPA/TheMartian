@@ -1,7 +1,6 @@
 package com.pavellukyanov.themartian.ui.screens.photo
 
 import android.app.DownloadManager
-import android.content.Context
 import android.net.Uri
 import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.domain.usecase.ChangeFavourites
@@ -21,20 +20,20 @@ class PhotoReducer(
             is PhotoAction.OnBackClick -> sendEffect(PhotoEffect.OnBackClick)
             is PhotoAction.DownloadPhoto -> onDownloadPhoto(photo = action.photo)
             is PhotoAction.ChangeFavourites -> action.photo?.let { onChangeFavourites(isAdd = !oldState.isFavourites, photo = it) }
-            is PhotoAction.OnImageError -> handledError(action.error)
+            is PhotoAction.OnImageError -> onError(error = action.error)
         }
     }
 
-    private fun onSubscribeStorage(photoId: Int) = withState { currentState ->
+    private suspend fun onSubscribeStorage(photoId: Int) {
         getPhotoById(id = photoId)
             .filter { it != null }
             .map { it!! }
             .collect { photo ->
-                saveState(currentState.copy(photo = photo, isFavourites = photo.isFavourites))
+                saveState(_state.value.copy(photo = photo, isFavourites = photo.isFavourites))
             }
     }
 
-    private fun onDownloadPhoto(photo: Photo?) = io {
+    private fun onDownloadPhoto(photo: Photo?) = cpu {
         photo?.let {
             val list = photo.src.split('/')
             val request = DownloadManager.Request(Uri.parse(photo.src))
@@ -43,7 +42,7 @@ class PhotoReducer(
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                 .setAllowedOverMetered(true)
 
-            (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
+            sendEffect(PhotoEffect.OnDownload(request))
         }
     }
 

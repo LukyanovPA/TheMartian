@@ -15,7 +15,11 @@ val reducerModule = module {
             deleteRoverInfoCache = get(),
             deleteCameraCache = get(),
             updateRoverInfoCache = get(),
-            isEmptyRoverCache = get()
+            isEmptyRoverCache = get(),
+            sharedPreferencesHelper = get(),
+            databaseHelper = get(),
+            imageLoaderHelper = get(),
+            errorQueue = get()
         )
     }
     viewModel { HomeReducer(loadRovers = get()) }

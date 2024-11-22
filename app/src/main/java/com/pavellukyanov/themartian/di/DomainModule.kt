@@ -17,18 +17,18 @@ import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
 import org.koin.dsl.module
 
 val domainModule = module {
-    single { LoadRovers(roverInfoDao = get()) }
-    single { UpdateRoverInfoCache(roverInfoDao = get(), apiDataSource = get(), camerasDao = get()) }
-    single { GetPhotoById(photoDao = get()) }
-    single { ChangeFavourites(photoDao = get()) }
-    single { PhotoToCache(photoDao = get()) }
-    single { DeleteOldCachedPhoto(photoDao = get()) }
-    single { GetCameras(camerasDao = get()) }
-    single { UpdateCamerasCache(camerasDao = get()) }
-    single { LoadPhotos(apiDataSource = get(), updateCamerasCache = get()) }
-    single { DeleteRoverInfoCache(roverInfoDao = get()) }
-    single { DeleteCameraCache(camerasDao = get()) }
-    single { GetFavourites(photoDao = get()) }
-    single { GetRoversOnFavourites(photoDao = get()) }
-    single { IsEmptyRoverCache(roverInfoDao = get()) }
+    factory { LoadRovers(roverInfoDao = get()) }
+    factory { UpdateRoverInfoCache(roverInfoDao = get(), apiDataSource = get(), camerasDao = get()) }
+    factory { GetPhotoById(photoDao = get()) }
+    factory { ChangeFavourites(photoDao = get()) }
+    factory { PhotoToCache(photoDao = get()) }
+    factory { DeleteOldCachedPhoto(photoDao = get()) }
+    factory { GetCameras(camerasDao = get()) }
+    factory { UpdateCamerasCache(camerasDao = get()) }
+    factory { LoadPhotos(apiDataSource = get(), updateCamerasCache = get()) }
+    factory { DeleteRoverInfoCache(roverInfoDao = get()) }
+    factory { DeleteCameraCache(camerasDao = get()) }
+    factory { GetFavourites(photoDao = get()) }
+    factory { GetRoversOnFavourites(photoDao = get()) }
+    factory { IsEmptyRoverCache(roverInfoDao = get()) }
 }

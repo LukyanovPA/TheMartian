@@ -1,5 +1,6 @@
 package com.pavellukyanov.themartian.ui.screens.photo
 
+import android.app.DownloadManager
 import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.ui.base.Action
 import com.pavellukyanov.themartian.ui.base.Effect
@@ -21,4 +22,5 @@ sealed class PhotoAction : Action() {
 
 sealed class PhotoEffect : Effect() {
     data object OnBackClick : PhotoEffect()
+    data class OnDownload(val request: DownloadManager.Request) : PhotoEffect()
 }

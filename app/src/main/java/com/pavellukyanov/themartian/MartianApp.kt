@@ -9,8 +9,10 @@ import coil.util.DebugLogger
 import com.pavellukyanov.themartian.di.commonModule
 import com.pavellukyanov.themartian.di.dataModule
 import com.pavellukyanov.themartian.di.domainModule
+import com.pavellukyanov.themartian.di.helpersModule
 import com.pavellukyanov.themartian.di.networkModule
 import com.pavellukyanov.themartian.di.reducerModule
+import com.pavellukyanov.themartian.di.utilsModule
 import com.pavellukyanov.themartian.utils.C.CACHE_SIZE
 import com.pavellukyanov.themartian.utils.C.COMMON
 import com.pavellukyanov.themartian.utils.C.DB_NAME
@@ -44,6 +46,8 @@ class MartianApp : Application(), ImageLoaderFactory {
             modules(domainModule)
             modules(reducerModule)
             modules(commonModule)
+            modules(helpersModule)
+            modules(utilsModule)
         }
     }
 

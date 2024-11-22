@@ -1,9 +1,5 @@
 package com.pavellukyanov.themartian
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -18,6 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +25,7 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -36,12 +34,9 @@ import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
 import com.pavellukyanov.themartian.ui.wigets.SettingsButton
 import com.pavellukyanov.themartian.ui.wigets.drawer.SettingsDrawer
 import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
-import com.pavellukyanov.themartian.utils.C.ERROR
-import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
-import com.pavellukyanov.themartian.utils.ext.localBroadcast
-import com.pavellukyanov.themartian.utils.ext.log
+import com.pavellukyanov.themartian.utils.ext.debug
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
 import kotlinx.coroutines.launch
@@ -49,13 +44,11 @@ import org.koin.android.ext.android.inject
 
 
 class MainActivity : ComponentActivity() {
-    private val errorReceiver by lazy { initErrorBroadcastReceiver() }
     private val reducer by inject<MainActivityReducer>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) reducer.sendAction(MainAction.OnUpdateRoverInfoCache)
-        registrationErrorBroadcastReceivers()
 
         var startDestination = "ui/screens/splash"
 
@@ -74,7 +67,6 @@ class MainActivity : ComponentActivity() {
             TheMartianTheme {
                 val state by reducer.asState()
                 val navController = rememberNavController()
-                val hasError = remember { mutableStateOf(false) }
                 val error = remember { mutableStateOf(EMPTY_STRING) }
                 val configuration = LocalConfiguration.current
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -82,17 +74,30 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val isHomeScreen = navBackStackEntry?.destination?.route == "ui/screens/home"
                 val snackbarHostState = remember { SnackbarHostState() }
+                val snackbarState = remember { mutableStateOf(SnackbarResult.Dismissed) }
 
                 Launch {
                     reducer.subscribeEffect { effect ->
                         when (effect) {
                             is MainEffect.ShowError -> {
-                                hasError.value = true
+                                snackbarHostState.currentSnackbarData?.dismiss()
                                 error.value = effect.errorMessage
+
+                                launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = error.value,
+                                        withDismissAction = true,
+                                        duration = SnackbarDuration.Indefinite
+                                    ).also { result ->
+                                        debug { "Snackbar result: $result" }
+                                        snackbarState.value = result
+                                        if (result == SnackbarResult.Dismissed) reducer.sendAction(MainAction.CloseErrorDialog)
+                                    }
+                                }
                             }
 
                             is MainEffect.CloseErrorDialog -> {
-                                hasError.value = false
+                                snackbarHostState.currentSnackbarData?.dismiss()
                                 error.value = EMPTY_STRING
                             }
 
@@ -104,11 +109,15 @@ class MainActivity : ComponentActivity() {
                 state.receive<MainState> { currentState ->
                     Scaffold(
                         snackbarHost = {
-                            SnackbarHost(hostState = snackbarHostState)
+                            SnackbarHost(
+                                modifier = Modifier
+                                    .padding(bottom = /*if (isHomeScreen) 0.dp else */32.dp),
+                                hostState = snackbarHostState
+                            )
                         },
                         floatingActionButton = {
                             SettingsButton(
-                                isVisible = !drawerState.isOpen && isHomeScreen,
+                                isVisible = !drawerState.isOpen && isHomeScreen && snackbarState.value == SnackbarResult.Dismissed,
                                 onClick = {
                                     scope.launch {
                                         if (drawerState.isOpen) drawerState.close() else drawerState.open()
@@ -150,38 +159,10 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 start = startDestination
                             )
-
-                            if (hasError.value) scope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = error.value,
-                                    withDismissAction = true,
-                                    duration = SnackbarDuration.Indefinite
-                                )
-                            }
                         }
                     }
                 }
             }
         }
-    }
-
-    private fun registrationErrorBroadcastReceivers() {
-        localBroadcast().registerReceiver(errorReceiver, IntentFilter(ERROR_BROADCAST_ACTION))
-        log.w("registrationErrorBroadcastReceivers")
-    }
-
-    private fun initErrorBroadcastReceiver(): BroadcastReceiver =
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                (intent?.getSerializableExtra(ERROR) as? Throwable)?.let { error ->
-                    reducer.sendAction(MainAction.Error(error = error))
-                    log.w("onReceiveError -> ${error.javaClass.simpleName}")
-                }
-            }
-        }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        localBroadcast().unregisterReceiver(errorReceiver)
     }
 }

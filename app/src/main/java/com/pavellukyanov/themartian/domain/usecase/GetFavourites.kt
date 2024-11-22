@@ -2,7 +2,9 @@ package com.pavellukyanov.themartian.domain.usecase
 
 import com.pavellukyanov.themartian.data.cache.dao.PhotoDao
 import com.pavellukyanov.themartian.data.dto.Photo
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 
 class GetFavourites(
@@ -12,4 +14,5 @@ class GetFavourites(
         photoDao.observe()
             .map { list -> list.filter { it.isFavourites } }
             .map { list -> list.filter { it.roverName.contains(roverName, ignoreCase = true) } }
+            .flowOn(Dispatchers.IO)
 }

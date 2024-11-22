@@ -13,10 +13,10 @@ class HomeReducer(
         }
     }
 
-    private fun onLoadRovers() = withState { currentState ->
+    private fun onLoadRovers() = cpu {
         loadRovers()
             .collect { rovers ->
-                saveState(currentState.copy(isLoading = rovers.isEmpty(), rovers = rovers))
+                saveState(_state.value.copy(isLoading = rovers.isEmpty(), rovers = rovers))
             }
     }
 }

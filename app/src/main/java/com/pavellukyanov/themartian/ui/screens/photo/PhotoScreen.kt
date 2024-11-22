@@ -1,5 +1,7 @@
 package com.pavellukyanov.themartian.ui.screens.photo
 
+import android.app.DownloadManager
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
@@ -33,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +50,8 @@ import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -57,12 +62,16 @@ fun PhotoScreen(
     reducer: PhotoReducer = koinViewModel()
 ) {
     val state by reducer.asState()
+    val context = LocalContext.current
 
     Launch {
         reducer.sendAction(PhotoAction.LoadPhoto(photoId = photoId))
         reducer.subscribeEffect { effect ->
             when (effect) {
                 is PhotoEffect.OnBackClick -> navController.popBackStack()
+                is PhotoEffect.OnDownload -> launch(Dispatchers.IO) {
+                    (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(effect.request)
+                }
             }
         }
     }

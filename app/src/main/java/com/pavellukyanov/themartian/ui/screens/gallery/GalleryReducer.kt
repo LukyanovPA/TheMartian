@@ -26,7 +26,7 @@ class GalleryReducer(
             is GalleryAction.OnPhotoClick -> onSaveSelectedPhoto(photo = action.photoDto)
             is GalleryAction.OnSetNewOptions -> handleOnSetNewOptionsAction(oldState = oldState, action.newOptions)
             is GalleryAction.LoadMore -> onLoadPhotos(options = oldState.options, page = oldState.page, isLatest = oldState.isLatest)
-            is GalleryAction.OnImageError -> handledError(error = action.error)
+            is GalleryAction.OnImageError -> onError(error = action.error)
             is GalleryAction.OnChooseRover -> saveState(oldState.copy(chooseRover = action.rover))
         }
     }
@@ -107,15 +107,11 @@ class GalleryReducer(
                 getFavourites(roverName = state.chooseRover.orEmpty())
             }
             .collect { photos ->
-                withState { currentState ->
-                    saveState(currentState.copy(isLoading = false, photos = photos.toMutableList()))
-                }
+                saveState(_state.value.copy(isLoading = false, photos = photos.toMutableList()))
             }
     }
 
     private fun onLoadFavouritesRovers() = cpu {
-        withState { currentState ->
-            saveState(currentState.copy(rovers = getRoversOnFavourites()))
-        }
+        saveState(_state.value.copy(rovers = getRoversOnFavourites()))
     }
 }
