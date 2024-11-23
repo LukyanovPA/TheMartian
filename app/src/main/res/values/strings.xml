@@ -4,7 +4,8 @@
     //Service
     <string name="cache_service_title">Обновление кэша</string>
     <string name="cache_service_content">Загружаю актуальную информацию о роверах</string>
-    <string name="cache_updated">Кэш успешно обновлен</string>
+    <string name="channel_id">Канал обновления кэша</string>
+    <string name="channel_name">Обновление кэша</string>
 
     //Common
     <string name="loading_title">Загружаю данные</string>

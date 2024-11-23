@@ -13,10 +13,10 @@ class SplashReducer(
         onObserveCacheState()
     }
 
-    private fun onObserveCacheState() = io {
+    private fun onObserveCacheState() = ui {
         loadRovers()
             .collect { rovers ->
-                if (rovers.isNotEmpty()) sendEffect(SplashEffect(state = true))
+                sendEffect(SplashEffect(state = rovers.isNotEmpty()))
             }
     }
 }

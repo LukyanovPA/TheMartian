@@ -41,13 +41,14 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
         viewModelScope.launch(context = dispatcher + errorHandler, block = action)
     }
 
-    fun sendAction(action: ACTION) = cpu {
+    fun dispatch(action: ACTION) = cpu {
         reduce(_state.value, action)
-        log.d("Reduce -> oldState: ${_state.value} | action: $action")
+        log.d("Dispatch -> oldState: ${_state.value} | action: $action")
     }
 
-    protected fun saveState(newState: STATE) {
+    protected fun execute(newState: STATE) {
         _state.value = newState
+        log.d("UpdateState -> newState: $newState")
     }
 
     protected suspend fun sendEffect(newEffect: EFFECT) = ui {

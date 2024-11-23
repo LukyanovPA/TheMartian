@@ -25,7 +25,7 @@ fun NavigationGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = start/*"ui/screens/home"*/
+        startDestination = start
     ) {
         composable(route = "ui/screens/splash") {
             SplashScreen(modifier = modifier, navController = navController)

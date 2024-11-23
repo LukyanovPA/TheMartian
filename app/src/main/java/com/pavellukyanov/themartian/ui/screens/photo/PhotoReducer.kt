@@ -29,7 +29,7 @@ class PhotoReducer(
             .filter { it != null }
             .map { it!! }
             .collect { photo ->
-                saveState(_state.value.copy(photo = photo, isFavourites = photo.isFavourites))
+                execute(_state.value.copy(photo = photo, isFavourites = photo.isFavourites))
             }
     }
 

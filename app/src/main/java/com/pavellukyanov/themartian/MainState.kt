@@ -8,11 +8,12 @@ import com.pavellukyanov.themartian.ui.base.State
 data class MainState(
     override val isLoading: Boolean = false,
     val cacheItems: List<CacheItem> = listOf(),
-    val currentCacheSize: Float = 0f
+    val currentCacheSize: Float = 0f,
+    val settingButtonVisibility: Boolean = true
 ) : State()
 
 sealed class MainAction : Action() {
-    data object OnUpdateRoverInfoCache : MainAction()
+    data object OnStart : MainAction()
     data class Error(val error: Throwable) : MainAction()
     data object CloseErrorDialog : MainAction()
     data object OnDeleteCache : MainAction()
@@ -25,4 +26,5 @@ sealed class MainEffect : Effect() {
     data class ShowError(val errorMessage: String) : MainEffect()
     data object CloseErrorDialog : MainEffect()
     data object OpenFavourites : MainEffect()
+    data object UpdateRoverInfoCache : MainEffect()
 }

@@ -65,7 +65,7 @@ fun PhotoScreen(
     val context = LocalContext.current
 
     Launch {
-        reducer.sendAction(PhotoAction.LoadPhoto(photoId = photoId))
+        reducer.dispatch(PhotoAction.LoadPhoto(photoId = photoId))
         reducer.subscribeEffect { effect ->
             when (effect) {
                 is PhotoEffect.OnBackClick -> navController.popBackStack()
@@ -82,10 +82,10 @@ fun PhotoScreen(
                 modifier = modifier,
                 isFavourites = currentState.isFavourites,
                 photo = currentState.photo,
-                onBackClick = { reducer.sendAction(PhotoAction.OnBackClick) },
-                onDownloadClick = { reducer.sendAction(PhotoAction.DownloadPhoto(photo = currentState.photo)) },
-                onChangeFavouritesClick = { reducer.sendAction(PhotoAction.ChangeFavourites(photo = currentState.photo)) },
-                onError = { reducer.sendAction(PhotoAction.OnImageError(error = it)) }
+                onBackClick = { reducer.dispatch(PhotoAction.OnBackClick) },
+                onDownloadClick = { reducer.dispatch(PhotoAction.DownloadPhoto(photo = currentState.photo)) },
+                onChangeFavouritesClick = { reducer.dispatch(PhotoAction.ChangeFavourites(photo = currentState.photo)) },
+                onError = { reducer.dispatch(PhotoAction.OnImageError(error = it)) }
             )
         }
     )

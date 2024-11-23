@@ -1,12 +1,12 @@
 package com.pavellukyanov.themartian
 
+import androidx.work.OutOfQuotaPolicy.*
 import coil.annotation.ExperimentalCoilApi
 import com.pavellukyanov.themartian.domain.entity.CacheItem
 import com.pavellukyanov.themartian.domain.usecase.DeleteCameraCache
 import com.pavellukyanov.themartian.domain.usecase.DeleteOldCachedPhoto
 import com.pavellukyanov.themartian.domain.usecase.DeleteRoverInfoCache
 import com.pavellukyanov.themartian.domain.usecase.IsEmptyRoverCache
-import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
 import com.pavellukyanov.themartian.ui.base.Reducer
 import com.pavellukyanov.themartian.ui.theme.DbPink
 import com.pavellukyanov.themartian.ui.theme.MediaRed
@@ -27,7 +27,6 @@ class MainActivityReducer(
     private val deleteOldCachedPhoto: DeleteOldCachedPhoto,
     private val deleteRoverInfoCache: DeleteRoverInfoCache,
     private val deleteCameraCache: DeleteCameraCache,
-    private val updateRoverInfoCache: UpdateRoverInfoCache,
     private val isEmptyRoverCache: IsEmptyRoverCache,
     private val sharedPreferencesHelper: SharedPreferencesHelper,
     private val databaseHelper: DatabaseHelper,
@@ -39,14 +38,14 @@ class MainActivityReducer(
 
     override suspend fun reduce(oldState: MainState, action: MainAction) {
         when (action) {
-            is MainAction.OnUpdateRoverInfoCache -> {
+            is MainAction.OnStart -> {
                 handleError()
                 onHandleCacheState()
-                onUpdateRoverInfoCache()
+                sendEffect(MainEffect.UpdateRoverInfoCache)
             }
 
             is MainAction.Error -> sendEffect(MainEffect.ShowError(errorMessage = action.error.message ?: action.error.javaClass.simpleName))
-            is MainAction.CloseErrorDialog -> errorQueue.clear() /*sendEffect(MainEffect.CloseErrorDialog)*/
+            is MainAction.CloseErrorDialog -> errorQueue.clear()
             is MainAction.OnDeleteCache -> deleteCache()
             is MainAction.OnUpdateSettings -> updateSettings()
             is MainAction.OnCacheSizeChange -> onChangeCacheSize(size = action.size)
@@ -60,11 +59,13 @@ class MainActivityReducer(
                 is UiError.Error -> sendEffect(MainEffect.ShowError(errorMessage = state.error.message.orEmpty()))
                 is UiError.NoError -> sendEffect(MainEffect.CloseErrorDialog)
             }
+            execute(_state.value.copy(settingButtonVisibility = state is UiError.NoError))
         }
     }
 
-    private fun onHandleCacheState() = io {
-        _isLoading.value = isEmptyRoverCache()
+    private fun onHandleCacheState() = ui {
+        isEmptyRoverCache()
+            .collect(_isLoading)
     }
 
     private fun onChangeCacheSize(size: Float) = io {
@@ -100,7 +101,7 @@ class MainActivityReducer(
         val dbSize = getRoomDatabaseSize()
         val cacheSize = sharedPreferencesHelper.getFloat(CACHE_SIZE, DEFAULT_CACHE_SIZE)
 
-        saveState(
+        execute(
             _state.value.copy(
                 cacheItems = mutableListOf<CacheItem>().apply {
                     //Images
@@ -128,28 +129,20 @@ class MainActivityReducer(
         )
     }
 
-    private fun deleteCache() = cpu {
+    private fun deleteCache() = ui {
         onDeleteCache()
         updateSettings()
-        onUpdateRoverInfoCache()
+        sendEffect(MainEffect.UpdateRoverInfoCache)
     }
 
     @OptIn(ExperimentalCoilApi::class)
-    private fun onDeleteCache() = io {
-        imageLoaderHelper.getDiskCache()?.clear()
-        imageLoaderHelper.getMemoryCache()?.clear()
+    private fun onDeleteCache() = ui {
+        io {
+            imageLoaderHelper.getDiskCache()?.clear()
+            imageLoaderHelper.getMemoryCache()?.clear()
+        }
         deleteOldCachedPhoto()
         deleteRoverInfoCache()
         deleteCameraCache()
     }
-
-    private fun onUpdateRoverInfoCache() = io {
-        updateRoverInfoCache()
-        _isLoading.value = false
-        log.v("onUpdateRoverInfoCache")
-    }
-
-//    override fun handledError(oldState: MainState, error: Throwable) {
-//        saveState(oldState.copy(error = error))
-//    }
 }

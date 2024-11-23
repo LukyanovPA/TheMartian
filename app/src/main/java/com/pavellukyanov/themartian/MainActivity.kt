@@ -24,11 +24,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
+import androidx.work.WorkManager
 import com.pavellukyanov.themartian.ui.NavigationGraph
 import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
 import com.pavellukyanov.themartian.ui.wigets.SettingsButton
@@ -36,9 +40,9 @@ import com.pavellukyanov.themartian.ui.wigets.drawer.SettingsDrawer
 import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
-import com.pavellukyanov.themartian.utils.ext.debug
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
+import com.pavellukyanov.themartian.utils.work.UpdateRoverInfoCacheWork
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
@@ -48,7 +52,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) reducer.sendAction(MainAction.OnUpdateRoverInfoCache)
 
         var startDestination = "ui/screens/splash"
 
@@ -75,8 +78,11 @@ class MainActivity : ComponentActivity() {
                 val isHomeScreen = navBackStackEntry?.destination?.route == "ui/screens/home"
                 val snackbarHostState = remember { SnackbarHostState() }
                 val snackbarState = remember { mutableStateOf(SnackbarResult.Dismissed) }
+                val context = LocalContext.current
 
                 Launch {
+                    if (savedInstanceState == null) reducer.dispatch(MainAction.OnStart)
+
                     reducer.subscribeEffect { effect ->
                         when (effect) {
                             is MainEffect.ShowError -> {
@@ -89,9 +95,8 @@ class MainActivity : ComponentActivity() {
                                         withDismissAction = true,
                                         duration = SnackbarDuration.Indefinite
                                     ).also { result ->
-                                        debug { "Snackbar result: $result" }
                                         snackbarState.value = result
-                                        if (result == SnackbarResult.Dismissed) reducer.sendAction(MainAction.CloseErrorDialog)
+                                        if (result == SnackbarResult.Dismissed) reducer.dispatch(MainAction.CloseErrorDialog)
                                     }
                                 }
                             }
@@ -102,6 +107,17 @@ class MainActivity : ComponentActivity() {
                             }
 
                             is MainEffect.OpenFavourites -> navController.navigate("ui/screens/gallery/${getString(R.string.favourites_title)}/${true}")
+
+                            is MainEffect.UpdateRoverInfoCache -> {
+                                launch {
+                                    val request = OneTimeWorkRequestBuilder<UpdateRoverInfoCacheWork>()
+                                        .setExpedited(RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                                        .build()
+
+                                    WorkManager.getInstance(context)
+                                        .enqueue(request)
+                                }
+                            }
                         }
                     }
                 }
@@ -111,13 +127,13 @@ class MainActivity : ComponentActivity() {
                         snackbarHost = {
                             SnackbarHost(
                                 modifier = Modifier
-                                    .padding(bottom = /*if (isHomeScreen) 0.dp else */32.dp),
+                                    .padding(bottom = 40.dp),
                                 hostState = snackbarHostState
                             )
                         },
                         floatingActionButton = {
                             SettingsButton(
-                                isVisible = !drawerState.isOpen && isHomeScreen && snackbarState.value == SnackbarResult.Dismissed,
+                                isVisible = !drawerState.isOpen && isHomeScreen && currentState.settingButtonVisibility,
                                 onClick = {
                                     scope.launch {
                                         if (drawerState.isOpen) drawerState.close() else drawerState.open()
@@ -130,7 +146,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                                 .padding(padding),
                             drawerState = drawerState.also {
-                                if (it.isOpen) reducer.sendAction(MainAction.OnUpdateSettings)
+                                if (it.isOpen) reducer.dispatch(MainAction.OnUpdateSettings)
                             },
                             gesturesEnabled = true,
                             drawerContent = {
@@ -138,10 +154,10 @@ class MainActivity : ComponentActivity() {
                                     items = currentState.cacheItems,
                                     paddingValues = padding,
                                     currentCacheSize = currentState.currentCacheSize,
-                                    onDeleteCache = { reducer.sendAction(MainAction.OnDeleteCache) },
-                                    onCacheSizeChange = { reducer.sendAction(MainAction.OnCacheSizeChange(size = it)) },
+                                    onDeleteCache = { reducer.dispatch(MainAction.OnDeleteCache) },
+                                    onCacheSizeChange = { reducer.dispatch(MainAction.OnCacheSizeChange(size = it)) },
                                     onFavouritesClick = {
-                                        reducer.sendAction(MainAction.OnFavouritesClick)
+                                        reducer.dispatch(MainAction.OnFavouritesClick)
                                         scope.launch {
                                             drawerState.close()
                                         }

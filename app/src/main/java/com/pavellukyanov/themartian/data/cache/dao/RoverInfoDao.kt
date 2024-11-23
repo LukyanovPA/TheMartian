@@ -10,9 +10,6 @@ interface RoverInfoDao : BaseDao<Rover> {
     @Query("SELECT * FROM rover_info")
     fun subscribeAll(): Flow<List<Rover>>
 
-    @Query("SELECT * FROM rover_info")
-    suspend fun all(): List<Rover>
-
     @Query("DELETE FROM rover_info")
     suspend fun deleteAll()
 }

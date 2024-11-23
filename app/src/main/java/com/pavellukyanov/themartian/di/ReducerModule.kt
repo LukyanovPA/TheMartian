@@ -14,7 +14,6 @@ val reducerModule = module {
             deleteOldCachedPhoto = get(),
             deleteRoverInfoCache = get(),
             deleteCameraCache = get(),
-            updateRoverInfoCache = get(),
             isEmptyRoverCache = get(),
             sharedPreferencesHelper = get(),
             databaseHelper = get(),

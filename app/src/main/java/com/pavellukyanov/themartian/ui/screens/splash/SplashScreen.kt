@@ -31,7 +31,7 @@ fun SplashScreen(
     val state by reducer.asState()
 
     Launch {
-        reducer.sendAction(SplashAction)
+        reducer.dispatch(SplashAction)
         reducer.subscribeEffect { effect ->
             if (effect.state) navController.navigate("ui/screens/home")
         }

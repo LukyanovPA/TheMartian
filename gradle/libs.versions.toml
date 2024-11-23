@@ -27,6 +27,7 @@ dev-tools = "1.9.10-1.0.13"
 google-services-version = "4.4.1"
 firebase-crashlytics-gradle = "2.9.9"
 core-splashscreen = "1.0.1"
+workmanager-version = "2.9.1"
 
 [libraries]
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
@@ -62,6 +63,7 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin-version" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin-version" }
 koin-android-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin-android-compose-version" }
+workmanager = { module = "androidx.work:work-runtime-ktx", version.ref = "workmanager-version" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

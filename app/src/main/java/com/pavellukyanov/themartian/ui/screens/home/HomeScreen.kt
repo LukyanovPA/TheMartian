@@ -58,7 +58,7 @@ fun HomeScreen(
     val state by reducer.asState()
 
     Launch {
-        reducer.sendAction(HomeAction.LoadRovers)
+        reducer.dispatch(HomeAction.LoadRovers)
         reducer.subscribeEffect { effect ->
             when (effect) {
                 is HomeEffect.NavigateToRoverGallery -> navController.navigate("ui/screens/gallery/${effect.roverName}/${false}")
@@ -72,7 +72,7 @@ fun HomeScreen(
             HomeScreenContent(
                 state = currentState,
                 modifier = modifier,
-                onClick = reducer::sendAction
+                onClick = reducer::dispatch
             )
         }
     )
