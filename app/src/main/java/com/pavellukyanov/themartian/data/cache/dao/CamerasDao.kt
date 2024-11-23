@@ -12,7 +12,7 @@ interface CamerasDao : BaseDao<Camera> {
     suspend fun getByName(name: String): List<Camera>
 
     @Query("SELECT * FROM cameras")
-    fun allStream(): Flow<List<Camera>>
+    fun observe(): Flow<List<Camera>>
 
     @Query("SELECT * FROM cameras")
     suspend fun all(): List<Camera>

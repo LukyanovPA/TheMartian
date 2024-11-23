@@ -48,7 +48,7 @@ abstract class Reducer<STATE : State, ACTION : Action, EFFECT : Effect>(initStat
 
     protected fun execute(newState: STATE) {
         _state.value = newState
-        log.d("UpdateState -> newState: $newState")
+        log.d("Execute -> newState: $newState")
     }
 
     protected suspend fun sendEffect(newEffect: EFFECT) = ui {

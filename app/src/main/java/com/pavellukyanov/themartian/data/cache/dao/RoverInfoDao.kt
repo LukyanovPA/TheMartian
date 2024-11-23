@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface RoverInfoDao : BaseDao<Rover> {
     @Query("SELECT * FROM rover_info")
-    fun subscribeAll(): Flow<List<Rover>>
+    fun observe(): Flow<List<Rover>>
 
     @Query("DELETE FROM rover_info")
     suspend fun deleteAll()

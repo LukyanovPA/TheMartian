@@ -9,7 +9,9 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.common.NetworkStateException
 import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
+import com.pavellukyanov.themartian.utils.ErrorQueue
 import com.pavellukyanov.themartian.utils.ext.log
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -17,6 +19,7 @@ import kotlin.random.Random
 
 class UpdateRoverInfoCacheWork(appContext: Context, workerParams: WorkerParameters) : CoroutineWorker(appContext, workerParams), KoinComponent {
     private val updateRoverInfoCache: UpdateRoverInfoCache by inject()
+    private val errorQueue: ErrorQueue by inject()
 
     override suspend fun doWork(): Result =
         try {
@@ -25,6 +28,7 @@ class UpdateRoverInfoCacheWork(appContext: Context, workerParams: WorkerParamete
             Result.success()
         } catch (e: Throwable) {
             log.e(e)
+            if (e is NetworkStateException) errorQueue.add(e)
             Result.failure()
         }
 

@@ -9,6 +9,6 @@ import kotlinx.coroutines.flow.flowOn
 class LoadRovers(private val roverInfoDao: RoverInfoDao) {
     operator fun invoke(): Flow<List<Rover>> =
         roverInfoDao
-            .subscribeAll()
+            .observe()
             .flowOn(Dispatchers.IO)
 }

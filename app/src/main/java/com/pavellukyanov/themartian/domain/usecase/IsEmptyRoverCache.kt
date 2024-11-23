@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.map
 
 class IsEmptyRoverCache(private val roverInfoDao: RoverInfoDao) {
     operator fun invoke(): Flow<Boolean> =
-        roverInfoDao.subscribeAll()
+        roverInfoDao.observe()
             .map { it.isEmpty() }
             .flowOn(Dispatchers.IO)
 }

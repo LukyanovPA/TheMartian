@@ -37,7 +37,6 @@ import com.pavellukyanov.themartian.ui.NavigationGraph
 import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
 import com.pavellukyanov.themartian.ui.wigets.SettingsButton
 import com.pavellukyanov.themartian.ui.wigets.drawer.SettingsDrawer
-import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
 import com.pavellukyanov.themartian.utils.ext.receive
@@ -45,7 +44,6 @@ import com.pavellukyanov.themartian.utils.ext.subscribeEffect
 import com.pavellukyanov.themartian.utils.work.UpdateRoverInfoCacheWork
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
-
 
 class MainActivity : ComponentActivity() {
     private val reducer by inject<MainActivityReducer>()
@@ -70,7 +68,6 @@ class MainActivity : ComponentActivity() {
             TheMartianTheme {
                 val state by reducer.asState()
                 val navController = rememberNavController()
-                val error = remember { mutableStateOf(EMPTY_STRING) }
                 val configuration = LocalConfiguration.current
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
@@ -87,11 +84,10 @@ class MainActivity : ComponentActivity() {
                         when (effect) {
                             is MainEffect.ShowError -> {
                                 snackbarHostState.currentSnackbarData?.dismiss()
-                                error.value = effect.errorMessage
 
                                 launch {
                                     snackbarHostState.showSnackbar(
-                                        message = error.value,
+                                        message = effect.errorMessage,
                                         withDismissAction = true,
                                         duration = SnackbarDuration.Indefinite
                                     ).also { result ->
@@ -103,7 +99,6 @@ class MainActivity : ComponentActivity() {
 
                             is MainEffect.CloseErrorDialog -> {
                                 snackbarHostState.currentSnackbarData?.dismiss()
-                                error.value = EMPTY_STRING
                             }
 
                             is MainEffect.OpenFavourites -> navController.navigate("ui/screens/gallery/${getString(R.string.favourites_title)}/${true}")
