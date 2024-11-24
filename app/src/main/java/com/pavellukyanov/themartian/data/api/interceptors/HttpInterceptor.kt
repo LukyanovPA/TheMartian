@@ -28,6 +28,7 @@ class HttpInterceptor : Interceptor {
         return when (initialResponse.code) {
             in HttpResponseCode.OK.errorCode -> initialResponse
             in HttpResponseCode.SERVER_ERROR.errorCode -> throw ApiException.ServerException(message = initialResponse.message)
+            in HttpResponseCode.MANY_REQUESTS.errorCode -> throw ApiException.ServerException(message = initialResponse.message)
             in HttpResponseCode.BAD_REQUEST.errorCode -> throw ApiException.ClientException(message = initialResponse.message)
             else -> throw IllegalStateException("Unexpected response with code: ${initialResponse.code} and body: ${initialResponse.body}")
         }
@@ -37,5 +38,6 @@ class HttpInterceptor : Interceptor {
 private enum class HttpResponseCode(val errorCode: IntRange) {
     OK(200..299),
     BAD_REQUEST(400..400),
+    MANY_REQUESTS(429..429),
     SERVER_ERROR(500..526)
 }

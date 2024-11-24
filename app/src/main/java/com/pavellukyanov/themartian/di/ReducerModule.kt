@@ -21,7 +21,7 @@ val reducerModule = module {
             errorQueue = get()
         )
     }
-    viewModel { HomeReducer(loadRovers = get()) }
+    viewModel { HomeReducer(loadRovers = get(), isRoverDataAvailable = get()) }
     viewModel { GalleryReducer(photoToCache = get(), getCameras = get(), loadPhotos = get(), getFavourites = get(), getRoversOnFavourites = get()) }
     viewModel { PhotoReducer(getPhotoById = get(), changeFavourites = get()) }
     viewModel { SplashReducer(loadRovers = get()) }

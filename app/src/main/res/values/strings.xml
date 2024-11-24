@@ -24,6 +24,7 @@
     <string name="launch_date">Дата запуска:</string>
     <string name="last_photo_date">Последние фото:</string>
     <string name="total_photo">Всего фото:</string>
+    <string name="disabled_rover_data">К сожалению данные с этого ровера больше недоступны :(</string>
 
     //Photo Info
     <string name="sol">Сол</string>

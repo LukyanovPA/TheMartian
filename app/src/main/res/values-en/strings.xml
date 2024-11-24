@@ -41,4 +41,5 @@
     <string name="favourites_title">Favourites</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="photo_download_dialog">Are you sure you want to download the photo</string>
+    <string name="disabled_rover_data">К сожалению данные с этого ровера больше недоступны :(</string>
 </resources>

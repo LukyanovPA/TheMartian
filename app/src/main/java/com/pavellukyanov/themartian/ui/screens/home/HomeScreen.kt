@@ -43,6 +43,7 @@ import androidx.navigation.NavHostController
 import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.domain.entity.Rover
 import com.pavellukyanov.themartian.ui.theme.MediaRed
+import com.pavellukyanov.themartian.ui.wigets.dialog.DisabledRoverDialog
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
 import com.pavellukyanov.themartian.utils.ext.receive
@@ -56,15 +57,19 @@ fun HomeScreen(
     reducer: HomeReducer = koinViewModel()
 ) {
     val state by reducer.asState()
+    var showRoverDataDisabledDialog by remember { mutableStateOf(false) }
 
     Launch {
         reducer.dispatch(HomeAction.LoadRovers)
         reducer.subscribeEffect { effect ->
             when (effect) {
                 is HomeEffect.NavigateToRoverGallery -> navController.navigate("ui/screens/gallery/${effect.roverName}/${false}")
+                is HomeEffect.ShowDisabledRoverDialog -> showRoverDataDisabledDialog = true
             }
         }
     }
+
+    if (showRoverDataDisabledDialog) DisabledRoverDialog { showRoverDataDisabledDialog = false }
 
     state.receive<HomeState>(
         modifier = modifier,
