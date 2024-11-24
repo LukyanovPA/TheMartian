@@ -12,18 +12,17 @@ plugins {
 
 android {
     namespace = "com.pavellukyanov.themartian"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 11200
         versionName = "1.1.2"
 
         archivesName = "${rootProject.name}-$versionName"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
