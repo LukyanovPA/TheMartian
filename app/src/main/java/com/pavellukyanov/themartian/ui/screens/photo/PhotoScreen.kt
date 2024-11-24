@@ -45,6 +45,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavHostController
 import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.data.dto.Photo
+import com.pavellukyanov.themartian.ui.wigets.dialog.ChooseDialog
 import com.pavellukyanov.themartian.ui.wigets.img.Picture
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
@@ -109,6 +110,16 @@ private fun PhotoScreenContent(
         rotation += rotationChange
         offset += offsetChange
     }
+    var showChooseDialog by remember { mutableStateOf(false) }
+
+
+    if (showChooseDialog) ChooseDialog(
+        onSuccess = {
+            onDownloadClick()
+            showChooseDialog = false
+        },
+        onClose = { showChooseDialog = false }
+    )
 
     ConstraintLayout(
         modifier = modifier
@@ -182,7 +193,7 @@ private fun PhotoScreenContent(
                     Button(
                         modifier = Modifier
                             .size(40.dp),
-                        onClick = onDownloadClick,
+                        onClick = { showChooseDialog = true },
                         shape = CircleShape,
                         contentPadding = PaddingValues(0.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
