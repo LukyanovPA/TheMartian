@@ -88,12 +88,12 @@ class GalleryReducer(
         )
     }
 
-    private fun onSaveSelectedPhoto(photo: Photo) = ui {
+    private fun onSaveSelectedPhoto(photo: Photo) = cpu {
         photoToCache(photo)
         sendEffect(GalleryEffect.OnPhotoClick(photoId = photo.id))
     }
 
-    private fun onSubscribeCameras(options: PhotosOptions) = ui {
+    private fun onSubscribeCameras(options: PhotosOptions) = cpu {
         getCameras(options = options)
             .collect { cameras ->
                 execute(_state.value.copy(cameras = cameras))
@@ -101,7 +101,7 @@ class GalleryReducer(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun onSubscribeFavourites() = ui {
+    private fun onSubscribeFavourites() = cpu {
         _state
             .flatMapMerge { state ->
                 getFavourites(roverName = state.chooseRover.orEmpty())
@@ -111,7 +111,7 @@ class GalleryReducer(
             }
     }
 
-    private fun onLoadFavouritesRovers() = ui {
+    private fun onLoadFavouritesRovers() = cpu {
         execute(_state.value.copy(rovers = getRoversOnFavourites()))
     }
 }

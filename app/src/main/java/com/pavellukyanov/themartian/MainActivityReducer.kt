@@ -63,7 +63,7 @@ class MainActivityReducer(
         }
     }
 
-    private fun onHandleCacheState() = ui {
+    private fun onHandleCacheState() = cpu {
         isEmptyRoverCache()
             .collect(_isLoading)
     }
@@ -129,14 +129,14 @@ class MainActivityReducer(
         )
     }
 
-    private fun deleteCache() = ui {
+    private fun deleteCache() = cpu {
         onDeleteCache()
         updateSettings()
         sendEffect(MainEffect.UpdateRoverInfoCache)
     }
 
     @OptIn(ExperimentalCoilApi::class)
-    private fun onDeleteCache() = ui {
+    private fun onDeleteCache() = cpu {
         io {
             imageLoaderHelper.getDiskCache()?.clear()
             imageLoaderHelper.getMemoryCache()?.clear()

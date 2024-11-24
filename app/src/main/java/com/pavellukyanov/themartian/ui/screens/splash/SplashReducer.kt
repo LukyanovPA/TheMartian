@@ -13,7 +13,7 @@ class SplashReducer(
         onObserveCacheState()
     }
 
-    private fun onObserveCacheState() = ui {
+    private fun onObserveCacheState() = cpu {
         loadRovers()
             .collect { rovers ->
                 sendEffect(SplashEffect(state = rovers.isNotEmpty()))

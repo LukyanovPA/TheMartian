@@ -8,6 +8,7 @@ plugins {
     id(libs.plugins.google.services.get().pluginId)
     id(libs.plugins.google.crashlytics.get().pluginId)
     alias(libs.plugins.compose.compiler)
+    id(libs.plugins.room.get().pluginId)
 }
 
 android {
@@ -66,6 +67,9 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    room {
+        schemaDirectory("$projectDir/schemas")
+    }
 }
 
 dependencies {
@@ -119,9 +123,9 @@ dependencies {
     implementation(libs.timber)
 
     //Google Services
-    implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
-    implementation("com.google.firebase:firebase-crashlytics")
-    implementation("com.google.firebase:firebase-analytics")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
 
     //WorkManager
     implementation(libs.workmanager)
