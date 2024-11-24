@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -8,6 +7,7 @@ plugins {
     alias(libs.plugins.devtools.ksp)
     id(libs.plugins.google.services.get().pluginId)
     id(libs.plugins.google.crashlytics.get().pluginId)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -18,10 +18,10 @@ android {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
         targetSdk = 35
-        versionCode = 11200
+        versionCode = 11201
         versionName = "1.1.2"
 
-        archivesName = "${rootProject.name}-$versionName"
+        extensions.getByType(BasePluginExtension::class.java).archivesName.set("${rootProject.name}-$versionName-($versionCode)")
 
         vectorDrawables {
             useSupportLibrary = true

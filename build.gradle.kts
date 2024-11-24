@@ -5,4 +5,5 @@ plugins {
     alias(libs.plugins.devtools.ksp) apply false
     alias(libs.plugins.google.services) apply false
     alias(libs.plugins.google.crashlytics) apply false
+    alias(libs.plugins.compose.compiler) apply false
 }
