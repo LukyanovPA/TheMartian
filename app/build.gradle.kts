@@ -19,7 +19,7 @@ android {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
         targetSdk = 35
-        versionCode = 11202
+        versionCode = 11203
         versionName = "1.1.2"
 
         extensions.getByType(BasePluginExtension::class.java).archivesName.set("${rootProject.name}-$versionName-($versionCode)")
