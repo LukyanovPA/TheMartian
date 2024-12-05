@@ -1,5 +1,7 @@
 package com.pavellukyanov.themartian.ui.screens.photo
 
+import android.app.DownloadManager
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
@@ -33,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -42,11 +45,14 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavHostController
 import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.data.dto.Photo
+import com.pavellukyanov.themartian.ui.wigets.dialog.ChooseDialog
 import com.pavellukyanov.themartian.ui.wigets.img.Picture
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -57,12 +63,16 @@ fun PhotoScreen(
     reducer: PhotoReducer = koinViewModel()
 ) {
     val state by reducer.asState()
+    val context = LocalContext.current
 
     Launch {
-        reducer.sendAction(PhotoAction.LoadPhoto(photoId = photoId))
+        reducer.dispatch(PhotoAction.LoadPhoto(photoId = photoId))
         reducer.subscribeEffect { effect ->
             when (effect) {
                 is PhotoEffect.OnBackClick -> navController.popBackStack()
+                is PhotoEffect.OnDownload -> launch(Dispatchers.IO) {
+                    (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(effect.request)
+                }
             }
         }
     }
@@ -73,10 +83,10 @@ fun PhotoScreen(
                 modifier = modifier,
                 isFavourites = currentState.isFavourites,
                 photo = currentState.photo,
-                onBackClick = { reducer.sendAction(PhotoAction.OnBackClick) },
-                onDownloadClick = { reducer.sendAction(PhotoAction.DownloadPhoto(photo = currentState.photo)) },
-                onChangeFavouritesClick = { reducer.sendAction(PhotoAction.ChangeFavourites(photo = currentState.photo)) },
-                onError = { reducer.sendAction(PhotoAction.OnImageError(error = it)) }
+                onBackClick = { reducer.dispatch(PhotoAction.OnBackClick) },
+                onDownloadClick = { reducer.dispatch(PhotoAction.DownloadPhoto(photo = currentState.photo)) },
+                onChangeFavouritesClick = { reducer.dispatch(PhotoAction.ChangeFavourites(photo = currentState.photo)) },
+                onError = { reducer.dispatch(PhotoAction.OnImageError(error = it)) }
             )
         }
     )
@@ -100,6 +110,16 @@ private fun PhotoScreenContent(
         rotation += rotationChange
         offset += offsetChange
     }
+    var showChooseDialog by remember { mutableStateOf(false) }
+
+
+    if (showChooseDialog) ChooseDialog(
+        onSuccess = {
+            onDownloadClick()
+            showChooseDialog = false
+        },
+        onClose = { showChooseDialog = false }
+    )
 
     ConstraintLayout(
         modifier = modifier
@@ -173,7 +193,7 @@ private fun PhotoScreenContent(
                     Button(
                         modifier = Modifier
                             .size(40.dp),
-                        onClick = onDownloadClick,
+                        onClick = { showChooseDialog = true },
                         shape = CircleShape,
                         contentPadding = PaddingValues(0.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)

@@ -12,7 +12,7 @@ class GetCameras(
     private val camerasDao: CamerasDao
 ) {
     operator fun invoke(options: PhotosOptions): Flow<List<Camera>> =
-        camerasDao.allStream()
+        camerasDao.observe()
             .map { list ->
                 list.filter { it.roverName == options.roverName }
             }

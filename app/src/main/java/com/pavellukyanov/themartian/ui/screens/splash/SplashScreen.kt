@@ -25,7 +25,7 @@ fun SplashScreen(
     reducer: SplashReducer = koinViewModel()
 ) {
     Launch {
-        reducer.sendAction(SplashAction)
+        reducer.dispatch(SplashAction)
         reducer.subscribeEffect { effect ->
             if (effect.state) navController.navigate("ui/screens/home")
         }

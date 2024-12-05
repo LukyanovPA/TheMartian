@@ -2,17 +2,23 @@ package com.pavellukyanov.themartian.ui.screens.home
 
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -35,6 +41,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.domain.entity.Rover
+import com.pavellukyanov.themartian.ui.theme.MediaRed
+import com.pavellukyanov.themartian.ui.wigets.dialog.DisabledRoverDialog
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
 import com.pavellukyanov.themartian.utils.ext.receive
@@ -48,15 +57,19 @@ fun HomeScreen(
     reducer: HomeReducer = koinViewModel()
 ) {
     val state by reducer.asState()
+    var showRoverDataDisabledDialog by remember { mutableStateOf(false) }
 
     Launch {
-        reducer.sendAction(HomeAction.LoadRovers)
+        reducer.dispatch(HomeAction.LoadRovers)
         reducer.subscribeEffect { effect ->
             when (effect) {
                 is HomeEffect.NavigateToRoverGallery -> navController.navigate("ui/screens/gallery/${effect.roverName}/${false}")
+                is HomeEffect.ShowDisabledRoverDialog -> showRoverDataDisabledDialog = true
             }
         }
     }
+
+    if (showRoverDataDisabledDialog) DisabledRoverDialog { showRoverDataDisabledDialog = false }
 
     state.receive<HomeState>(
         modifier = modifier,
@@ -64,7 +77,7 @@ fun HomeScreen(
             HomeScreenContent(
                 state = currentState,
                 modifier = modifier,
-                onClick = reducer::sendAction
+                onClick = reducer::dispatch
             )
         }
     )
@@ -100,7 +113,7 @@ private fun HomeScreenContent(
         //Rovers
         state.rovers.forEach { rover ->
             item {
-                rover.Content(onClick = { onClick(HomeAction.OnRoverClick(rover = it)) })
+                RoverContent(rover = rover, onClick = { onClick(HomeAction.OnRoverClick(rover = it)) })
             }
         }
 
@@ -173,5 +186,150 @@ private fun PrivacyPolicyWebView(
                 webView.loadUrl("https://www.freeprivacypolicy.com/live/213d427d-8cba-4986-8ca6-41d60dd6b758")
             }
         )
+    }
+}
+
+private const val STATUS = "active"
+
+@Composable
+private fun RoverContent(
+    rover: Rover,
+    onClick: (Rover) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .fillMaxWidth()
+            .background(color = Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(16.dp))
+            .clickable { onClick(rover) }
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            //Header
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                //Rover Name
+                Text(
+                    modifier = Modifier
+                        .weight(3f),
+                    text = rover.roverName,
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    letterSpacing = 1.sp,
+                    textAlign = TextAlign.Start
+                )
+                //Status
+                Text(
+                    text = rover.status,
+                    color = if (rover.status == STATUS) Color.Green else MediaRed,
+                    fontSize = 12.sp,
+                    letterSpacing = 1.sp,
+                    textAlign = TextAlign.End
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            //Dates
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    modifier = Modifier
+                        .weight(3f),
+                    text = stringResource(R.string.launch_date),
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Black,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Start
+                )
+                Text(
+                    text = rover.launchDate,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Black,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.End
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    modifier = Modifier
+                        .weight(3f),
+                    text = stringResource(R.string.landing_date),
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Black,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Start
+                )
+                Text(
+                    text = rover.landingDateFormat,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Black,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.End
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            //Photos
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    modifier = Modifier
+                        .weight(3f),
+                    text = stringResource(R.string.last_photo_date),
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Black,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Start
+                )
+                Text(
+                    text = rover.maxDateFormat,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Black,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.End
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    modifier = Modifier
+                        .weight(3f),
+                    text = stringResource(R.string.total_photo),
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Black,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Start
+                )
+                Text(
+                    text = rover.totalPhotos.toString(),
+                    fontWeight = FontWeight.Normal,
+                    color = Color.Black,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.End
+                )
+            }
+        }
     }
 }

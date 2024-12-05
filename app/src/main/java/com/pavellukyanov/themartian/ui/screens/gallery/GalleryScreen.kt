@@ -71,7 +71,7 @@ fun GalleryScreen(
         //isLocal = true -> Избранное
         //isLocal = false -> Из API
         launch {
-            reducer.sendAction(GalleryAction.LoadLatestPhotos(roverName = roverName, isLocal = isLocal))
+            reducer.dispatch(GalleryAction.LoadLatestPhotos(roverName = roverName, isLocal = isLocal))
         }
 
         launch {
@@ -90,7 +90,7 @@ fun GalleryScreen(
                 modifier = modifier,
                 bottomBar = { BottomFilterButton(visibility = !showBottomSheet) { showBottomSheet = true } }
             ) { padding ->
-                GalleryScreenContent(modifier = modifier, isLocal = currentState.isLocal, paddingValues = padding, state = currentState, onAction = reducer::sendAction)
+                GalleryScreenContent(modifier = modifier, isLocal = currentState.isLocal, paddingValues = padding, state = currentState, onAction = reducer::dispatch)
 
                 if (showBottomSheet) BottomFilter(
                     rovers = currentState.rovers,
@@ -100,11 +100,11 @@ fun GalleryScreen(
                     isFavourites = isLocal,
                     onShowBottomSheetState = { showBottomSheet = it },
                     onNewOptions = {
-                        reducer.sendAction(GalleryAction.OnSetNewOptions(newOptions = it))
+                        reducer.dispatch(GalleryAction.OnSetNewOptions(newOptions = it))
                         showBottomSheet = false
                     },
                     onChooseRover = {
-                        reducer.sendAction(GalleryAction.OnChooseRover(rover = it))
+                        reducer.dispatch(GalleryAction.OnChooseRover(rover = it))
                         showBottomSheet = false
                     }
                 )

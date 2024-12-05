@@ -51,6 +51,7 @@ fun Picture(
         .error(R.drawable.ic_rocket)
         .diskCachePolicy(CachePolicy.ENABLED)
         .memoryCachePolicy(CachePolicy.ENABLED)
+        .fallback(R.drawable.ic_rocket)
         .build()
 
     SubcomposeAsyncImage(

@@ -9,7 +9,7 @@ import org.koin.dsl.module
 
 val dataModule = module {
     //Api
-    single { ApiDataSource(roverService = get(), networkMonitor = get()) }
+    factory { ApiDataSource(roverService = get(), networkMonitor = get()) }
 
     //Cache
     single {

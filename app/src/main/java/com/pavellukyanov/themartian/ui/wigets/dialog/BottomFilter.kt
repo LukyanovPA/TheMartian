@@ -38,7 +38,6 @@ import com.pavellukyanov.themartian.domain.entity.Camera
 import com.pavellukyanov.themartian.domain.entity.PhotosOptions
 import com.pavellukyanov.themartian.utils.DateFormatter
 import com.pavellukyanov.themartian.utils.ext.Launch
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +62,7 @@ fun BottomFilter(
     var currentRovers by remember { mutableStateOf(listOf<String>()) }
 
     Launch {
-        launch(Dispatchers.Default) {
+        launch {
             currentDateTriple = DateFormatter.parse(options.date)
             currentRover = chooseRover
             currentRovers = rovers ?: listOf()

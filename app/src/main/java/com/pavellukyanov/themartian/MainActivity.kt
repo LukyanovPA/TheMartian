@@ -1,9 +1,5 @@
 package com.pavellukyanov.themartian
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -18,6 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,35 +24,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
+import androidx.work.WorkManager
 import com.pavellukyanov.themartian.ui.NavigationGraph
 import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
 import com.pavellukyanov.themartian.ui.wigets.SettingsButton
 import com.pavellukyanov.themartian.ui.wigets.drawer.SettingsDrawer
-import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
-import com.pavellukyanov.themartian.utils.C.ERROR
-import com.pavellukyanov.themartian.utils.C.ERROR_BROADCAST_ACTION
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
-import com.pavellukyanov.themartian.utils.ext.localBroadcast
-import com.pavellukyanov.themartian.utils.ext.log
 import com.pavellukyanov.themartian.utils.ext.receive
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
+import com.pavellukyanov.themartian.utils.work.UpdateRoverInfoCacheWork
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
-
 class MainActivity : ComponentActivity() {
-    private val errorReceiver by lazy { initErrorBroadcastReceiver() }
     private val reducer by inject<MainActivityReducer>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) reducer.sendAction(MainAction.OnUpdateRoverInfoCache)
-        registrationErrorBroadcastReceivers()
 
         var startDestination = "ui/screens/splash"
 
@@ -74,29 +68,51 @@ class MainActivity : ComponentActivity() {
             TheMartianTheme {
                 val state by reducer.asState()
                 val navController = rememberNavController()
-                val hasError = remember { mutableStateOf(false) }
-                val error = remember { mutableStateOf(EMPTY_STRING) }
                 val configuration = LocalConfiguration.current
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val isHomeScreen = navBackStackEntry?.destination?.route == "ui/screens/home"
                 val snackbarHostState = remember { SnackbarHostState() }
+                val snackbarState = remember { mutableStateOf(SnackbarResult.Dismissed) }
+                val context = LocalContext.current
 
                 Launch {
+                    if (savedInstanceState == null) reducer.dispatch(MainAction.OnStart)
+
                     reducer.subscribeEffect { effect ->
                         when (effect) {
                             is MainEffect.ShowError -> {
-                                hasError.value = true
-                                error.value = effect.errorMessage
+                                snackbarHostState.currentSnackbarData?.dismiss()
+
+                                launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = effect.errorMessage,
+                                        withDismissAction = true,
+                                        duration = SnackbarDuration.Indefinite
+                                    ).also { result ->
+                                        snackbarState.value = result
+                                        if (result == SnackbarResult.Dismissed) reducer.dispatch(MainAction.CloseErrorDialog)
+                                    }
+                                }
                             }
 
                             is MainEffect.CloseErrorDialog -> {
-                                hasError.value = false
-                                error.value = EMPTY_STRING
+                                snackbarHostState.currentSnackbarData?.dismiss()
                             }
 
                             is MainEffect.OpenFavourites -> navController.navigate("ui/screens/gallery/${getString(R.string.favourites_title)}/${true}")
+
+                            is MainEffect.UpdateRoverInfoCache -> {
+                                launch {
+                                    val request = OneTimeWorkRequestBuilder<UpdateRoverInfoCacheWork>()
+                                        .setExpedited(RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                                        .build()
+
+                                    WorkManager.getInstance(context)
+                                        .enqueue(request)
+                                }
+                            }
                         }
                     }
                 }
@@ -104,11 +120,15 @@ class MainActivity : ComponentActivity() {
                 state.receive<MainState> { currentState ->
                     Scaffold(
                         snackbarHost = {
-                            SnackbarHost(hostState = snackbarHostState)
+                            SnackbarHost(
+                                modifier = Modifier
+                                    .padding(bottom = 40.dp),
+                                hostState = snackbarHostState
+                            )
                         },
                         floatingActionButton = {
                             SettingsButton(
-                                isVisible = !drawerState.isOpen && isHomeScreen,
+                                isVisible = !drawerState.isOpen && isHomeScreen && currentState.settingButtonVisibility,
                                 onClick = {
                                     scope.launch {
                                         if (drawerState.isOpen) drawerState.close() else drawerState.open()
@@ -121,7 +141,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                                 .padding(padding),
                             drawerState = drawerState.also {
-                                if (it.isOpen) reducer.sendAction(MainAction.OnUpdateSettings)
+                                if (it.isOpen) reducer.dispatch(MainAction.OnUpdateSettings)
                             },
                             gesturesEnabled = true,
                             drawerContent = {
@@ -129,10 +149,10 @@ class MainActivity : ComponentActivity() {
                                     items = currentState.cacheItems,
                                     paddingValues = padding,
                                     currentCacheSize = currentState.currentCacheSize,
-                                    onDeleteCache = { reducer.sendAction(MainAction.OnDeleteCache) },
-                                    onCacheSizeChange = { reducer.sendAction(MainAction.OnCacheSizeChange(size = it)) },
+                                    onDeleteCache = { reducer.dispatch(MainAction.OnDeleteCache) },
+                                    onCacheSizeChange = { reducer.dispatch(MainAction.OnCacheSizeChange(size = it)) },
                                     onFavouritesClick = {
-                                        reducer.sendAction(MainAction.OnFavouritesClick)
+                                        reducer.dispatch(MainAction.OnFavouritesClick)
                                         scope.launch {
                                             drawerState.close()
                                         }
@@ -150,38 +170,10 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 start = startDestination
                             )
-
-                            if (hasError.value) scope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = error.value,
-                                    withDismissAction = true,
-                                    duration = SnackbarDuration.Indefinite
-                                )
-                            }
                         }
                     }
                 }
             }
         }
-    }
-
-    private fun registrationErrorBroadcastReceivers() {
-        localBroadcast().registerReceiver(errorReceiver, IntentFilter(ERROR_BROADCAST_ACTION))
-        log.w("registrationErrorBroadcastReceivers")
-    }
-
-    private fun initErrorBroadcastReceiver(): BroadcastReceiver =
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                (intent?.getSerializableExtra(ERROR) as? Throwable)?.let { error ->
-                    reducer.sendAction(MainAction.Error(error = error))
-                    log.w("onReceiveError -> ${error.javaClass.simpleName}")
-                }
-            }
-        }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        localBroadcast().unregisterReceiver(errorReceiver)
     }
 }

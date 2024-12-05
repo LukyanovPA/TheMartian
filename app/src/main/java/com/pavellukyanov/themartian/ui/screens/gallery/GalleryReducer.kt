@@ -26,13 +26,13 @@ class GalleryReducer(
             is GalleryAction.OnPhotoClick -> onSaveSelectedPhoto(photo = action.photoDto)
             is GalleryAction.OnSetNewOptions -> handleOnSetNewOptionsAction(oldState = oldState, action.newOptions)
             is GalleryAction.LoadMore -> onLoadPhotos(options = oldState.options, page = oldState.page, isLatest = oldState.isLatest)
-            is GalleryAction.OnImageError -> handledError(error = action.error)
-            is GalleryAction.OnChooseRover -> saveState(oldState.copy(chooseRover = action.rover))
+            is GalleryAction.OnImageError -> onError(error = action.error)
+            is GalleryAction.OnChooseRover -> execute(oldState.copy(chooseRover = action.rover))
         }
     }
 
     private suspend fun handleOnSetNewOptionsAction(oldState: GalleryState, newOptions: PhotosOptions) {
-        saveState(
+        execute(
             oldState.copy(
                 isLoading = true,
                 options = newOptions,
@@ -48,14 +48,14 @@ class GalleryReducer(
         if (isLocal) {
             onLoadFavouritesRovers()
             onSubscribeFavourites()
-            saveState(
+            execute(
                 oldState.copy(
                     isLoading = true,
                     isLocal = true
                 )
             )
         } else {
-            saveState(
+            execute(
                 oldState.copy(
                     isLoading = true,
                     options = oldState.options.copy(roverName = roverName),
@@ -77,7 +77,7 @@ class GalleryReducer(
         val canPaginate = photos.size == 25
         newList.addAll(photos)
 
-        saveState(
+        execute(
             _state.value.copy(
                 isLoading = false,
                 canPaginate = canPaginate,
@@ -96,26 +96,22 @@ class GalleryReducer(
     private fun onSubscribeCameras(options: PhotosOptions) = cpu {
         getCameras(options = options)
             .collect { cameras ->
-                saveState(_state.value.copy(cameras = cameras))
+                execute(_state.value.copy(cameras = cameras))
             }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun onSubscribeFavourites() = io {
+    private fun onSubscribeFavourites() = cpu {
         _state
             .flatMapMerge { state ->
                 getFavourites(roverName = state.chooseRover.orEmpty())
             }
             .collect { photos ->
-                withState { currentState ->
-                    saveState(currentState.copy(isLoading = false, photos = photos.toMutableList()))
-                }
+                execute(_state.value.copy(isLoading = false, photos = photos.toMutableList()))
             }
     }
 
     private fun onLoadFavouritesRovers() = cpu {
-        withState { currentState ->
-            saveState(currentState.copy(rovers = getRoversOnFavourites()))
-        }
+        execute(_state.value.copy(rovers = getRoversOnFavourites()))
     }
 }

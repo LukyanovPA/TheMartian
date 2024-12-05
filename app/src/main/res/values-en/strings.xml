@@ -3,7 +3,8 @@
     <string name="app_name">TheMartian</string>
     <string name="cache_service_title">Update cache</string>
     <string name="cache_service_content">Download actual rovers information</string>
-    <string name="cache_updated">Cache updated successfully</string>
+    <string name="channel_id">Update rover info cache channel</string>
+    <string name="channel_name">Cache update</string>
     <string name="loading_title">Loading data</string>
     <string name="any_screen_confirm">Confirm</string>
     <string name="bad_internet_connection_error_message">No internet connection</string>
@@ -39,4 +40,6 @@
     <string name="settings_button_description">Settings</string>
     <string name="favourites_title">Favourites</string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="photo_download_dialog">Are you sure you want to download the photo</string>
+    <string name="disabled_rover_data">К сожалению данные с этого ровера больше недоступны :(</string>
 </resources>

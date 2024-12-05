@@ -4,7 +4,8 @@
     //Service
     <string name="cache_service_title">Обновление кэша</string>
     <string name="cache_service_content">Загружаю актуальную информацию о роверах</string>
-    <string name="cache_updated">Кэш успешно обновлен</string>
+    <string name="channel_id">Канал обновления кэша</string>
+    <string name="channel_name">Обновление кэша</string>
 
     //Common
     <string name="loading_title">Загружаю данные</string>
@@ -16,12 +17,14 @@
     <string name="bad_internet_connection_error_message">Отсутствует соединение с интернетом</string>
     <string name="favourites_title">Избранное</string>
     <string name="privacy_policy">Политика конфиденциальности</string>
+    <string name="photo_download_dialog">Вы действительно хотите скачать фото?</string>
 
     //Rover Info
     <string name="landing_date">Дата посадки:</string>
     <string name="launch_date">Дата запуска:</string>
     <string name="last_photo_date">Последние фото:</string>
     <string name="total_photo">Всего фото:</string>
+    <string name="disabled_rover_data">К сожалению данные с этого ровера больше недоступны :(</string>
 
     //Photo Info
     <string name="sol">Сол</string>

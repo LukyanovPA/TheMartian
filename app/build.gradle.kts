@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -8,22 +7,23 @@ plugins {
     alias(libs.plugins.devtools.ksp)
     id(libs.plugins.google.services.get().pluginId)
     id(libs.plugins.google.crashlytics.get().pluginId)
+    alias(libs.plugins.compose.compiler)
+    id(libs.plugins.room.get().pluginId)
 }
 
 android {
     namespace = "com.pavellukyanov.themartian"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 11005
-        versionName = "1.1.1"
+        targetSdk = 35
+        versionCode = 11203
+        versionName = "1.1.2"
 
-        archivesName = "${rootProject.name}-$versionName"
+        extensions.getByType(BasePluginExtension::class.java).archivesName.set("${rootProject.name}-$versionName-($versionCode)")
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -66,6 +66,9 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+    room {
+        schemaDirectory("$projectDir/schemas")
     }
 }
 
@@ -120,7 +123,10 @@ dependencies {
     implementation(libs.timber)
 
     //Google Services
-    implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
-    implementation("com.google.firebase:firebase-crashlytics")
-    implementation("com.google.firebase:firebase-analytics")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
+
+    //WorkManager
+    implementation(libs.workmanager)
 }

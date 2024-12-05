@@ -17,4 +17,5 @@ sealed class HomeAction : Action() {
 
 sealed class HomeEffect : Effect() {
     data class NavigateToRoverGallery(val roverName: String) : HomeEffect()
+    data object ShowDisabledRoverDialog : HomeEffect()
 }

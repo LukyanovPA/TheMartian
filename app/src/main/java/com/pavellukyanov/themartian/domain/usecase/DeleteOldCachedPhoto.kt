@@ -9,6 +9,6 @@ class DeleteOldCachedPhoto(
     suspend operator fun invoke() = onIo {
         photoDao.all()
             .filter { it.isCache && !it.isFavourites }
-            .forEach { photoDao.delete(it) }
+            .forEach(photoDao::delete)
     }
 }
