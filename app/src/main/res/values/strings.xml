@@ -57,4 +57,5 @@
     <string name="cache_size_mb_small">меньше 1 МБ</string>
     <string name="delete_cache_button_title">Удалить кэш</string>
     <string name="cache_change_description">Установите размер кэша</string>
+    <string name="delete_cache_dialog">Вы действительно хотите удалить кэш?</string>
 </resources>

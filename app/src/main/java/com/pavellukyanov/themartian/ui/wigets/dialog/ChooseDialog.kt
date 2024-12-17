@@ -30,6 +30,7 @@ import com.pavellukyanov.themartian.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChooseDialog(
+    text: String,
     onSuccess: () -> Unit,
     onClose: () -> Unit,
 ) {
@@ -55,7 +56,7 @@ fun ChooseDialog(
                 Text(
                     textAlign = TextAlign.Center,
                     color = Color.DarkGray,
-                    text = stringResource(R.string.photo_download_dialog)
+                    text = text
                 )
             }
             Column {
