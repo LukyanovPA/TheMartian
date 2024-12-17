@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,6 +40,7 @@ import com.pavellukyanov.themartian.ui.theme.DbPink
 import com.pavellukyanov.themartian.ui.theme.GrayBac
 import com.pavellukyanov.themartian.ui.theme.MediaRed
 import com.pavellukyanov.themartian.ui.wigets.chart.CircularChart
+import com.pavellukyanov.themartian.ui.wigets.dialog.ChooseDialog
 
 @Composable
 fun SettingsDrawer(
@@ -49,8 +51,18 @@ fun SettingsDrawer(
     onCacheSizeChange: (Float) -> Unit,
     onFavouritesClick: () -> Unit
 ) {
+    var showChooseDialog by remember { mutableStateOf(false) }
     var sliderPosition by remember { mutableFloatStateOf(0F) }
     sliderPosition = currentCacheSize
+
+    if (showChooseDialog) ChooseDialog(
+        text = stringResource(R.string.delete_cache_dialog),
+        onSuccess = {
+            onDeleteCache()
+            showChooseDialog = false
+        },
+        onClose = { showChooseDialog = false }
+    )
 
     ModalDrawerSheet {
         Box(
@@ -92,7 +104,7 @@ fun SettingsDrawer(
                             .fillMaxWidth()
                             .padding(top = 10.dp),
                         onClick = {
-                            onDeleteCache()
+                            showChooseDialog = true
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Blue, contentColor = Color.White)
                     ) {

@@ -139,6 +139,7 @@ private fun PrivacyPolicyWebView(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(top = 32.dp)
     ) {
         Box(
             modifier = Modifier
@@ -164,8 +165,8 @@ private fun PrivacyPolicyWebView(
                 modifier = Modifier
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center,
-                text = "Privacy Policy",
-                color = Color.White,
+                text = stringResource(id = R.string.privacy_policy),
+                color = Color.Black,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp
             )

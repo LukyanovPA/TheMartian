@@ -114,6 +114,7 @@ private fun PhotoScreenContent(
 
 
     if (showChooseDialog) ChooseDialog(
+        text = stringResource(R.string.photo_download_dialog),
         onSuccess = {
             onDownloadClick()
             showChooseDialog = false
