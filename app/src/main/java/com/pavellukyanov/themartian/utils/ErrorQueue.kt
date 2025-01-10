@@ -1,19 +1,22 @@
 package com.pavellukyanov.themartian.utils
 
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class ErrorQueue {
-    val onError: MutableStateFlow<UiError> = MutableStateFlow(UiError.NoError)
+    private val _onError: MutableStateFlow<UiError> = MutableStateFlow(UiError.NoError)
+    val onError: StateFlow<UiError> = _onError.asStateFlow()
 
     fun add(error: Throwable) {
-        when (val state = onError.value) {
-            is UiError.Error -> if (state.error != error) onError.value = UiError.Error(error)
-            is UiError.NoError -> onError.value = UiError.Error(error)
+        when (val state = _onError.value) {
+            is UiError.Error -> if (state.error != error) _onError.value = UiError.Error(error)
+            is UiError.NoError -> _onError.value = UiError.Error(error)
         }
     }
 
     fun clear() {
-        onError.value = UiError.NoError
+        _onError.value = UiError.NoError
     }
 }
 
