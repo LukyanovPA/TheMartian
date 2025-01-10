@@ -68,8 +68,8 @@ class MainActivityReducer(
             .collect(_isLoading)
     }
 
-    private fun onChangeCacheSize(size: Float) = io {
-        sharedPreferencesHelper.putFloat(CACHE_SIZE, size)
+    private fun onChangeCacheSize(size: Float) = cpu {
+        sharedPreferencesHelper.put(CACHE_SIZE, size)
         updateSettings()
     }
 
@@ -99,7 +99,7 @@ class MainActivityReducer(
     private fun updateSettings() = io {
         val mediaSize = getImageCacheSize()
         val dbSize = getRoomDatabaseSize()
-        val cacheSize = sharedPreferencesHelper.getFloat(CACHE_SIZE, DEFAULT_CACHE_SIZE)
+        val cacheSize = sharedPreferencesHelper.get(CACHE_SIZE, DEFAULT_CACHE_SIZE)
 
         execute(
             _state.value.copy(

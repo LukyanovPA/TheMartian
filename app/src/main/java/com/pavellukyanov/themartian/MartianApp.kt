@@ -1,6 +1,9 @@
 package com.pavellukyanov.themartian
 
 import android.app.Application
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
+import androidx.work.WorkManager
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -15,24 +18,22 @@ import com.pavellukyanov.themartian.di.reducerModule
 import com.pavellukyanov.themartian.di.utilsModule
 import com.pavellukyanov.themartian.utils.C.CACHE_SIZE
 import com.pavellukyanov.themartian.utils.C.COMMON
-import com.pavellukyanov.themartian.utils.C.DB_NAME
 import com.pavellukyanov.themartian.utils.C.DEFAULT_CACHE_SIZE
+import com.pavellukyanov.themartian.utils.work.DebugCheckFirstStartWork
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import timber.log.Timber
 
-private const val FIRST_START_KEY = "FIRST_START_KEY"
 private const val IMAGE_CACHE = "image_cache"
 
 class MartianApp : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
         initDi()
-        initLogger()
-        if (BuildConfig.DEBUG) checkFirstStart()
+        if (BuildConfig.DEBUG) initLogger(); debugCheckFirstStart()
 
-//        this.applicationContext.deleteDatabase("MartianLocalDatabase.db")
+//        this.applicationContext.deleteDatabase(DB_NAME)
     }
 
     private fun initDi() {
@@ -51,23 +52,17 @@ class MartianApp : Application(), ImageLoaderFactory {
         }
     }
 
-    private fun checkFirstStart() {
-        try {
-            val preferences = applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE)
-            val result = preferences.getBoolean(FIRST_START_KEY, false)
-            if (!result) {
-                if (applicationContext.getDatabasePath(DB_NAME).canRead())
-                    applicationContext.deleteDatabase(DB_NAME)
+    private fun debugCheckFirstStart() {
+        val request = OneTimeWorkRequestBuilder<DebugCheckFirstStartWork>()
+            .setExpedited(RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build()
 
-                preferences.edit().putBoolean(FIRST_START_KEY, true).apply()
-            }
-        } catch (e: Throwable) {
-            Timber.e(e)
-        }
+        WorkManager.getInstance(this)
+            .enqueue(request)
     }
 
     private fun initLogger() {
-        if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
+        Timber.plant(Timber.DebugTree())
     }
 
     override fun newImageLoader(): ImageLoader =

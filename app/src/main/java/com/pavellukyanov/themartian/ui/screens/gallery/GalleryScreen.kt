@@ -181,6 +181,7 @@ private fun GalleryScreenContent(
                             url = photo.src,
                             contentDescription = photo.cameraFullName,
                             modifier = Modifier
+                                .animateItem()
                                 .fillMaxWidth()
                                 .wrapContentHeight()
                                 .clickable { onAction(GalleryAction.OnPhotoClick(photo)) },

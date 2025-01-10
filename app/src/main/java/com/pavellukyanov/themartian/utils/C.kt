@@ -4,20 +4,12 @@ object C {
     //Int
     const val INT_MINUS_ONE = -1
     const val INT_ZERO = 0
-    const val INT_ONE = 1
-
-    //Long
-    const val LONG_ZERO = 0L
 
     //String
     const val EMPTY_STRING = ""
     const val SPACE = " "
     const val DASH = "-"
     const val RU = "ru"
-
-    //Broadcast
-    const val ERROR = "ERROR"
-    const val ERROR_BROADCAST_ACTION = "com.pavellukyanov.themartian.ERROR_ACTION"
 
     //Args
     const val ROVER_NAME_ARG = "ROVER_NAME_ARG"

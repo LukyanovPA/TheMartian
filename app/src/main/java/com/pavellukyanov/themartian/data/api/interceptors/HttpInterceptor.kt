@@ -1,6 +1,6 @@
 package com.pavellukyanov.themartian.data.api.interceptors
 
-import com.pavellukyanov.themartian.data.api.ApiException
+import com.pavellukyanov.themartian.utils.ext.ApiException
 import okhttp3.Interceptor
 import okhttp3.Response
 import timber.log.Timber

@@ -113,7 +113,11 @@ private fun HomeScreenContent(
         //Rovers
         state.rovers.forEach { rover ->
             item {
-                RoverContent(rover = rover, onClick = { onClick(HomeAction.OnRoverClick(rover = it)) })
+                RoverContent(
+                    modifier = Modifier.animateItem(),
+                    rover = rover,
+                    onClick = { onClick(HomeAction.OnRoverClick(rover = it)) }
+                )
             }
         }
 
@@ -194,11 +198,12 @@ private const val STATUS = "active"
 
 @Composable
 private fun RoverContent(
+    modifier: Modifier,
     rover: Rover,
     onClick: (Rover) -> Unit
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .padding(vertical = 8.dp, horizontal = 16.dp)
             .fillMaxWidth()
             .background(color = Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(16.dp))

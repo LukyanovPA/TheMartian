@@ -8,4 +8,6 @@ class DatabaseHelper : Helper() {
     fun canRead(): Boolean = db.canRead()
 
     fun getFolderPath(): String = context.filesDir.absolutePath.replace("files", "databases")
+
+    fun delete() = db.delete()
 }

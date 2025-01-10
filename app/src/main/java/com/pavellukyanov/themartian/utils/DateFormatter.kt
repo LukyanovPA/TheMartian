@@ -38,34 +38,49 @@ object DateFormatter {
     private fun getMonth(month: String): String =
         if (Locale.getDefault().language == RU)
             when (month) {
-                "01" -> "Янв"
-                "02" -> "Фев"
-                "03" -> "Мар"
-                "04" -> "Апр"
-                "05" -> "Мая"
-                "06" -> "Июн"
-                "07" -> "Июл"
-                "08" -> "Авг"
-                "09" -> "Сен"
-                "10" -> "Окт"
-                "11" -> "Ноя"
-                "12" -> "Дек"
+                Month.JAN.value -> "Янв"
+                Month.FEB.value -> "Фев"
+                Month.MAR.value -> "Мар"
+                Month.APR.value -> "Апр"
+                Month.MAY.value -> "Мая"
+                Month.JUN.value -> "Июн"
+                Month.JUL.value -> "Июл"
+                Month.AUG.value -> "Авг"
+                Month.SEP.value -> "Сен"
+                Month.OKT.value -> "Окт"
+                Month.NOV.value -> "Ноя"
+                Month.DEC.value -> "Дек"
                 else -> EMPTY_STRING
             }
         else
             when (month) {
-                "01" -> "Jan"
-                "02" -> "Feb"
-                "03" -> "Mar"
-                "04" -> "Apr"
-                "05" -> "May"
-                "06" -> "Jun"
-                "07" -> "Jul"
-                "08" -> "Aug"
-                "09" -> "Sep"
-                "10" -> "Okt"
-                "11" -> "Nov"
-                "12" -> "Dec"
+                Month.JAN.value -> "Jan"
+                Month.FEB.value -> "Feb"
+                Month.MAR.value -> "Mar"
+                Month.APR.value -> "Apr"
+                Month.MAY.value -> "May"
+                Month.JUN.value -> "Jun"
+                Month.JUL.value -> "Jul"
+                Month.AUG.value -> "Aug"
+                Month.SEP.value -> "Sep"
+                Month.OKT.value -> "Okt"
+                Month.NOV.value -> "Nov"
+                Month.DEC.value -> "Dec"
                 else -> EMPTY_STRING
             }
+}
+
+private enum class Month(val value: String) {
+    JAN("01"),
+    FEB("02"),
+    MAR("03"),
+    APR("04"),
+    MAY("05"),
+    JUN("06"),
+    JUL("07"),
+    AUG("08"),
+    SEP("09"),
+    OKT("10"),
+    NOV("11"),
+    DEC("12")
 }
