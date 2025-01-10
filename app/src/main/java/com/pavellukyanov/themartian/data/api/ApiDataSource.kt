@@ -8,6 +8,7 @@ import com.pavellukyanov.themartian.data.dto.RoverName
 import com.pavellukyanov.themartian.data.dto.map
 import com.pavellukyanov.themartian.domain.entity.PhotosOptions
 import com.pavellukyanov.themartian.utils.ext.onIo
+import com.pavellukyanov.themartian.utils.ext.toData
 
 class ApiDataSource(
     private val roverService: RoverService,

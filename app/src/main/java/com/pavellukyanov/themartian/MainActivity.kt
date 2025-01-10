@@ -1,16 +1,17 @@
 package com.pavellukyanov.themartian
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -23,13 +24,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -78,7 +80,22 @@ class MainActivity : ComponentActivity() {
                 val isHomeScreen = navBackStackEntry?.destination?.route == "ui/screens/home"
                 val snackbarHostState = remember { SnackbarHostState() }
                 val snackbarState = remember { mutableStateOf(SnackbarResult.Dismissed) }
-                val context = LocalContext.current
+                var notificationPermissions by remember {
+                    mutableStateOf(
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            ContextCompat.checkSelfPermission(
+                                this,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) == PackageManager.PERMISSION_GRANTED
+                        } else true
+                    )
+                }
+                val permissionLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission(),
+                    onResult = { isGranded ->
+                        notificationPermissions = isGranded
+                    }
+                )
 
                 Launch {
                     if (savedInstanceState == null) reducer.dispatch(MainAction.OnStart)
@@ -112,7 +129,7 @@ class MainActivity : ComponentActivity() {
                                         .setExpedited(RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                                         .build()
 
-                                    WorkManager.getInstance(context)
+                                    WorkManager.getInstance(this@MainActivity)
                                         .enqueue(request)
                                 }
                             }
@@ -163,6 +180,9 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         ) {
+                            if (!notificationPermissions && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+
                             NavigationGraph(
                                 modifier = Modifier
                                     .fillMaxSize()
