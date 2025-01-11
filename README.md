@@ -15,7 +15,7 @@
 # Technology
 - Kotlin
 - Kotlin Coroutines/Flow
-- MVI
+- MVI (Redux & Elm)
 - Jetpack Compose
 - Jetpack Navigation Component
 - Koin
