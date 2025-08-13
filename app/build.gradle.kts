@@ -13,14 +13,14 @@ plugins {
 
 android {
     namespace = "com.pavellukyanov.themartian"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
         targetSdk = 35
-        versionCode = 11400
-        versionName = "1.1.4"
+        versionCode = 11500
+        versionName = "1.1.5"
 
         extensions.getByType(BasePluginExtension::class.java).archivesName.set("${rootProject.name}-$versionName-($versionCode)")
 
