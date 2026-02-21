@@ -14,7 +14,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-private const val BASE_URL = "https://api.nasa.gov/mars-photos/api/v1/"
+private const val BASE_URL = "https://api.marsvista.dev/api/v2/"
 
 val networkModule = module {
     singleOf(::HttpInterceptor)

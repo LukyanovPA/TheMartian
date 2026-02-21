@@ -9,22 +9,25 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface RoverService {
-    @GET("rovers/{rover}/?")
+    @GET("rovers/{rover}?include=cameras")
     suspend fun loadRoverInfo(
         @Path("rover") roverName: String
     ): Response<RoverManifestDto>
 
-    @GET("rovers/{rover}/latest_photos?")
+    @GET("photos")
     suspend fun getLatestPhotos(
-        @Path("rover") roverName: String,
-        @Query("page") page: Int
+        @Query("rovers") roverName: String,
+        @Query("page") page: Int,
+        @Query("sort") sort: String = "-earth_date",
+        @Query("include") include: String = "rover,camera"
     ): Response<LatestDto>
 
-    @GET("rovers/{rover}/photos?")
+    @GET("photos")
     suspend fun getByOptions(
-        @Path("rover") roverName: String,
+        @Query("rovers") roverName: String,
         @Query("earth_date") earthDate: String,
-        @Query("camera") camera: String?,
-        @Query("page") page: Int
+        @Query("cameras") camera: String?,
+        @Query("page") page: Int,
+        @Query("include") include: String = "rover,camera"
     ): Response<PhotosDto>
 }

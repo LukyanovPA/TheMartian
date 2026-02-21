@@ -7,11 +7,50 @@ import com.pavellukyanov.themartian.utils.DateFormatter
 
 data class PhotoDto(
     @SerializedName("id") val id: Int,
+    @SerializedName("attributes") val attributes: PhotoAttributesDto,
+    @SerializedName("relationships") val relationships: PhotoRelationshipsDto?
+) {
+    val sol: Int get() = attributes.sol
+    val imgSrc: String get() = attributes.imgSrc ?: ""
+    val earthDate: String get() = attributes.earthDate ?: ""
+    val cameraDto: CameraDto get() = relationships?.camera?.let { 
+        CameraDto(
+            id = 0, 
+            name = it.attributes?.name ?: it.id ?: "", 
+            roverId = 0, 
+            fullName = it.attributes?.fullName ?: ""
+        ) 
+    } ?: CameraDto(0, "", 0, "")
+    val roverDto: RoverDto get() = relationships?.rover?.let { 
+        RoverDto(
+            id = 0, 
+            name = it.attributes?.name ?: it.id ?: "", 
+            landingDate = "", 
+            launchDate = "", 
+            status = ""
+        ) 
+    } ?: RoverDto(0, "", "", "", "")
+}
+
+class PhotoAttributesDto(
     @SerializedName("sol") val sol: Int,
-    @SerializedName("camera") val cameraDto: CameraDto,
-    @SerializedName("img_src") val imgSrc: String,
-    @SerializedName("earth_date") val earthDate: String,
-    @SerializedName("rover") val roverDto: RoverDto
+    @SerializedName("img_src") val imgSrc: String?,
+    @SerializedName("earth_date") val earthDate: String?
+)
+
+class PhotoRelationshipsDto(
+    @SerializedName("rover") val rover: ResourceReferenceDto?,
+    @SerializedName("camera") val camera: ResourceReferenceDto?
+)
+
+class ResourceReferenceDto(
+    @SerializedName("id") val id: String?,
+    @SerializedName("attributes") val attributes: ResourceAttributesDto?
+)
+
+class ResourceAttributesDto(
+    @SerializedName("name") val name: String?,
+    @SerializedName("full_name") val fullName: String?
 )
 
 @Entity(tableName = "photo")
