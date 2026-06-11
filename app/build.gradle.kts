@@ -18,7 +18,7 @@ android {
     defaultConfig {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 11500
         versionName = "1.1.5"
 
@@ -58,9 +58,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
     packaging {
         resources {
@@ -106,6 +103,7 @@ dependencies {
 
     //Coil
     implementation(libs.coil)
+    implementation(libs.coil.network.okhttp)
 
     //Retrofit
     implementation(libs.retrofit)
@@ -115,7 +113,6 @@ dependencies {
 
     //Room
     implementation(libs.androidx.room.runtime)
-    annotationProcessor(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 

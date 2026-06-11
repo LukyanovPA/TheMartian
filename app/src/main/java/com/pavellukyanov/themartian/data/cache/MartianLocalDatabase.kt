@@ -15,7 +15,7 @@ import com.pavellukyanov.themartian.domain.entity.Rover
         Photo::class,
         Camera::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class MartianLocalDatabase : RoomDatabase() {

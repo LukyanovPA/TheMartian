@@ -1,7 +1,6 @@
 package com.pavellukyanov.themartian
 
 import androidx.work.OutOfQuotaPolicy.*
-import coil.annotation.ExperimentalCoilApi
 import com.pavellukyanov.themartian.domain.entity.CacheItem
 import com.pavellukyanov.themartian.domain.usecase.DeleteCameraCache
 import com.pavellukyanov.themartian.domain.usecase.DeleteOldCachedPhoto
@@ -92,7 +91,6 @@ class MainActivityReducer(
         }
 
 
-    @OptIn(ExperimentalCoilApi::class)
     private fun getImageCacheSize(): Long =
         ((imageLoaderHelper.getDiskCache()?.size ?: 0L) / 1024) / 1024
 
@@ -135,7 +133,6 @@ class MainActivityReducer(
         sendEffect(MainEffect.UpdateRoverInfoCache)
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     private fun onDeleteCache() = cpu {
         io {
             imageLoaderHelper.getDiskCache()?.clear()

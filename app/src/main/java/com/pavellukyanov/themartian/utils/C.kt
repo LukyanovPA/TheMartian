@@ -13,8 +13,10 @@ object C {
 
     //Args
     const val ROVER_NAME_ARG = "ROVER_NAME_ARG"
+    const val ROVER_SLUG_ARG = "ROVER_SLUG_ARG"
     const val IS_LOCAL_ARG = "IS_LOCAL_ARG"
     const val PHOTO_ARG = "PHOTO_ARG"
+    const val PANORAMA_ARG = "PANORAMA_ARG"
 
     //Database
     const val DB_NAME = "MartianLocalDatabase.db"

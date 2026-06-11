@@ -5,18 +5,23 @@ import android.net.Uri
 import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.domain.usecase.ChangeFavourites
 import com.pavellukyanov.themartian.domain.usecase.GetPhotoById
+import com.pavellukyanov.themartian.domain.usecase.GetPhotoFromApi
 import com.pavellukyanov.themartian.ui.base.Reducer
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
 class PhotoReducer(
     private val getPhotoById: GetPhotoById,
-    private val changeFavourites: ChangeFavourites
+    private val changeFavourites: ChangeFavourites,
+    private val getPhotoFromApi: GetPhotoFromApi
 ) : Reducer<PhotoState, PhotoAction, PhotoEffect>(PhotoState()) {
 
     override suspend fun reduce(oldState: PhotoState, action: PhotoAction) {
         when (action) {
-            is PhotoAction.LoadPhoto -> onSubscribeStorage(photoId = action.photoId)
+            is PhotoAction.LoadPhoto -> {
+                onRefreshFromApi(photoId = action.photoId)
+                onSubscribeStorage(photoId = action.photoId)
+            }
             is PhotoAction.OnBackClick -> sendEffect(PhotoEffect.OnBackClick)
             is PhotoAction.DownloadPhoto -> onDownloadPhoto(photo = action.photo)
             is PhotoAction.ChangeFavourites -> action.photo?.let { onChangeFavourites(isAdd = !oldState.isFavourites, photo = it) }
@@ -33,10 +38,22 @@ class PhotoReducer(
             }
     }
 
+    private suspend fun onRefreshFromApi(photoId: Int) {
+        try {
+            val apiPhoto = getPhotoFromApi(photoId)
+            apiPhoto?.let {
+                execute(_state.value.copy(photo = it))
+            }
+        } catch (_: Exception) {
+            // Silently fall back to cached version
+        }
+    }
+
     private fun onDownloadPhoto(photo: Photo?) = cpu {
         photo?.let {
-            val list = photo.src.split('/')
-            val request = DownloadManager.Request(Uri.parse(photo.src))
+            val url = it.srcFull ?: it.srcLarge ?: it.srcMedium ?: it.src
+            val list = url.split('/')
+            val request = DownloadManager.Request(Uri.parse(url))
                 .setTitle(list[list.lastIndex])
                 .setDescription(photo.cameraFullName)
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)

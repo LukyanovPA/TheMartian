@@ -130,7 +130,7 @@ private fun PhotoScreenContent(
 
         //Photo
         Picture(
-            url = photo?.src.orEmpty(),
+            url = photo?.src,
             contentDescription = null,
             modifier = Modifier
                 .constrainAs(photoBox) {
