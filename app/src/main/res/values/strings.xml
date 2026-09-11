@@ -58,4 +58,27 @@
     <string name="delete_cache_button_title">Удалить кэш</string>
     <string name="cache_change_description">Установите размер кэша</string>
     <string name="delete_cache_dialog">Вы действительно хотите удалить кэш?</string>
+
+    //Redesign: Navigation
+    <string name="nav_rovers">Роверы</string>
+
+    //Redesign: Home
+    <string name="home_section_rovers">Аппараты</string>
+    <string name="home_stat_launch">Запуск</string>
+    <string name="home_stat_landing">Посадка</string>
+    <string name="home_stat_last_photo">Свежий кадр</string>
+    <string name="home_stat_total_photos">Всего фото</string>
+    <string name="home_hero_kicker">Последний кадр</string>
+
+    //Redesign: Gallery
+    <string name="gallery_photos_count">%d кадров</string>
+    <string name="filter_button_description">Открыть фильтр</string>
+
+    //Redesign: Photo meta
+    <string name="photo_meta_lighting">Освещение</string>
+    <string name="photo_meta_panorama">Часть панорамы</string>
+    <string name="photo_meta_stereo">Стерео пара</string>
+    <string name="photo_credit">NASA / JPL-Caltech</string>
+    <string name="button_previous_photo">Предыдущее фото</string>
+    <string name="button_next_photo">Следующее фото</string>
 </resources>

@@ -9,6 +9,7 @@ import com.pavellukyanov.themartian.domain.usecase.LoadPhotos
 import com.pavellukyanov.themartian.domain.usecase.PhotoToCache
 import com.pavellukyanov.themartian.domain.usecase.UpdateCamerasCache
 import com.pavellukyanov.themartian.ui.base.Reducer
+import com.pavellukyanov.themartian.utils.GalleryBrowseSession
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 
@@ -18,7 +19,8 @@ class GalleryReducer(
     private val getCameras: GetCameras,
     private val updateCamerasCache: UpdateCamerasCache,
     private val getFavourites: GetFavourites,
-    private val getRoversOnFavourites: GetRoversOnFavourites
+    private val getRoversOnFavourites: GetRoversOnFavourites,
+    private val browseSession: GalleryBrowseSession
 ) : Reducer<GalleryState, GalleryAction, GalleryEffect>(GalleryState()) {
 
     private var isLoadingLocked = false
@@ -74,18 +76,22 @@ class GalleryReducer(
             // must not move it back to an older sol.
             val newestPhoto = result.photos.firstOrNull().takeIf { page == 1 }
 
+            val allPhotos = if (page == 1) result.photos else _state.value.photos + result.photos
+
             execute(
                 _state.value.copy(
                     isLoading = false,
                     canPaginate = result.canPaginate,
+                    totalCount = result.totalCount ?: _state.value.totalCount,
                     options = _state.value.options.copy(
                         date = newestPhoto?.earthDate ?: _state.value.options.date,
                         displayDate = newestPhoto?.earthFormattedDate ?: _state.value.options.displayDate
                     ),
                     page = if (result.canPaginate) _state.value.page + 1 else _state.value.page,
-                    photos = if (page == 1) result.photos else _state.value.photos + result.photos
+                    photos = allPhotos
                 )
             )
+            browseSession.update(allPhotos.map { it.id })
         } catch (_: Exception) {
             execute(_state.value.copy(isLoading = false))
         } finally {
@@ -119,6 +125,7 @@ class GalleryReducer(
             .flatMapLatest { state -> getFavourites(roverName = state.chooseRover.orEmpty()) }
             .collect { photos ->
                 execute(_state.value.copy(isLoading = false, photos = photos))
+                browseSession.update(photos.map { it.id })
             }
     }
 

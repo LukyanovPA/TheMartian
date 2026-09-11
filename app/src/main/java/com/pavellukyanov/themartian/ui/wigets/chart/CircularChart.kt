@@ -27,12 +27,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.domain.entity.CacheItem
+import com.pavellukyanov.themartian.ui.theme.AccentMars
+import com.pavellukyanov.themartian.ui.theme.GolosFontFamily
+import com.pavellukyanov.themartian.ui.theme.StatusError
+import com.pavellukyanov.themartian.ui.theme.SurfaceBorder
+import com.pavellukyanov.themartian.ui.theme.TextPrimary
 
 @Composable
 fun CircularChart(
     items: List<CacheItem>,
     currentSize: Float,
-    backgroundCircleColor: Color = Color.LightGray.copy(alpha = 0.3f),
+    backgroundCircleColor: Color = SurfaceBorder,
     size: Dp = 280.dp,
     thickness: Dp = 16.dp,
     gapBetweenCircles: Dp = 42.dp
@@ -57,7 +62,7 @@ fun CircularChart(
             )
 
             drawArc(
-                color = if (sweepAngles[index] > 360) Color.Red else cacheItem.chartColor,
+                color = if (sweepAngles[index] > 360) StatusError else cacheItem.chartColor,
                 startAngle = -90f,
                 sweepAngle = sweepAngles[index],
                 useCenter = false,
@@ -108,7 +113,8 @@ private fun DisplayLegend(
 
             Text(
                 text = stringResource(id = title),
-                color = Color.Black
+                fontFamily = GolosFontFamily,
+                color = TextPrimary
             )
         }
         Row(
@@ -119,8 +125,9 @@ private fun DisplayLegend(
         ) {
             Text(
                 text = if (size <= 0) stringResource(id = R.string.cache_size_mb_small) else stringResource(id = R.string.cache_size_mb, size),
+                fontFamily = GolosFontFamily,
                 fontWeight = FontWeight.Medium,
-                color = Color.Blue
+                color = AccentMars
             )
         }
     }

@@ -1,6 +1,8 @@
 package com.pavellukyanov.themartian.ui.wigets.dialog
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,8 +15,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -27,15 +27,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.domain.entity.Camera
 import com.pavellukyanov.themartian.domain.entity.PhotosOptions
+import com.pavellukyanov.themartian.ui.theme.AccentMars
+import com.pavellukyanov.themartian.ui.theme.BgDeep
+import com.pavellukyanov.themartian.ui.theme.MartianType
+import com.pavellukyanov.themartian.ui.theme.SurfaceBorder
+import com.pavellukyanov.themartian.ui.theme.SurfaceCard
+import com.pavellukyanov.themartian.ui.theme.SurfaceMuted
+import com.pavellukyanov.themartian.ui.theme.TextPrimary
+import com.pavellukyanov.themartian.ui.theme.TextTertiary
 import com.pavellukyanov.themartian.utils.DateFormatter
 import com.pavellukyanov.themartian.utils.ext.Launch
 import kotlinx.coroutines.launch
@@ -90,172 +95,130 @@ fun BottomFilter(
         onClose = { showRoverDialog = false })
 
     ModalBottomSheet(
-        modifier = Modifier
-            .wrapContentHeight(),
-        containerColor = Color.Transparent,
+        modifier = Modifier.wrapContentHeight(),
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         onDismissRequest = { onShowBottomSheetState(false) },
         sheetState = sheetState
     ) {
         LazyColumn(
             state = rememberLazyListState(),
             modifier = Modifier
-                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                .background(Color.Transparent.copy(alpha = 0.5f))
+                .clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp))
+                .background(SurfaceCard)
                 .fillMaxWidth()
                 .padding(bottom = 32.dp)
         ) {
             //Header
             item {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(
                         modifier = Modifier
-                            .padding(6.dp)
-                            .background(Color.LightGray)
-                            .height(2.dp)
-                            .width(26.dp)
+                            .padding(top = 10.dp, bottom = 6.dp)
+                            .background(color = SurfaceBorder, shape = RoundedCornerShape(999.dp))
+                            .height(4.dp)
+                            .width(38.dp)
                     )
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 6.dp)
-                            .padding(bottom = 4.dp),
+                            .padding(top = 10.dp, bottom = 4.dp),
                         text = stringResource(id = R.string.filter_title),
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        fontSize = 16.sp,
+                        style = MartianType.ScreenTitle,
+                        color = TextPrimary,
                         textAlign = TextAlign.Center
                     )
                 }
             }
 
-            //Date and camera or Rover
+            //Field(s)
             item {
                 Row(
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.Top,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 8.dp)
                 ) {
                     if (isFavourites) {
-                        //Rover
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 8.dp),
-                                text = stringResource(id = R.string.rover_name),
-                                color = Color.White.copy(alpha = 0.7f),
-                                fontSize = 12.sp,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Button(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                onClick = {
-                                    showRoverDialog = true
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-                            ) {
-                                Text(
-                                    text = currentRover ?: stringResource(id = R.string.filter_camera_dialog_all),
-                                    color = Color.Black,
-                                    fontSize = 12.sp,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
+                        FilterField(
+                            modifier = Modifier.fillMaxWidth(),
+                            label = stringResource(id = R.string.rover_name),
+                            value = currentRover ?: stringResource(id = R.string.filter_camera_dialog_all),
+                            onClick = { showRoverDialog = true }
+                        )
                     } else {
-                        //Date
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 8.dp),
-                                text = stringResource(id = R.string.filter_current_date),
-                                color = Color.White.copy(alpha = 0.7f),
-                                fontSize = 12.sp,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Button(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                onClick = {
-                                    showDatePicker = true
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-                            ) {
-                                Text(
-                                    text = currentOptions.displayDate,
-                                    color = Color.Black,
-                                    fontSize = 12.sp,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
-
-                        //Camera
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 8.dp),
-                                text = stringResource(id = R.string.camera_name),
-                                color = Color.White.copy(alpha = 0.7f),
-                                fontSize = 12.sp,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Button(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                onClick = {
-                                    showCameraDialog = true
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-                            ) {
-                                Text(
-                                    text = currentOptions.camera ?: stringResource(id = R.string.filter_camera_dialog_all),
-                                    color = Color.Black,
-                                    fontSize = 12.sp,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
+                        FilterField(
+                            modifier = Modifier.weight(1f),
+                            label = stringResource(id = R.string.filter_current_date),
+                            value = currentOptions.displayDate,
+                            onClick = { showDatePicker = true }
+                        )
+                        FilterField(
+                            modifier = Modifier.weight(1f),
+                            label = stringResource(id = R.string.camera_name),
+                            value = currentOptions.camera ?: stringResource(id = R.string.filter_camera_dialog_all),
+                            onClick = { showCameraDialog = true }
+                        )
                     }
                 }
             }
 
-            //Button submit
+            //Submit
             item {
                 Row(
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 20.dp)
                 ) {
-                    Button(
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        onClick = {
-                            if (isFavourites)
-                                onChooseRover(currentRover)
-                            else
-                                onNewOptions(currentOptions)
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Green.copy(alpha = 0.5f))
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = AccentMars, shape = RoundedCornerShape(14.dp))
+                            .clickable {
+                                if (isFavourites) onChooseRover(currentRover)
+                                else onNewOptions(currentOptions)
+                            }
+                            .padding(vertical = 15.dp)
                     ) {
                         Text(
                             text = stringResource(id = R.string.any_screen_confirm),
-                            color = Color.White,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center
+                            style = MartianType.Body,
+                            color = BgDeep
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun FilterField(
+    modifier: Modifier,
+    label: String,
+    value: String,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .background(color = SurfaceMuted, shape = RoundedCornerShape(12.dp))
+            .border(width = 1.dp, color = SurfaceBorder, shape = RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+    ) {
+        Text(text = label.uppercase(), style = MartianType.MonoLabel, color = TextTertiary)
+        Text(
+            modifier = Modifier.padding(top = 4.dp),
+            text = value,
+            style = MartianType.Body,
+            color = TextPrimary
+        )
     }
 }

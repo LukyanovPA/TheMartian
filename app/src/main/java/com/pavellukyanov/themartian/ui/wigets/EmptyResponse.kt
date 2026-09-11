@@ -6,19 +6,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.ui.theme.AccentMars
+import com.pavellukyanov.themartian.ui.theme.GolosFontFamily
+import com.pavellukyanov.themartian.ui.theme.TextPrimary
+import com.pavellukyanov.themartian.ui.theme.TextSecondary
 
 @Composable
 fun EmptyResponse(
@@ -35,9 +38,9 @@ fun EmptyResponse(
             Icon(
                 modifier = Modifier
                     .size(45.dp),
-                imageVector = Icons.Filled.Cancel,
+                imageVector = Icons.Outlined.SearchOff,
                 contentDescription = stringResource(id = R.string.empty_state_icon_description),
-                tint = Color.Red.copy(alpha = 0.6f)
+                tint = AccentMars
             )
             Text(
                 modifier = Modifier
@@ -45,9 +48,10 @@ fun EmptyResponse(
                     .padding(top = 16.dp),
                 textAlign = TextAlign.Center,
                 text = if (isFavourites) stringResource(id = R.string.empty_response_title_favourites) else stringResource(id = R.string.empty_response_title),
-                color = Color.White,
+                color = TextPrimary,
                 fontWeight = FontWeight.Normal,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                fontFamily = GolosFontFamily
             )
             if (!isFavourites) {
                 Text(
@@ -56,9 +60,10 @@ fun EmptyResponse(
                         .padding(top = 8.dp),
                     textAlign = TextAlign.Center,
                     text = stringResource(id = R.string.empty_response_body),
-                    color = Color.White,
+                    color = TextSecondary,
                     fontWeight = FontWeight.Normal,
-                    fontSize = 12.sp
+                    fontSize = 12.sp,
+                    fontFamily = GolosFontFamily
                 )
             }
         }

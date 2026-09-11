@@ -14,6 +14,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.ui.theme.GolosFontFamily
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -50,14 +51,14 @@ fun DateDialog(
                     }
                 }
             ) {
-                Text(text = stringResource(id = R.string.any_screen_confirm))
+                Text(text = stringResource(id = R.string.any_screen_confirm), fontFamily = GolosFontFamily)
             }
         },
         dismissButton = {
             TextButton(onClick = {
                 onShowDatePicker(false)
             }) {
-                Text(text = stringResource(id = R.string.any_screen_chancel))
+                Text(text = stringResource(id = R.string.any_screen_chancel), fontFamily = GolosFontFamily)
             }
         }
     ) {

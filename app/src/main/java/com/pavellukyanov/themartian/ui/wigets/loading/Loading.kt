@@ -29,17 +29,19 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.ui.theme.AccentMars
+import com.pavellukyanov.themartian.ui.theme.GolosFontFamily
+import com.pavellukyanov.themartian.ui.theme.TextSecondary
 import kotlinx.coroutines.delay
 
 @Composable
 fun Loading(
     modifier: Modifier,
-    circleColor: Color = Color.Red,
+    circleColor: Color = AccentMars,
     circleSize: Dp = 18.dp,
     animationDelay: Int = 400,
     initialAlpha: Float = 0.3f
 ) {
-    // 3 circles
     val circles = listOf(
         remember {
             Animatable(initialValue = initialAlpha)
@@ -53,12 +55,8 @@ fun Loading(
     )
 
     circles.forEachIndexed { index, animatable ->
-
         LaunchedEffect(Unit) {
-
-            // Use coroutine delay to sync animations
             delay(timeMillis = (animationDelay / circles.size).toLong() * index)
-
             animatable.animateTo(
                 targetValue = 1f,
                 animationSpec = infiniteRepeatable(
@@ -71,7 +69,6 @@ fun Loading(
         }
     }
 
-
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -79,21 +76,13 @@ fun Loading(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            // container for circles
             Row(
                 modifier = Modifier
-                //.border(width = 2.dp, color = Color.Magenta)
             ) {
-
-                // adding each circle
                 circles.forEachIndexed { index, animatable ->
-
-                    // gap between the circles
                     if (index != 0) {
                         Spacer(modifier = Modifier.width(width = 6.dp))
                     }
-
                     Box(
                         modifier = Modifier
                             .size(size = circleSize)
@@ -112,9 +101,10 @@ fun Loading(
                     .fillMaxWidth(),
                 text = stringResource(R.string.loading_title),
                 fontWeight = FontWeight.Normal,
-                color = Color.LightGray,
+                color = TextSecondary,
                 fontSize = 16.sp,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                fontFamily = GolosFontFamily
             )
         }
     }

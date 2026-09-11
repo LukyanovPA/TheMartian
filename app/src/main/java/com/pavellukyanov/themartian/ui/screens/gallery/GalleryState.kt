@@ -14,6 +14,7 @@ data class GalleryState(
     val cameras: List<Camera> = listOf(),
     val canPaginate: Boolean = false,
     val photos: List<Photo> = listOf(),
+    val totalCount: Int? = null,
     val isLatest: Boolean = false,
     val page: Int = 1,
     val rovers: List<String>? = null,

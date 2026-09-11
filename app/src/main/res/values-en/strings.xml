@@ -43,4 +43,19 @@
     <string name="photo_download_dialog">Are you sure you want to download the photo</string>
     <string name="disabled_rover_data">К сожалению данные с этого ровера больше недоступны :(</string>
     <string name="delete_cache_dialog">Are you sure you want to delete the cache?</string>
+    <string name="nav_rovers">Rovers</string>
+    <string name="home_section_rovers">Rovers</string>
+    <string name="home_stat_launch">Launch</string>
+    <string name="home_stat_landing">Landing</string>
+    <string name="home_stat_last_photo">Last photo</string>
+    <string name="home_stat_total_photos">Total photos</string>
+    <string name="home_hero_kicker">Latest frame</string>
+    <string name="gallery_photos_count">%d photos</string>
+    <string name="filter_button_description">Open filter</string>
+    <string name="photo_meta_lighting">Lighting</string>
+    <string name="photo_meta_panorama">Panorama part</string>
+    <string name="photo_meta_stereo">Stereo pair</string>
+    <string name="photo_credit">NASA / JPL-Caltech</string>
+    <string name="button_previous_photo">Previous photo</string>
+    <string name="button_next_photo">Next photo</string>
 </resources>

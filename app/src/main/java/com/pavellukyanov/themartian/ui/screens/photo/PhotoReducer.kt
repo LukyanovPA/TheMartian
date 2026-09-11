@@ -7,18 +7,21 @@ import com.pavellukyanov.themartian.domain.usecase.ChangeFavourites
 import com.pavellukyanov.themartian.domain.usecase.GetPhotoById
 import com.pavellukyanov.themartian.domain.usecase.GetPhotoFromApi
 import com.pavellukyanov.themartian.ui.base.Reducer
+import com.pavellukyanov.themartian.utils.GalleryBrowseSession
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
 class PhotoReducer(
     private val getPhotoById: GetPhotoById,
     private val changeFavourites: ChangeFavourites,
-    private val getPhotoFromApi: GetPhotoFromApi
+    private val getPhotoFromApi: GetPhotoFromApi,
+    private val browseSession: GalleryBrowseSession
 ) : Reducer<PhotoState, PhotoAction, PhotoEffect>(PhotoState()) {
 
     override suspend fun reduce(oldState: PhotoState, action: PhotoAction) {
         when (action) {
             is PhotoAction.LoadPhoto -> {
+                execute(_state.value.copy(browseContext = browseSession.contextFor(photoId = action.photoId)))
                 onRefreshFromApi(photoId = action.photoId)
                 onSubscribeStorage(photoId = action.photoId)
             }
@@ -26,6 +29,8 @@ class PhotoReducer(
             is PhotoAction.DownloadPhoto -> onDownloadPhoto(photo = action.photo)
             is PhotoAction.ChangeFavourites -> action.photo?.let { onChangeFavourites(isAdd = !oldState.isFavourites, photo = it) }
             is PhotoAction.OnImageError -> onError(error = action.error)
+            is PhotoAction.OnPreviousClick -> oldState.browseContext?.previousId?.let { sendEffect(PhotoEffect.NavigateToPhoto(photoId = it)) }
+            is PhotoAction.OnNextClick -> oldState.browseContext?.nextId?.let { sendEffect(PhotoEffect.NavigateToPhoto(photoId = it)) }
         }
     }
 
