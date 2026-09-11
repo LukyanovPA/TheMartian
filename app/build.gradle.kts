@@ -1,4 +1,3 @@
-import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
@@ -13,14 +12,14 @@ plugins {
 
 android {
     namespace = "com.pavellukyanov.themartian"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
-        targetSdk = 36
-        versionCode = 11500
-        versionName = "1.1.5"
+        targetSdk = 37
+        versionCode = 20000
+        versionName = "2.0"
 
         extensions.getByType(BasePluginExtension::class.java).archivesName.set("${rootProject.name}-$versionName-($versionCode)")
 
@@ -29,9 +28,18 @@ android {
         }
 
         val localProperties = Properties()
-        localProperties.load(FileInputStream(rootProject.file("local.properties")))
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use(localProperties::load)
+        }
 
-        buildConfigField("String", "API_KEY", localProperties["apiKey"].toString())
+        // The value may be written with or without surrounding quotes in local.properties.
+        val apiKey = localProperties.getProperty("apiKey").orEmpty().trim().trim('"')
+        require(apiKey.isNotEmpty()) {
+            "Missing 'apiKey' in local.properties. Add the MarsVista API key as: apiKey=<key>"
+        }
+
+        buildConfigField("String", "API_KEY", "\"$apiKey\"")
     }
 
     buildTypes {

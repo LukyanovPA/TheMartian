@@ -14,10 +14,6 @@ val ComponentActivity.log get() = Timber.tag(this::class.java.simpleName)
 val Reducer<*, *, *>.log get() = Timber.tag(this::class.java.simpleName)
 val CoroutineWorker.log get() = Timber.tag(this::class.java.simpleName)
 
-fun debug(message: () -> String) {
-    Timber.v("SMOTRIM -> ${message()}")
-}
-
 val CoroutineContext.dispatcher get() = splitContext(this)
 
 private fun splitContext(coroutineContext: CoroutineContext): String {

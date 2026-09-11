@@ -72,14 +72,9 @@ fun GalleryScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     val gridState = rememberLazyStaggeredGridState()
 
-    // Initial load
+    // Initial load (cameras included)
     LaunchedEffect(roverName, isLocal) {
         reducer.dispatch(GalleryAction.InitGallery(roverName = roverName, isLocal = isLocal))
-    }
-
-    // Load cameras once
-    LaunchedEffect(roverName) {
-        if (!isLocal) reducer.dispatch(GalleryAction.LoadCameras)
     }
 
     // Effects
@@ -93,16 +88,13 @@ fun GalleryScreen(
     }
 
     // Scroll-based pagination — emits on every item count change (new page loaded)
-    val stateHolder = reducer.asState()
     LaunchedEffect(gridState) {
         snapshotFlow { gridState.layoutInfo.totalItemsCount }
-            .collect { totalItems ->
+            .collect {
                 val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@collect
-                if (totalItems > 0 && lastVisible >= totalItems - 3) {
-                    val st = stateHolder.value
-                    if (st is GalleryState && st.canPaginate && !st.isLoading) {
-                        reducer.dispatch(GalleryAction.LoadPage(st.page))
-                    }
+                val currentState = state as? GalleryState ?: return@collect
+                if (it > 0 && lastVisible >= it - 3 && currentState.canPaginate && !currentState.isLoading) {
+                    reducer.dispatch(GalleryAction.LoadPage(currentState.page))
                 }
             }
     }

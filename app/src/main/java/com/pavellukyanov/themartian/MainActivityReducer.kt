@@ -20,6 +20,7 @@ import com.pavellukyanov.themartian.utils.helpers.ImageLoaderHelper
 import com.pavellukyanov.themartian.utils.helpers.SharedPreferencesHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import java.io.File
 
 class MainActivityReducer(
@@ -38,8 +39,7 @@ class MainActivityReducer(
     override suspend fun reduce(oldState: MainState, action: MainAction) {
         when (action) {
             is MainAction.OnStart -> {
-                handleError()
-                onHandleCacheState()
+                handleInitialization()
                 sendEffect(MainEffect.UpdateRoverInfoCache)
             }
 
@@ -52,18 +52,21 @@ class MainActivityReducer(
         }
     }
 
-    private fun handleError() = cpu {
-        errorQueue.onError.collect { state ->
-            when (state) {
-                is UiError.Error -> sendEffect(MainEffect.ShowError(errorMessage = state.error.message.orEmpty()))
-                is UiError.NoError -> sendEffect(MainEffect.CloseErrorDialog)
-            }
-            execute(_state.value.copy(settingButtonVisibility = state is UiError.NoError))
-        }
-    }
-
-    private fun onHandleCacheState() = cpu {
+    private fun handleInitialization() = cpu {
         isEmptyRoverCache()
+            .combine(errorQueue.onError) { isEmpty, error ->
+                if (error is UiError.Error) {
+                    sendEffect(MainEffect.ShowError(errorMessage = error.error.message.orEmpty()))
+                }
+
+                val noError = error is UiError.NoError
+                execute(_state.value.copy(settingButtonVisibility = noError))
+
+                // If there is an error, we are no longer loading because the outcome of
+                // the sync is known. If there is no error, we are loading as long as
+                // the cache stays empty.
+                isEmpty && noError
+            }
             .collect(_isLoading)
     }
 

@@ -8,6 +8,13 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
+/**
+ * Turns statuses and I/O errors into [ApiException] so the rest of the app deals with one
+ * exception family.
+ *
+ * Every branch here has to leave through [ApiException] — see the note on that class. An
+ * interceptor that throws anything else kills the process on the OkHttp dispatcher thread.
+ */
 class HttpInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response =
         try {
@@ -23,17 +30,27 @@ class HttpInterceptor : Interceptor {
         }
 
     private fun safeHandleResponse(chain: Interceptor.Chain): Response {
-        val initialResponse = chain.proceed(chain.request())
+        val response = chain.proceed(chain.request())
 
-        return when (initialResponse.code) {
-            in HttpResponseCode.OK.errorCode -> initialResponse
-            in HttpResponseCode.NOT_MODIFIED.errorCode -> initialResponse
-            in HttpResponseCode.NOT_FOUND.errorCode -> throw ApiException.ClientException("Resource not found")
-            in HttpResponseCode.VALIDATION_ERROR.errorCode -> throw ApiException.ClientException("Validation error")
-            in HttpResponseCode.SERVER_ERROR.errorCode -> throw ApiException.ServerException(message = initialResponse.message)
-            in HttpResponseCode.MANY_REQUESTS.errorCode -> throw ApiException.ServerException(message = initialResponse.message)
-            in HttpResponseCode.BAD_REQUEST.errorCode -> throw ApiException.ClientException(message = initialResponse.message)
-            else -> throw IllegalStateException("Unexpected response with code: ${initialResponse.code}")
+        if (response.code in HttpResponseCode.OK.errorCode ||
+            response.code in HttpResponseCode.NOT_MODIFIED.errorCode
+        ) return response
+
+        // Every branch below leaves by throwing, so nobody will ever read this body. Closing
+        // it first hands the connection back to the pool instead of stranding it.
+        val code = response.code
+        val message = response.message
+        response.close()
+
+        throw when (code) {
+            in HttpResponseCode.NOT_FOUND.errorCode -> ApiException.ClientException("Resource not found")
+            in HttpResponseCode.VALIDATION_ERROR.errorCode -> ApiException.ClientException("Validation error")
+            in HttpResponseCode.SERVER_ERROR.errorCode -> ApiException.ServerException(message = message)
+            in HttpResponseCode.MANY_REQUESTS.errorCode -> ApiException.ServerException(message = message)
+            in HttpResponseCode.BAD_REQUEST.errorCode -> ApiException.ClientException(message = message)
+            // Any other status — a redirect, 401, 403, 405, an unknown 5xx. Reporting it as an
+            // ordinary API error keeps it from becoming a process-killing throwable.
+            else -> ApiException.UndefinedException(message = "Unexpected response with code: $code")
         }
     }
 }

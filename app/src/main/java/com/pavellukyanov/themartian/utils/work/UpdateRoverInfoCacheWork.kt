@@ -12,6 +12,7 @@ import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.common.NetworkStateException
 import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
 import com.pavellukyanov.themartian.utils.ErrorQueue
+import com.pavellukyanov.themartian.utils.ext.ApiException
 import com.pavellukyanov.themartian.utils.ext.log
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -28,8 +29,25 @@ class UpdateRoverInfoCacheWork(appContext: Context, workerParams: WorkerParamete
             Result.success()
         } catch (e: Throwable) {
             log.e(e)
-            if (e is NetworkStateException) errorQueue.add(e)
+            // This work is what fills the rover cache, and the splash screen stays up until
+            // the outcome is known — so every failure has to be reported, not only
+            // NetworkStateException. Reporting just that one meant a dropped connection left
+            // the user on an endless splash with nothing to explain it.
+            errorQueue.add(e.asReportableError())
             Result.failure()
+        }
+
+    /**
+     * A transport problem is worth the plain "no internet" wording; anything else keeps its
+     * own message so it can be told apart from a connectivity issue.
+     */
+    private fun Throwable.asReportableError(): Throwable =
+        when (this) {
+            is NetworkStateException -> this
+            is ApiException.ConnectionException -> NetworkStateException(
+                message = applicationContext.getString(R.string.bad_internet_connection_error_message)
+            )
+            else -> this
         }
 
     override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(Random.nextInt(), getNotification())

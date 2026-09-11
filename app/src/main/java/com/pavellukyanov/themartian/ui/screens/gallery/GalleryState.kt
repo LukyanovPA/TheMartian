@@ -22,7 +22,6 @@ data class GalleryState(
 
 sealed class GalleryAction : Action() {
     data class InitGallery(val roverName: String, val isLocal: Boolean) : GalleryAction()
-    data object LoadCameras : GalleryAction()
     data class LoadPage(val page: Int) : GalleryAction()
     data object OnBackClick : GalleryAction()
     data class OnPhotoClick(val photoDto: Photo) : GalleryAction()

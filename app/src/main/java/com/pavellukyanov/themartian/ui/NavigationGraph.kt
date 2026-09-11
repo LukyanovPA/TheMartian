@@ -9,17 +9,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.pavellukyanov.themartian.ui.screens.gallery.GalleryScreen
 import com.pavellukyanov.themartian.ui.screens.home.HomeScreen
-import com.pavellukyanov.themartian.ui.screens.location.LocationScreen
-import com.pavellukyanov.themartian.ui.screens.panorama.PanoramaScreen
 import com.pavellukyanov.themartian.ui.screens.photo.PhotoScreen
-import com.pavellukyanov.themartian.ui.screens.rover.RoverScreen
 import com.pavellukyanov.themartian.ui.screens.splash.SplashScreen
 import com.pavellukyanov.themartian.utils.C.EMPTY_STRING
 import com.pavellukyanov.themartian.utils.C.INT_MINUS_ONE
 import com.pavellukyanov.themartian.utils.C.IS_LOCAL_ARG
 import com.pavellukyanov.themartian.utils.C.PHOTO_ARG
 import com.pavellukyanov.themartian.utils.C.ROVER_NAME_ARG
-import com.pavellukyanov.themartian.utils.C.ROVER_SLUG_ARG
 
 @Composable
 fun NavigationGraph(
@@ -65,23 +61,6 @@ fun NavigationGraph(
         ) { backStackEntry ->
             val photoId = backStackEntry.arguments?.getInt(PHOTO_ARG, INT_MINUS_ONE) ?: INT_MINUS_ONE
             PhotoScreen(photoId = photoId, modifier = modifier, navController = navController)
-        }
-        composable(
-            route = "ui/screens/rover/{$ROVER_SLUG_ARG}/{$ROVER_NAME_ARG}",
-            arguments = listOf(
-                navArgument(name = ROVER_SLUG_ARG) { type = NavType.StringType },
-                navArgument(name = ROVER_NAME_ARG) { type = NavType.StringType }
-            )
-        ) { entry ->
-            val slug = entry.arguments?.getString(ROVER_SLUG_ARG).orEmpty()
-            val name = entry.arguments?.getString(ROVER_NAME_ARG).orEmpty()
-            RoverScreen(slug = slug, name = name, modifier = modifier, onBackClick = { navController.popBackStack() })
-        }
-        composable(route = "ui/screens/panoramas") {
-            PanoramaScreen(modifier = modifier)
-        }
-        composable(route = "ui/screens/locations") {
-            LocationScreen(modifier = modifier)
         }
     }
 }

@@ -122,24 +122,7 @@ class ResourceAttributesDto(
     @SerializedName("photo_count") val photoCount: Int? = null
 )
 
-// ============== Rover Manifest ==============
-
-class RoverManifestDto(
-    @SerializedName("data") val data: RoverDataDto
-) {
-    val roverItem: RoverItemDto
-        get() = RoverItemDto(
-            id = 0,
-            name = data.attributes.name ?: "",
-            landingDate = data.attributes.landingDate ?: "",
-            launchDate = data.attributes.launchDate ?: "",
-            status = data.attributes.status ?: "",
-            maxSol = data.attributes.maxSol ?: 0,
-            maxDate = data.attributes.maxDate ?: "",
-            totalPhotos = data.attributes.totalPhotos ?: 0,
-            cameras = data.relationships?.cameras?.map { it.attributes } ?: emptyList()
-        )
-}
+// ============== Rover ==============
 
 class RoverDataDto(
     @SerializedName("id") val id: String? = null,
@@ -147,8 +130,6 @@ class RoverDataDto(
     @SerializedName("attributes") val attributes: RoverAttributesDto,
     @SerializedName("relationships") val relationships: RoverRelationshipsDto? = null
 )
-
-// ============== Rover ==============
 
 class RoverAttributesDto(
     @SerializedName("name") val name: String? = null,
@@ -169,7 +150,12 @@ class RoverRelationshipsDto(
 class CameraResourceDto(
     @SerializedName("id") val id: String? = null,
     @SerializedName("type") val type: String? = null,
-    @SerializedName("attributes") val attributes: CameraItemDto
+    @SerializedName("attributes") val attributes: CameraItemDto,
+    @SerializedName("relationships") val relationships: CameraRelationshipsDto? = null
+)
+
+class CameraRelationshipsDto(
+    @SerializedName("rover") val rover: ResourceReferenceDto? = null
 )
 
 data class CameraItemDto(

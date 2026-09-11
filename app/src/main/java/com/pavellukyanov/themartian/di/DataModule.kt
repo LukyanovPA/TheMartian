@@ -37,7 +37,7 @@ val dataModule = module {
         )
             .allowMainThreadQueries()
             .addMigrations(MIGRATION_2_3)
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
     }
 
