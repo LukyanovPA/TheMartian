@@ -19,3 +19,6 @@
 .cxx
 local.properties
 .claude
+
+app/debug/
+app/release/

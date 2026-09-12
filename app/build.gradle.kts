@@ -33,13 +33,30 @@ android {
             localPropertiesFile.inputStream().use(localProperties::load)
         }
 
-        // The value may be written with or without surrounding quotes in local.properties.
         val apiKey = localProperties.getProperty("apiKey").orEmpty().trim().trim('"')
         require(apiKey.isNotEmpty()) {
             "Missing 'apiKey' in local.properties. Add the MarsVista API key as: apiKey=<key>"
         }
 
         buildConfigField("String", "API_KEY", "\"$apiKey\"")
+
+        val relayBaseUrl = localProperties.getProperty("relayBaseUrl").orEmpty().trim().trim('"')
+        require(relayBaseUrl.isNotEmpty()) {
+            "Missing 'relayBaseUrl' in local.properties. Add the relay endpoint as: " +
+                "relayBaseUrl=https://<host>/api/v2/"
+        }
+
+        require(relayBaseUrl.endsWith("/")) {
+            "relayBaseUrl must end with '/': relayBaseUrl=https://<host>/api/v2/"
+        }
+
+        val relayToken = localProperties.getProperty("relayToken").orEmpty().trim().trim('"')
+        require(relayToken.isNotEmpty()) {
+            "Missing 'relayToken' in local.properties. Add the relay gate token as: relayToken=<token>"
+        }
+
+        buildConfigField("String", "BASE_URL", "\"$relayBaseUrl\"")
+        buildConfigField("String", "RELAY_TOKEN", "\"$relayToken\"")
     }
 
     buildTypes {

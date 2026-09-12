@@ -24,7 +24,6 @@
     <string name="launch_date">Дата запуска:</string>
     <string name="last_photo_date">Последние фото:</string>
     <string name="total_photo">Всего фото:</string>
-    <string name="disabled_rover_data">К сожалению данные с этого ровера больше недоступны :(</string>
 
     //Photo Info
     <string name="sol">Сол</string>
@@ -59,10 +58,8 @@
     <string name="cache_change_description">Установите размер кэша</string>
     <string name="delete_cache_dialog">Вы действительно хотите удалить кэш?</string>
 
-    //Redesign: Navigation
     <string name="nav_rovers">Роверы</string>
 
-    //Redesign: Home
     <string name="home_section_rovers">Аппараты</string>
     <string name="home_stat_launch">Запуск</string>
     <string name="home_stat_landing">Посадка</string>
@@ -70,11 +67,9 @@
     <string name="home_stat_total_photos">Всего фото</string>
     <string name="home_hero_kicker">Последний кадр</string>
 
-    //Redesign: Gallery
     <string name="gallery_photos_count">%d кадров</string>
     <string name="filter_button_description">Открыть фильтр</string>
 
-    //Redesign: Photo meta
     <string name="photo_meta_lighting">Освещение</string>
     <string name="photo_meta_panorama">Часть панорамы</string>
     <string name="photo_meta_stereo">Стерео пара</string>

@@ -64,7 +64,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-/** The image can be zoomed in for detail but never past a point where it loses the frame entirely. */
 private const val MIN_SCALE = 1f
 private const val MAX_SCALE = 4f
 
@@ -86,9 +85,6 @@ fun PhotoScreen(
                 is PhotoEffect.OnDownload -> launch(Dispatchers.IO) {
                     (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(effect.request)
                 }
-                // Pop the current photo before pushing the next one, so paging ←/→ never grows
-                // the back stack — back always lands on the gallery, no matter how many photos
-                // were paged through, the same way it would if only one had ever been opened.
                 is PhotoEffect.NavigateToPhoto -> {
                     navController.popBackStack()
                     navController.navigate("ui/screens/photo/${effect.photoId}")
@@ -132,7 +128,6 @@ private fun PhotoScreenContent(
     var offset by remember { mutableStateOf(Offset.Zero) }
     val transformState = rememberTransformableState { zoomChange, offsetChange, _ ->
         val newScale = (scale * zoomChange).coerceIn(MIN_SCALE, MAX_SCALE)
-        // Panning is only meaningful once zoomed in; at rest the image stays centered.
         offset = if (newScale > MIN_SCALE) offset + offsetChange else Offset.Zero
         scale = newScale
     }
@@ -227,7 +222,6 @@ private fun PhotoScreenContent(
             }
         }
 
-        //Prev/next — only rendered when the browse session actually has a neighbour.
         if (browseContext?.previousId != null) {
             RoundIconButton(
                 modifier = Modifier.constrainAs(prevButton) {
@@ -261,7 +255,6 @@ private fun PhotoScreenContent(
             }
         }
 
-        //Info panel
         PhotoInfoPanel(
             modifier = Modifier.constrainAs(info) {
                 bottom.linkTo(parent.bottom)
@@ -342,7 +335,6 @@ private fun PhotoInfoPanel(
                 InfoCell(modifier = Modifier.weight(1f), label = stringResource(id = R.string.camera_name), value = photo?.cameraName.orEmpty())
             }
 
-            // These only render when the API actually reported them — no field here is invented.
             val badges = buildList {
                 photo?.lightingConditions?.takeIf { it.isNotBlank() }?.let { add(stringResource(id = R.string.photo_meta_lighting) to it) }
                 if (photo?.isPanoramaPart == true) add(stringResource(id = R.string.photo_meta_panorama) to null)

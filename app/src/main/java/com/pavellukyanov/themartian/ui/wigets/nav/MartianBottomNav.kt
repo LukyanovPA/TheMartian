@@ -30,15 +30,8 @@ import com.pavellukyanov.themartian.ui.theme.MartianType
 import com.pavellukyanov.themartian.ui.theme.SurfaceBorder
 import com.pavellukyanov.themartian.ui.theme.TextTertiary
 
-/** The app's only two top-level destinations. Drill-down screens (a rover's gallery, a single photo) use a back arrow instead. */
 enum class BottomNavTab { ROVERS, FAVOURITES }
 
-/**
- * Persistent bottom bar shown on the two top-level screens only (rover roster, favourites).
- * Per-rover gallery and the photo viewer are drill-down destinations reached from Home and are
- * navigated with a back arrow instead — a third "frames" tab has no destination of its own
- * without a rover already chosen, so it is intentionally not part of this bar.
- */
 @Composable
 fun MartianBottomNav(
     selected: BottomNavTab,

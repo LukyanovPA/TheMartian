@@ -41,7 +41,6 @@
     <string name="favourites_title">Favourites</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="photo_download_dialog">Are you sure you want to download the photo</string>
-    <string name="disabled_rover_data">К сожалению данные с этого ровера больше недоступны :(</string>
     <string name="delete_cache_dialog">Are you sure you want to delete the cache?</string>
     <string name="nav_rovers">Rovers</string>
     <string name="home_section_rovers">Rovers</string>

@@ -7,7 +7,9 @@ import androidx.work.WorkManager
 import coil3.ImageLoader
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.util.DebugLogger
+import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
 import com.pavellukyanov.themartian.di.commonModule
 import com.pavellukyanov.themartian.di.dataModule
@@ -22,19 +24,23 @@ import com.pavellukyanov.themartian.utils.C.DEFAULT_CACHE_SIZE
 import com.pavellukyanov.themartian.utils.work.DebugCheckFirstStartWork
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.koin.core.context.startKoin
 import timber.log.Timber
 
 private const val IMAGE_CACHE = "image_cache"
 
-class MartianApp : Application() {
+class MartianApp : Application(), KoinComponent {
     lateinit var imageLoader: ImageLoader
         private set
 
+    private val httpClient: OkHttpClient by inject()
+
     override fun onCreate() {
         super.onCreate()
-        imageLoader = createImageLoader()
         initDi()
+        imageLoader = createImageLoader()
         if (BuildConfig.DEBUG) initLogger(); debugCheckFirstStart()
     }
 
@@ -56,6 +62,9 @@ class MartianApp : Application() {
                             .build()
                     }
                 }
+            }
+            .components {
+                add(OkHttpNetworkFetcherFactory(callFactory = { httpClient }))
             }
             .logger(DebugLogger())
             .build()

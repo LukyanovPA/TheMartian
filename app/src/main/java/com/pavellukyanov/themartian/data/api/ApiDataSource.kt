@@ -15,7 +15,6 @@ class ApiDataSource(
     private val roverService: RoverService,
     private val networkMonitor: NetworkMonitor
 ) {
-    // ============== Photos ==============
 
     data class PhotoPageResult(
         val photos: List<Photo>,
@@ -73,13 +72,9 @@ class ApiDataSource(
         }
     }
 
-    // ============== Rovers ==============
-
     suspend fun getRoversInfo(): List<RoverItemDto> = onIo {
         networkMonitor {
             val rovers = roverService.getRovers().toData().data
-            // `/rovers` does not embed cameras, so they are fetched in a single call
-            // and joined to their rover by slug.
             val camerasByRover = roverService.getAllCameras().toData().data
                 .groupBy { it.relationships?.rover?.id.orEmpty() }
                 .mapValues { (_, cameras) -> cameras.map(CameraResourceDto::attributes) }

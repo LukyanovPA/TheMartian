@@ -29,18 +29,10 @@ class UpdateRoverInfoCacheWork(appContext: Context, workerParams: WorkerParamete
             Result.success()
         } catch (e: Throwable) {
             log.e(e)
-            // This work is what fills the rover cache, and the splash screen stays up until
-            // the outcome is known — so every failure has to be reported, not only
-            // NetworkStateException. Reporting just that one meant a dropped connection left
-            // the user on an endless splash with nothing to explain it.
             errorQueue.add(e.asReportableError())
             Result.failure()
         }
 
-    /**
-     * A transport problem is worth the plain "no internet" wording; anything else keeps its
-     * own message so it can be told apart from a connectivity issue.
-     */
     private fun Throwable.asReportableError(): Throwable =
         when (this) {
             is NetworkStateException -> this

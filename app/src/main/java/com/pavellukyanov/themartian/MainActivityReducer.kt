@@ -62,9 +62,6 @@ class MainActivityReducer(
                 val noError = error is UiError.NoError
                 execute(_state.value.copy(settingButtonVisibility = noError))
 
-                // If there is an error, we are no longer loading because the outcome of
-                // the sync is known. If there is no error, we are loading as long as
-                // the cache stays empty.
                 isEmpty && noError
             }
             .collect(_isLoading)

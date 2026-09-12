@@ -20,10 +20,6 @@ class UpdateRoverInfoCache(
         insertMissingCameras(rovers)
     }
 
-    /**
-     * A camera is identified by the pair (rover, camera name), so only the ones
-     * that are not cached yet are inserted.
-     */
     private suspend fun insertMissingCameras(rovers: List<RoverItemDto>) = onIo {
         val cached = camerasDao.all().map { it.roverName to it.name }.toSet()
 
