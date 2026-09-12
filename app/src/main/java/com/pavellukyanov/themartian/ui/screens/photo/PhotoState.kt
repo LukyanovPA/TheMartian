@@ -11,8 +11,6 @@ data class PhotoState(
     override val isLoading: Boolean = false,
     val photo: Photo? = null,
     val isFavourites: Boolean = false,
-    // Position within the gallery this photo was opened from — null when there is none to know
-    // (a deep link, or the browse session was never populated). See GalleryBrowseSession.
     val browseContext: BrowseContext? = null
 ) : State()
 

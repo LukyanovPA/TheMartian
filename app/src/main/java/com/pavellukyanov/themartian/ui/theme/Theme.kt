@@ -4,11 +4,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 
-/**
- * The "Field Journal" scheme — the only palette the app ships. There is no light theme or
- * system dynamic-color toggle anywhere in the UI, so rather than keep a dead branch this maps
- * every Material3 role directly onto the redesign's tokens.
- */
 private val MartianColorScheme = darkColorScheme(
     primary = AccentMars,
     onPrimary = BgDeep,

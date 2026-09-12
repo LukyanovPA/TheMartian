@@ -5,8 +5,6 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import com.pavellukyanov.themartian.utils.DateFormatter
 
-// ============== Photo DTO ==============
-
 data class PhotoDto(
     @SerializedName("id") val id: Int,
     @SerializedName("type") val type: String? = null,
@@ -102,8 +100,6 @@ data class PhotoMetaDto(
     @SerializedName("location_visits") val locationVisits: Int? = null
 )
 
-// ============== Relationships ==============
-
 class PhotoRelationshipsDto(
     @SerializedName("rover") val rover: ResourceReferenceDto?,
     @SerializedName("camera") val camera: ResourceReferenceDto?
@@ -121,8 +117,6 @@ class ResourceAttributesDto(
     @SerializedName("status") val status: String? = null,
     @SerializedName("photo_count") val photoCount: Int? = null
 )
-
-// ============== Rover ==============
 
 class RoverDataDto(
     @SerializedName("id") val id: String? = null,
@@ -145,8 +139,6 @@ class RoverRelationshipsDto(
     @SerializedName("cameras") val cameras: List<CameraResourceDto>? = null
 )
 
-// ============== Camera ==============
-
 class CameraResourceDto(
     @SerializedName("id") val id: String? = null,
     @SerializedName("type") val type: String? = null,
@@ -166,8 +158,6 @@ data class CameraItemDto(
     @SerializedName("last_photo_sol") val lastPhotoSol: Int? = null
 )
 
-// ============== RoverItem (used domain-side) ==============
-
 data class RoverItemDto(
     @SerializedName("id") val id: Int = 0,
     @SerializedName("name") val name: String = "",
@@ -180,16 +170,12 @@ data class RoverItemDto(
     @SerializedName("cameras") val cameras: List<CameraItemDto> = emptyList()
 )
 
-// ============== RoverName ==============
-
 enum class RoverName(val roverName: String) {
     @SerializedName("roverName") PERSEVERANCE("Perseverance"),
     @SerializedName("roverName") CURIOSITY("Curiosity"),
     @SerializedName("roverName") OPPORTUNITY("Opportunity"),
     @SerializedName("roverName") SPIRIT("Spirit")
 }
-
-// ============== Flattened helpers ==============
 
 data class CameraDto(
     @SerializedName("id") val id: Int,
@@ -205,8 +191,6 @@ data class RoverDto(
     @SerializedName("launch_date") val launchDate: String,
     @SerializedName("status") val status: String
 )
-
-// ============== Room entity ==============
 
 @Entity(tableName = "photo")
 data class Photo(
@@ -232,8 +216,6 @@ data class Photo(
     val lightingConditions: String? = null,
     val locationVisits: Int? = null
 )
-
-// ============== Mapping ==============
 
 fun PhotoDto.map(): Photo =
     Photo(

@@ -56,7 +56,6 @@ import com.pavellukyanov.themartian.ui.theme.SurfaceMuted
 import com.pavellukyanov.themartian.ui.theme.TextPrimary
 import com.pavellukyanov.themartian.ui.theme.TextSecondary
 import com.pavellukyanov.themartian.ui.theme.TextTertiary
-import com.pavellukyanov.themartian.ui.wigets.dialog.DisabledRoverDialog
 import com.pavellukyanov.themartian.ui.wigets.img.Picture
 import com.pavellukyanov.themartian.ui.wigets.nav.BottomNavTab
 import com.pavellukyanov.themartian.ui.wigets.nav.MartianBottomNav
@@ -73,19 +72,15 @@ fun HomeScreen(
     reducer: HomeReducer = koinViewModel()
 ) {
     val state by reducer.asState()
-    var showRoverDataDisabledDialog by remember { mutableStateOf(false) }
 
     Launch {
         reducer.dispatch(HomeAction.LoadRovers)
         reducer.subscribeEffect { effect ->
             when (effect) {
                 is HomeEffect.NavigateToRoverGallery -> navController.navigate("ui/screens/gallery/${effect.roverName}/${false}")
-                is HomeEffect.ShowDisabledRoverDialog -> showRoverDataDisabledDialog = true
             }
         }
     }
-
-    if (showRoverDataDisabledDialog) DisabledRoverDialog { showRoverDataDisabledDialog = false }
 
     state.receive<HomeState>(
         modifier = modifier,
@@ -110,9 +105,6 @@ private fun HomeScreenContent(
     var privacyPolicyState by remember { mutableStateOf(false) }
     val favouritesRoute = "ui/screens/gallery/${stringResource(id = R.string.favourites_title)}/${true}"
 
-    // The hero reuses the same best-effort thumbnails the cards below already fetch — no
-    // dedicated network call of its own. Whichever active rover has the most recent frame wins;
-    // falls back to the first rover so there is still something once none are active.
     val heroRover = state.rovers.filter { it.status == STATUS_ACTIVE }.maxByOrNull { it.maxDate } ?: state.rovers.firstOrNull()
     val heroPhoto = heroRover?.let { state.thumbnails[it.roverName]?.firstOrNull() }
 
@@ -125,7 +117,6 @@ private fun HomeScreenContent(
                 modifier = Modifier.padding(top = 20.dp),
                 contentPadding = PaddingValues(bottom = 88.dp)
             ) {
-                //Wordmark
                 item {
                     Row(
                         modifier = Modifier
@@ -147,14 +138,12 @@ private fun HomeScreenContent(
                     }
                 }
 
-                //Latest frame
                 if (heroRover != null) {
                     item {
                         HeroSection(rover = heroRover, photo = heroPhoto)
                     }
                 }
 
-                //Section label
                 item {
                     Text(
                         modifier = Modifier
@@ -166,7 +155,6 @@ private fun HomeScreenContent(
                     )
                 }
 
-                //Rovers
                 state.rovers.forEach { rover ->
                     item {
                         RoverCard(
@@ -287,8 +275,6 @@ private fun HeroSection(
                 modifier = Modifier.fillMaxSize(),
                 onError = {}
             )
-            // Compose gradients run top(0f)-to-bottom(1f) by default — the reverse of the CSS
-            // "to top" this mirrors, so the stops are inverted here rather than the axis.
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -351,7 +337,6 @@ private fun RoverCard(
             .clickable { onClick(rover) }
             .padding(14.dp)
     ) {
-        //Header
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -385,7 +370,6 @@ private fun RoverCard(
 
         Spacer(modifier = Modifier.height(13.dp))
 
-        //Stats grid
         Row(modifier = Modifier.fillMaxWidth()) {
             StatCell(modifier = Modifier.weight(1f), label = stringResource(id = R.string.home_stat_launch), value = rover.launchDate)
             StatCell(modifier = Modifier.weight(1f), label = stringResource(id = R.string.home_stat_landing), value = rover.landingDateFormat)

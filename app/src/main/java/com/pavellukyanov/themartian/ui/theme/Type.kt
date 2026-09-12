@@ -8,11 +8,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.pavellukyanov.themartian.R
 
-/**
- * Golos Text — Cyrillic-native geometric sans (OFL, Google Fonts). Used for every UI label:
- * the app is predominantly Russian-language, so a Latin-only display face (e.g. Space Grotesk)
- * would silently fall back to the system font for most of the copy.
- */
 val GolosFontFamily = FontFamily(
     Font(R.font.golos_regular, FontWeight.Normal),
     Font(R.font.golos_medium, FontWeight.Medium),
@@ -20,7 +15,6 @@ val GolosFontFamily = FontFamily(
     Font(R.font.golos_bold, FontWeight.Bold)
 )
 
-/** JetBrains Mono — data/telemetry labels (sol, dates, camera codes). Cyrillic-capable too. */
 val MonoFontFamily = FontFamily(
     Font(R.font.jetbrains_mono_regular, FontWeight.Normal),
     Font(R.font.jetbrains_mono_medium, FontWeight.Medium),
@@ -28,10 +22,6 @@ val MonoFontFamily = FontFamily(
     Font(R.font.jetbrains_mono_bold, FontWeight.Bold)
 )
 
-/**
- * Named text styles for the recurring roles across screens (mirrors how the codebase already
- * builds [androidx.compose.material3.Text] with explicit styling rather than theme roles).
- */
 object MartianType {
     val ScreenTitle = TextStyle(fontFamily = GolosFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 22.sp, letterSpacing = (-0.2).sp)
     val CardTitle = TextStyle(fontFamily = GolosFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 21.sp, letterSpacing = (-0.2).sp)

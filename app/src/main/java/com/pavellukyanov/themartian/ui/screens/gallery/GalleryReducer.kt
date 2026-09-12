@@ -72,8 +72,6 @@ class GalleryReducer(
                 updateCamerasCache(photos = result.photos)
             }
 
-            // The date label reflects the newest loaded page, so paginating deeper
-            // must not move it back to an older sol.
             val newestPhoto = result.photos.firstOrNull().takeIf { page == 1 }
 
             val allPhotos = if (page == 1) result.photos else _state.value.photos + result.photos
@@ -118,7 +116,6 @@ class GalleryReducer(
         sendEffect(GalleryEffect.OnPhotoClick(photoId = photo.id))
     }
 
-    /** Favourites live only in the local cache, so the list is observed instead of paginated. */
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun onSubscribeFavourites() = cpu {
         _state

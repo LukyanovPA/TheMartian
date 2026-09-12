@@ -72,12 +72,10 @@ fun GalleryScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     val gridState = rememberLazyStaggeredGridState()
 
-    // Initial load (cameras included)
     LaunchedEffect(roverName, isLocal) {
         reducer.dispatch(GalleryAction.InitGallery(roverName = roverName, isLocal = isLocal))
     }
 
-    // Effects
     LaunchedEffect(Unit) {
         reducer.subscribeEffect { effect ->
             when (effect) {
@@ -87,7 +85,6 @@ fun GalleryScreen(
         }
     }
 
-    // Scroll-based pagination — emits on every item count change (new page loaded)
     LaunchedEffect(gridState) {
         snapshotFlow { gridState.layoutInfo.totalItemsCount }
             .collect {
@@ -143,16 +140,12 @@ private fun GalleryScreenContent(
     onAction: (GalleryAction) -> Unit,
     onFilterClick: () -> Unit
 ) {
-    // The staggered grid and the FAB both live in a `weight(1f)` Box below — Column already
-    // measures the (fixed-height) bottom nav first and gives the Box only the space left over,
-    // so their own bottom clearance never needs to account for whether the nav bar is showing.
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(BgDeep)
             .padding(top = 20.dp)
     ) {
-        //Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -198,7 +191,6 @@ private fun GalleryScreenContent(
             }
         }
 
-        //Active filter summary
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier

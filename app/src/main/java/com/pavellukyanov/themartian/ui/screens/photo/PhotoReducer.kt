@@ -50,7 +50,6 @@ class PhotoReducer(
                 execute(_state.value.copy(photo = it))
             }
         } catch (_: Exception) {
-            // Silently fall back to cached version
         }
     }
 

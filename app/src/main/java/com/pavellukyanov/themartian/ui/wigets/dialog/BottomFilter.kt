@@ -133,7 +133,6 @@ fun BottomFilter(
                 }
             }
 
-            //Field(s)
             item {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -167,7 +166,6 @@ fun BottomFilter(
                 }
             }
 
-            //Submit
             item {
                 Row(
                     modifier = Modifier

@@ -1,9 +1,11 @@
 package com.pavellukyanov.themartian.di
 
 import com.google.gson.GsonBuilder
+import com.pavellukyanov.themartian.BuildConfig
 import com.pavellukyanov.themartian.data.api.RoverService
 import com.pavellukyanov.themartian.data.api.interceptors.ApiKeyInterceptor
 import com.pavellukyanov.themartian.data.api.interceptors.HttpInterceptor
+import com.pavellukyanov.themartian.data.api.interceptors.ImageRelayInterceptor
 import com.pavellukyanov.themartian.data.api.interceptors.LoggingInterceptor
 import com.pavellukyanov.themartian.data.api.interceptors.RetryInterceptor
 import okhttp3.OkHttpClient
@@ -13,39 +15,29 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-private const val BASE_URL = "https://api.marsvista.dev/api/v2/"
+private val BASE_URL = BuildConfig.BASE_URL
 
-// The API answers in well under a second, so 15s per attempt is already generous slack for a
-// slow connection. 60s used to be here — harmless when the network is merely slow, but when a
-// connection is actually broken (a TLS handshake that stalls and never completes, seen on some
-// real devices/networks — SocketTimeoutException inside ConscryptEngineSocket.doHandshake) that
-// meant 3 attempts x 60s = up to 3 minutes staring at the splash screen before the app could
-// even report an error. Failing fast matters more than tolerating a slow-but-working connection.
 private const val CONNECT_TIMEOUT_SECONDS = 15L
 private const val READ_TIMEOUT_SECONDS = 15L
 private const val WRITE_TIMEOUT_SECONDS = 15L
 
-// Ceiling for a whole call, retries included, so a request can never hang forever.
-// It has to stay above (maxRetries + 1) * READ_TIMEOUT_SECONDS plus the backoff waits —
-// 3 * 15s + ~2s — or the call timeout cuts the last attempt short and the retry never
-// gets to finish on its own.
 private const val CALL_TIMEOUT_SECONDS = 50L
 
 val networkModule = module {
     singleOf(::HttpInterceptor)
     singleOf(::ApiKeyInterceptor)
-    // Not singleOf: that resolves every constructor parameter from the container, and the
-    // tuning knobs are plain Int/Long with defaults rather than injectable types.
+    singleOf(::ImageRelayInterceptor)
     single { RetryInterceptor() }
     singleOf(::LoggingInterceptor)
 
     single {
         val httpInterceptor: HttpInterceptor by inject()
         val apiKeyInterceptor: ApiKeyInterceptor by inject()
+        val imageRelayInterceptor: ImageRelayInterceptor by inject()
         val retryInterceptor: RetryInterceptor by inject()
         val loggingInterceptor: LoggingInterceptor by inject()
 
-        val okHttpClient = OkHttpClient.Builder()
+        OkHttpClient.Builder()
             .retryOnConnectionFailure(true)
             .apply {
                 connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -55,17 +47,18 @@ val networkModule = module {
 
                 addInterceptor(loggingInterceptor)
                 addInterceptor(apiKeyInterceptor)
+                addInterceptor(imageRelayInterceptor)
                 addInterceptor(httpInterceptor)
-                // Added last, right above the network, so it sees the raw status codes
-                // and I/O errors before HttpInterceptor turns them into ApiException.
                 addInterceptor(retryInterceptor)
             }
             .build()
+    }
 
+    single {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
-            .client(okHttpClient)
+            .client(get<OkHttpClient>())
             .build()
     }
 

@@ -10,7 +10,6 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface RoverService {
-    // ============ PHOTOS ============
 
     @GET("photos")
     suspend fun getPhotos(
@@ -37,12 +36,8 @@ interface RoverService {
         @Query("include") include: String = "rover,camera"
     ): Response<ApiResponse<PhotoDto>>
 
-    // ============ ROVERS ============
-
     @GET("rovers")
     suspend fun getRovers(): Response<ApiResponse<List<RoverDataDto>>>
-
-    // ============ CAMERAS ============
 
     @GET("cameras")
     suspend fun getAllCameras(
