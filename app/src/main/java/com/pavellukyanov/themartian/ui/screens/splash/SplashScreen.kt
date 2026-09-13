@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.ui.theme.BgDeep
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.subscribeEffect
 import org.koin.androidx.compose.koinViewModel
@@ -33,7 +33,7 @@ fun SplashScreen(
 
     Box(
         modifier = modifier
-            .background(Color.DarkGray)
+            .background(BgDeep)
             .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {

@@ -6,7 +6,6 @@ import com.pavellukyanov.themartian.data.cache.dao.RoverInfoDao
 import com.pavellukyanov.themartian.data.dto.RoverItemDto
 import com.pavellukyanov.themartian.domain.entity.Camera
 import com.pavellukyanov.themartian.domain.entity.toRover
-import com.pavellukyanov.themartian.utils.ext.onCpu
 import com.pavellukyanov.themartian.utils.ext.onIo
 
 class UpdateRoverInfoCache(
@@ -15,21 +14,24 @@ class UpdateRoverInfoCache(
     private val camerasDao: CamerasDao
 ) {
     suspend operator fun invoke() = onIo {
-        roverInfoDao.insert(
-            apiDataSource.getRoversInfo()
-                .map { updateCameras(it) }
-                .map(RoverItemDto::toRover)
-        )
+        val rovers = apiDataSource.getRoversInfo()
+
+        roverInfoDao.insert(rovers.map(RoverItemDto::toRover))
+        insertMissingCameras(rovers)
     }
 
-    private suspend fun updateCameras(roverItem: RoverItemDto): RoverItemDto = onCpu {
-        roverItem.cameras.forEach { cameraItemDto ->
-            insertCamera(Camera(roverName = roverItem.name, name = cameraItemDto.name, cameraFullName = cameraItemDto.fullName))
-        }
-        return@onCpu roverItem
-    }
+    private suspend fun insertMissingCameras(rovers: List<RoverItemDto>) = onIo {
+        val cached = camerasDao.all().map { it.roverName to it.name }.toSet()
 
-    private suspend fun insertCamera(camera: Camera) = onIo {
-        if (camerasDao.all().find { it.name == camera.name && it.roverName == camera.roverName } == null) camerasDao.insert(camera)
+        val newCameras = rovers
+            .flatMap { rover ->
+                rover.cameras.map { camera ->
+                    Camera(roverName = rover.name, name = camera.name, cameraFullName = camera.fullName)
+                }
+            }
+            .distinctBy { it.roverName to it.name }
+            .filter { (it.roverName to it.name) !in cached }
+
+        if (newCameras.isNotEmpty()) camerasDao.insert(newCameras)
     }
 }

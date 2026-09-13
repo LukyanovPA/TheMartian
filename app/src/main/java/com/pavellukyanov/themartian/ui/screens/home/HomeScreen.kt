@@ -2,7 +2,9 @@ package com.pavellukyanov.themartian.ui.screens.home
 
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,27 +25,43 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import com.pavellukyanov.themartian.R
+import com.pavellukyanov.themartian.data.dto.Photo
 import com.pavellukyanov.themartian.domain.entity.Rover
-import com.pavellukyanov.themartian.ui.theme.MediaRed
-import com.pavellukyanov.themartian.ui.wigets.dialog.DisabledRoverDialog
+import com.pavellukyanov.themartian.ui.theme.AccentMars
+import com.pavellukyanov.themartian.ui.theme.BgDeep
+import com.pavellukyanov.themartian.ui.theme.MartianType
+import com.pavellukyanov.themartian.ui.theme.StatusActive
+import com.pavellukyanov.themartian.ui.theme.StatusMuted
+import com.pavellukyanov.themartian.ui.theme.SurfaceBorder
+import com.pavellukyanov.themartian.ui.theme.SurfaceCard
+import com.pavellukyanov.themartian.ui.theme.SurfaceMuted
+import com.pavellukyanov.themartian.ui.theme.TextPrimary
+import com.pavellukyanov.themartian.ui.theme.TextSecondary
+import com.pavellukyanov.themartian.ui.theme.TextTertiary
+import com.pavellukyanov.themartian.ui.wigets.img.Picture
+import com.pavellukyanov.themartian.ui.wigets.nav.BottomNavTab
+import com.pavellukyanov.themartian.ui.wigets.nav.MartianBottomNav
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
 import com.pavellukyanov.themartian.utils.ext.receive
@@ -57,19 +75,15 @@ fun HomeScreen(
     reducer: HomeReducer = koinViewModel()
 ) {
     val state by reducer.asState()
-    var showRoverDataDisabledDialog by remember { mutableStateOf(false) }
 
     Launch {
         reducer.dispatch(HomeAction.LoadRovers)
         reducer.subscribeEffect { effect ->
             when (effect) {
                 is HomeEffect.NavigateToRoverGallery -> navController.navigate("ui/screens/gallery/${effect.roverName}/${false}")
-                is HomeEffect.ShowDisabledRoverDialog -> showRoverDataDisabledDialog = true
             }
         }
     }
-
-    if (showRoverDataDisabledDialog) DisabledRoverDialog { showRoverDataDisabledDialog = false }
 
     state.receive<HomeState>(
         modifier = modifier,
@@ -77,60 +91,111 @@ fun HomeScreen(
             HomeScreenContent(
                 state = currentState,
                 modifier = modifier,
+                navController = navController,
                 onClick = reducer::dispatch
             )
         }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeScreenContent(
     modifier: Modifier,
     state: HomeState,
+    navController: NavHostController,
     onClick: (HomeAction) -> Unit
 ) {
     var privacyPolicyState by remember { mutableStateOf(false) }
+    val favouritesRoute = "ui/screens/gallery/${stringResource(id = R.string.favourites_title)}/${true}"
 
-    if (privacyPolicyState) PrivacyPolicyWebView(onBackClick = { privacyPolicyState = !privacyPolicyState })
-    else LazyColumn(
-        state = rememberLazyListState(),
-        modifier = modifier.padding(top = 32.dp)
-    ) {
-        //App name
-        item {
-            Text(
-                modifier = Modifier
-                    .padding(vertical = 54.dp)
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                text = stringResource(id = R.string.app_name),
-                color = Color.White,
-                fontWeight = FontWeight.Medium,
-                fontSize = 28.sp
-            )
-        }
+    if (privacyPolicyState) {
+        PrivacyPolicyWebView(onBackClick = { privacyPolicyState = !privacyPolicyState })
+    } else {
+        Box(modifier = modifier.fillMaxSize()) {
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = { onClick(HomeAction.Refresh) },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                LazyColumn(
+                    state = rememberLazyListState(),
+                    modifier = Modifier.padding(top = 20.dp),
+                    contentPadding = PaddingValues(bottom = 88.dp)
+                ) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 24.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(color = AccentMars, shape = CircleShape)
+                            )
+                            Text(
+                                modifier = Modifier.padding(start = 9.dp),
+                                text = stringResource(id = R.string.app_name),
+                                style = MartianType.ScreenTitle,
+                                color = TextPrimary
+                            )
+                        }
+                    }
 
-        //Rovers
-        state.rovers.forEach { rover ->
-            item {
-                RoverContent(
-                    modifier = Modifier.animateItem(),
-                    rover = rover,
-                    onClick = { onClick(HomeAction.OnRoverClick(rover = it)) }
-                )
+                    if (state.rovers.isNotEmpty()) {
+                        item {
+                            HeroSection(photo = state.heroPhoto)
+                        }
+                    }
+
+                    item {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                            text = stringResource(id = R.string.home_section_rovers).uppercase(),
+                            style = MartianType.Kicker,
+                            color = TextSecondary
+                        )
+                    }
+
+                    state.rovers.forEach { rover ->
+                        item {
+                            RoverCard(
+                                modifier = Modifier.animateItem(),
+                                rover = rover,
+                                thumbnails = state.thumbnails[rover.roverName].orEmpty(),
+                                onClick = { onClick(HomeAction.OnRoverClick(rover = it)) },
+                                onLoadThumbnail = { onClick(HomeAction.LoadThumbnail(roverName = rover.roverName)) }
+                            )
+                        }
+                    }
+
+                    item {
+                        Text(
+                            text = stringResource(id = R.string.privacy_policy),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 20.dp, bottom = 8.dp)
+                                .clickable { privacyPolicyState = !privacyPolicyState }
+                                .padding(16.dp),
+                            style = MartianType.MonoCaption,
+                            color = TextTertiary,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             }
-        }
 
-        item {
-            Text(
-                text = stringResource(id = R.string.privacy_policy),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .clickable { privacyPolicyState = !privacyPolicyState },
-                color = Color.Black.copy(alpha = 0.8f),
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center
+            MartianBottomNav(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                selected = BottomNavTab.ROVERS,
+                onRoversClick = {},
+                onFavouritesClick = {
+                    navController.navigate(favouritesRoute) { launchSingleTop = true }
+                }
             )
         }
     }
@@ -143,6 +208,7 @@ private fun PrivacyPolicyWebView(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(BgDeep)
             .padding(top = 32.dp)
     ) {
         Box(
@@ -152,27 +218,24 @@ private fun PrivacyPolicyWebView(
             contentAlignment = Alignment.CenterStart
         ) {
             Button(
-                modifier = Modifier
-                    .size(40.dp),
+                modifier = Modifier.size(40.dp),
                 onClick = onBackClick,
                 shape = CircleShape,
                 contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
             ) {
                 Icon(
-                    tint = Color.Black,
+                    tint = TextPrimary,
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(id = R.string.button_back)
                 )
             }
             Text(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 text = stringResource(id = R.string.privacy_policy),
-                color = Color.Black,
-                fontWeight = FontWeight.Bold,
-                fontSize = 28.sp
+                style = MartianType.CardTitle,
+                color = TextPrimary
             )
         }
 
@@ -194,148 +257,206 @@ private fun PrivacyPolicyWebView(
     }
 }
 
-private const val STATUS = "active"
+private const val STATUS_ACTIVE = "active"
+
+private const val PREVIEW_TILES = 3
+
+private val HERO_HEIGHT = 196.dp
 
 @Composable
-private fun RoverContent(
-    modifier: Modifier,
-    rover: Rover,
-    onClick: (Rover) -> Unit
+private fun HeroSection(
+    photo: Photo?
 ) {
     Box(
-        modifier = modifier
-            .padding(vertical = 8.dp, horizontal = 16.dp)
+        modifier = Modifier
             .fillMaxWidth()
-            .background(color = Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(16.dp))
-            .clickable { onClick(rover) }
+            .height(HERO_HEIGHT)
+            .background(SurfaceMuted)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Crossfade(targetState = photo, label = "hero") { currentPhoto ->
+            if (currentPhoto != null) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Picture(
+                        url = currentPhoto.src,
+                        contentDescription = currentPhoto.cameraFullName,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                        onError = {}
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colorStops = arrayOf(
+                                        0f to BgDeep.copy(alpha = 0.15f),
+                                        0.58f to BgDeep.copy(alpha = 0.55f),
+                                        1f to BgDeep
+                                    )
+                                )
+                            )
+                    )
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(horizontal = 20.dp, vertical = 14.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.home_hero_kicker).uppercase(),
+                            style = MartianType.Kicker,
+                            color = AccentMars
+                        )
+                        Text(
+                            modifier = Modifier.padding(top = 4.dp),
+                            text = "${currentPhoto.roverName} · ${stringResource(id = R.string.sol)} ${currentPhoto.sol}",
+                            style = MartianType.ScreenTitle,
+                            color = TextPrimary
+                        )
+                        Text(
+                            modifier = Modifier.padding(top = 2.dp),
+                            text = "${currentPhoto.cameraName} · ${currentPhoto.earthFormattedDate}",
+                            style = MartianType.MonoCaption,
+                            color = TextSecondary
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RoverCard(
+    modifier: Modifier,
+    rover: Rover,
+    thumbnails: List<Photo>,
+    onClick: (Rover) -> Unit,
+    onLoadThumbnail: () -> Unit
+) {
+    val isActive = rover.status == STATUS_ACTIVE
+    val statusColor = if (isActive) StatusActive else StatusMuted
+
+    LaunchedEffect(rover.roverName) { onLoadThumbnail() }
+
+    Column(
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .fillMaxWidth()
+            .background(color = SurfaceCard, shape = RoundedCornerShape(16.dp))
+            .border(width = 1.dp, color = SurfaceBorder, shape = RoundedCornerShape(16.dp))
+            .clickable { onClick(rover) }
+            .padding(14.dp)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            //Header
+            Text(
+                modifier = Modifier.weight(1f),
+                text = rover.roverName,
+                style = MartianType.CardTitle,
+                color = TextPrimary
+            )
             Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.Top,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .background(color = statusColor.copy(alpha = 0.12f), shape = RoundedCornerShape(999.dp))
+                    .padding(horizontal = 9.dp, vertical = 5.dp)
             ) {
-                //Rover Name
-                Text(
+                Box(
                     modifier = Modifier
-                        .weight(3f),
-                    text = rover.roverName,
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    letterSpacing = 1.sp,
-                    textAlign = TextAlign.Start
-                )
-                //Status
-                Text(
-                    text = rover.status,
-                    color = if (rover.status == STATUS) Color.Green else MediaRed,
-                    fontSize = 12.sp,
-                    letterSpacing = 1.sp,
-                    textAlign = TextAlign.End
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            //Dates
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.Top,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    modifier = Modifier
-                        .weight(3f),
-                    text = stringResource(R.string.launch_date),
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Start
+                        .size(6.dp)
+                        .background(color = statusColor, shape = CircleShape)
                 )
                 Text(
-                    text = rover.launchDate,
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.End
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.Top,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    modifier = Modifier
-                        .weight(3f),
-                    text = stringResource(R.string.landing_date),
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Start
-                )
-                Text(
-                    text = rover.landingDateFormat,
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.End
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            //Photos
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.Top,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    modifier = Modifier
-                        .weight(3f),
-                    text = stringResource(R.string.last_photo_date),
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Start
-                )
-                Text(
-                    text = rover.maxDateFormat,
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.End
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.Top,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    modifier = Modifier
-                        .weight(3f),
-                    text = stringResource(R.string.total_photo),
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Start
-                )
-                Text(
-                    text = rover.totalPhotos.toString(),
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.End
+                    modifier = Modifier.padding(start = 6.dp),
+                    text = rover.status.uppercase(),
+                    style = MartianType.MonoLabel,
+                    color = statusColor
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(13.dp))
+
+        Row(modifier = Modifier.fillMaxWidth()) {
+            StatCell(modifier = Modifier.weight(1f), label = stringResource(id = R.string.home_stat_launch), value = rover.launchDate)
+            StatCell(modifier = Modifier.weight(1f), label = stringResource(id = R.string.home_stat_landing), value = rover.landingDateFormat)
+        }
+        Spacer(modifier = Modifier.height(11.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            StatCell(modifier = Modifier.weight(1f), label = stringResource(id = R.string.home_stat_last_photo), value = rover.maxDateFormat)
+            StatCell(modifier = Modifier.weight(1f), label = stringResource(id = R.string.home_stat_total_photos), value = rover.totalPhotos.toString())
+        }
+
+        Spacer(modifier = Modifier.height(13.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            repeat(PREVIEW_TILES) { index ->
+                ThumbnailTile(modifier = Modifier.weight(1f), photo = thumbnails.getOrNull(index))
+            }
+            OverflowTile(modifier = Modifier.weight(1f), count = rover.totalPhotos - PREVIEW_TILES)
+        }
+    }
+}
+
+@Composable
+private fun ThumbnailTile(
+    modifier: Modifier,
+    photo: Photo?
+) {
+    Box(
+        modifier = modifier
+            .height(74.dp)
+            .background(color = SurfaceMuted, shape = RoundedCornerShape(9.dp))
+    ) {
+        if (photo != null) {
+            Picture(
+                url = photo.src,
+                contentDescription = photo.cameraFullName,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = SurfaceMuted, shape = RoundedCornerShape(9.dp)),
+                onError = {}
+            )
+        }
+    }
+}
+
+@Composable
+private fun OverflowTile(
+    modifier: Modifier,
+    count: Int
+) {
+    Box(
+        modifier = modifier
+            .height(74.dp)
+            .background(color = SurfaceMuted, shape = RoundedCornerShape(9.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        if (count > 0) {
+            Text(text = "+$count", style = MartianType.MonoValue, color = TextSecondary)
+        }
+    }
+}
+
+@Composable
+private fun StatCell(
+    modifier: Modifier,
+    label: String,
+    value: String
+) {
+    Column(modifier = modifier) {
+        Text(text = label.uppercase(), style = MartianType.MonoLabel, color = TextTertiary)
+        Text(
+            modifier = Modifier.padding(top = 3.dp),
+            text = value,
+            style = MartianType.MonoValue,
+            color = TextPrimary
+        )
     }
 }

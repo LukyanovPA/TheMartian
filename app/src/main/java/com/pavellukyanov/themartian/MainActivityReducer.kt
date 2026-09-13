@@ -1,7 +1,6 @@
 package com.pavellukyanov.themartian
 
 import androidx.work.OutOfQuotaPolicy.*
-import coil.annotation.ExperimentalCoilApi
 import com.pavellukyanov.themartian.domain.entity.CacheItem
 import com.pavellukyanov.themartian.domain.usecase.DeleteCameraCache
 import com.pavellukyanov.themartian.domain.usecase.DeleteOldCachedPhoto
@@ -21,6 +20,7 @@ import com.pavellukyanov.themartian.utils.helpers.ImageLoaderHelper
 import com.pavellukyanov.themartian.utils.helpers.SharedPreferencesHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import java.io.File
 
 class MainActivityReducer(
@@ -39,8 +39,7 @@ class MainActivityReducer(
     override suspend fun reduce(oldState: MainState, action: MainAction) {
         when (action) {
             is MainAction.OnStart -> {
-                handleError()
-                onHandleCacheState()
+                handleInitialization()
                 sendEffect(MainEffect.UpdateRoverInfoCache)
             }
 
@@ -53,18 +52,18 @@ class MainActivityReducer(
         }
     }
 
-    private fun handleError() = cpu {
-        errorQueue.onError.collect { state ->
-            when (state) {
-                is UiError.Error -> sendEffect(MainEffect.ShowError(errorMessage = state.error.message.orEmpty()))
-                is UiError.NoError -> sendEffect(MainEffect.CloseErrorDialog)
-            }
-            execute(_state.value.copy(settingButtonVisibility = state is UiError.NoError))
-        }
-    }
-
-    private fun onHandleCacheState() = cpu {
+    private fun handleInitialization() = cpu {
         isEmptyRoverCache()
+            .combine(errorQueue.onError) { isEmpty, error ->
+                if (error is UiError.Error) {
+                    sendEffect(MainEffect.ShowError(errorMessage = error.error.message.orEmpty()))
+                }
+
+                val noError = error is UiError.NoError
+                execute(_state.value.copy(settingButtonVisibility = noError))
+
+                isEmpty && noError
+            }
             .collect(_isLoading)
     }
 
@@ -92,7 +91,6 @@ class MainActivityReducer(
         }
 
 
-    @OptIn(ExperimentalCoilApi::class)
     private fun getImageCacheSize(): Long =
         ((imageLoaderHelper.getDiskCache()?.size ?: 0L) / 1024) / 1024
 
@@ -135,7 +133,6 @@ class MainActivityReducer(
         sendEffect(MainEffect.UpdateRoverInfoCache)
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     private fun onDeleteCache() = cpu {
         io {
             imageLoaderHelper.getDiskCache()?.clear()

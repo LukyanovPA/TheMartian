@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -40,13 +42,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavHostController
 import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.data.dto.Photo
+import com.pavellukyanov.themartian.ui.theme.AccentMars
+import com.pavellukyanov.themartian.ui.theme.BgDeep
+import com.pavellukyanov.themartian.ui.theme.MartianType
+import com.pavellukyanov.themartian.ui.theme.SurfaceBorder
+import com.pavellukyanov.themartian.ui.theme.SurfaceCard
+import com.pavellukyanov.themartian.ui.theme.TextPrimary
+import com.pavellukyanov.themartian.ui.theme.TextTertiary
 import com.pavellukyanov.themartian.ui.wigets.dialog.ChooseDialog
 import com.pavellukyanov.themartian.ui.wigets.img.Picture
+import com.pavellukyanov.themartian.utils.BrowseContext
 import com.pavellukyanov.themartian.utils.ext.Launch
 import com.pavellukyanov.themartian.utils.ext.asState
 import com.pavellukyanov.themartian.utils.ext.receive
@@ -54,6 +63,9 @@ import com.pavellukyanov.themartian.utils.ext.subscribeEffect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+
+private const val MIN_SCALE = 1f
+private const val MAX_SCALE = 4f
 
 @Composable
 fun PhotoScreen(
@@ -73,6 +85,10 @@ fun PhotoScreen(
                 is PhotoEffect.OnDownload -> launch(Dispatchers.IO) {
                     (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(effect.request)
                 }
+                is PhotoEffect.NavigateToPhoto -> {
+                    navController.popBackStack()
+                    navController.navigate("ui/screens/photo/${effect.photoId}")
+                }
             }
         }
     }
@@ -83,9 +99,12 @@ fun PhotoScreen(
                 modifier = modifier,
                 isFavourites = currentState.isFavourites,
                 photo = currentState.photo,
+                browseContext = currentState.browseContext,
                 onBackClick = { reducer.dispatch(PhotoAction.OnBackClick) },
                 onDownloadClick = { reducer.dispatch(PhotoAction.DownloadPhoto(photo = currentState.photo)) },
                 onChangeFavouritesClick = { reducer.dispatch(PhotoAction.ChangeFavourites(photo = currentState.photo)) },
+                onPreviousClick = { reducer.dispatch(PhotoAction.OnPreviousClick) },
+                onNextClick = { reducer.dispatch(PhotoAction.OnNextClick) },
                 onError = { reducer.dispatch(PhotoAction.OnImageError(error = it)) }
             )
         }
@@ -97,21 +116,22 @@ private fun PhotoScreenContent(
     modifier: Modifier,
     isFavourites: Boolean,
     photo: Photo?,
+    browseContext: BrowseContext?,
     onBackClick: () -> Unit,
     onDownloadClick: () -> Unit,
     onChangeFavouritesClick: () -> Unit,
+    onPreviousClick: () -> Unit,
+    onNextClick: () -> Unit,
     onError: (Throwable) -> Unit
 ) {
     var scale by remember { mutableFloatStateOf(1f) }
-    var rotation by remember { mutableFloatStateOf(0f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
-    val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
-        scale *= zoomChange
-        rotation += rotationChange
-        offset += offsetChange
+    val transformState = rememberTransformableState { zoomChange, offsetChange, _ ->
+        val newScale = (scale * zoomChange).coerceIn(MIN_SCALE, MAX_SCALE)
+        offset = if (newScale > MIN_SCALE) offset + offsetChange else Offset.Zero
+        scale = newScale
     }
     var showChooseDialog by remember { mutableStateOf(false) }
-
 
     if (showChooseDialog) ChooseDialog(
         text = stringResource(R.string.photo_download_dialog),
@@ -125,12 +145,13 @@ private fun PhotoScreenContent(
     ConstraintLayout(
         modifier = modifier
             .fillMaxSize()
+            .background(BgDeep)
     ) {
-        val (buttonBack, photoBox, info) = createRefs()
+        val (photoBox, header, prevButton, nextButton, info) = createRefs()
 
         //Photo
         Picture(
-            url = photo?.src.orEmpty(),
+            url = photo?.src,
             contentDescription = null,
             modifier = Modifier
                 .constrainAs(photoBox) {
@@ -143,211 +164,226 @@ private fun PhotoScreenContent(
                 .graphicsLayer(
                     scaleX = scale,
                     scaleY = scale,
-                    rotationZ = rotation,
                     translationX = offset.x,
                     translationY = offset.y
                 )
-                .transformable(state = state),
+                .transformable(state = transformState),
             onError = onError
         )
 
         //Header
-        Column(
+        Box(
             modifier = Modifier
-                .constrainAs(buttonBack) {
+                .constrainAs(header) {
                     top.linkTo(parent.top, margin = 40.dp)
                     start.linkTo(parent.start, margin = 16.dp)
                     end.linkTo(parent.end, margin = 16.dp)
                 }
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .size(40.dp)
         ) {
+            RoundIconButton(modifier = Modifier.align(Alignment.CenterStart), onClick = onBackClick) {
+                Icon(
+                    tint = TextPrimary,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(id = R.string.button_back)
+                )
+            }
+
+            if (browseContext != null) {
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = "${browseContext.position} / ${browseContext.total}",
+                    style = MartianType.MonoTag,
+                    color = TextPrimary
+                )
+            }
+
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.align(Alignment.CenterEnd),
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
-                //Button Back
-                Button(
-                    modifier = Modifier
-                        .size(40.dp),
-                    onClick = onBackClick,
-                    shape = CircleShape,
-                    contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-                ) {
+                RoundIconButton(onClick = { showChooseDialog = true }) {
                     Icon(
-                        tint = Color.White,
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        tint = TextPrimary,
+                        modifier = Modifier.padding(4.dp),
+                        painter = painterResource(id = R.drawable.ic_download),
                         contentDescription = stringResource(id = R.string.button_back)
                     )
                 }
-
-                Row(
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.Top,
-                    modifier = Modifier
-                ) {
-                    //Button Download
-                    Button(
-                        modifier = Modifier
-                            .size(40.dp),
-                        onClick = { showChooseDialog = true },
-                        shape = CircleShape,
-                        contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-                    ) {
-                        Icon(
-                            tint = Color.White,
-                            modifier = Modifier
-                                .padding(4.dp),
-                            painter = painterResource(id = R.drawable.ic_download),
-                            contentDescription = stringResource(id = R.string.button_back)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    //Button Favourites
-                    Button(
-                        modifier = Modifier
-                            .size(40.dp),
-                        onClick = onChangeFavouritesClick,
-                        shape = CircleShape,
-                        contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-                    ) {
-                        Icon(
-                            tint = Color.Yellow,
-                            modifier = Modifier
-                                .padding(4.dp),
-                            painter = if (isFavourites) painterResource(id = R.drawable.ic_favourites) else painterResource(id = R.drawable.ic_is_not_favourites),
-                            contentDescription = stringResource(id = R.string.button_back)
-                        )
-                    }
+                Spacer(modifier = Modifier.width(12.dp))
+                RoundIconButton(onClick = onChangeFavouritesClick) {
+                    Icon(
+                        tint = AccentMars,
+                        modifier = Modifier.padding(4.dp),
+                        painter = if (isFavourites) painterResource(id = R.drawable.ic_favourites) else painterResource(id = R.drawable.ic_is_not_favourites),
+                        contentDescription = stringResource(id = R.string.button_back)
+                    )
                 }
             }
         }
 
-        //Info
-        Box(
-            modifier = Modifier.run {
-                constrainAs(info) {
-                    bottom.linkTo(parent.bottom, margin = 36.dp)
-                    start.linkTo(parent.start, margin = 16.dp)
-                    end.linkTo(parent.end, margin = 16.dp)
-                }
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-                    .background(color = Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(16.dp))
+        if (browseContext?.previousId != null) {
+            RoundIconButton(
+                modifier = Modifier.constrainAs(prevButton) {
+                    top.linkTo(photoBox.top)
+                    bottom.linkTo(photoBox.bottom)
+                    start.linkTo(parent.start, margin = 12.dp)
+                },
+                onClick = onPreviousClick
+            ) {
+                Icon(
+                    tint = TextPrimary,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(id = R.string.button_previous_photo)
+                )
             }
+        }
+        if (browseContext?.nextId != null) {
+            RoundIconButton(
+                modifier = Modifier.constrainAs(nextButton) {
+                    top.linkTo(photoBox.top)
+                    bottom.linkTo(photoBox.bottom)
+                    end.linkTo(parent.end, margin = 12.dp)
+                },
+                onClick = onNextClick
+            ) {
+                Icon(
+                    tint = TextPrimary,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = stringResource(id = R.string.button_next_photo)
+                )
+            }
+        }
+
+        PhotoInfoPanel(
+            modifier = Modifier.constrainAs(info) {
+                bottom.linkTo(parent.bottom)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+            },
+            photo = photo
+        )
+    }
+}
+
+@Composable
+private fun RoundIconButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Button(
+        modifier = modifier
+            .size(40.dp)
+            .background(color = BgDeep.copy(alpha = 0.55f), shape = CircleShape),
+        onClick = onClick,
+        shape = CircleShape,
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+        content = { content() }
+    )
+}
+
+@Composable
+private fun PhotoInfoPanel(
+    modifier: Modifier,
+    photo: Photo?
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color.Transparent, BgDeep, BgDeep)
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(top = 48.dp, bottom = 28.dp)
+                .background(color = SurfaceCard, shape = RoundedCornerShape(18.dp))
+                .padding(16.dp)
         ) {
-            Column(
+            Text(
+                text = photo?.cameraFullName.takeUnless { it.isNullOrBlank() } ?: photo?.cameraName.orEmpty(),
+                style = MartianType.CardTitle,
+                color = TextPrimary
+            )
+            Text(
+                modifier = Modifier.padding(top = 4.dp),
+                text = "${photo?.roverName.orEmpty()} · ${stringResource(id = R.string.sol)} ${photo?.sol?.toString().orEmpty()} · ${photo?.earthFormattedDate.orEmpty()}",
+                style = MartianType.MonoCaption,
+                color = TextTertiary
+            )
+
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(top = 16.dp)
             ) {
-                //Sol
+                InfoCell(modifier = Modifier.weight(1f), label = stringResource(id = R.string.sol), value = photo?.sol?.toString().orEmpty())
+                InfoCell(modifier = Modifier.weight(1f), label = stringResource(id = R.string.earth_date), value = photo?.earthFormattedDate.orEmpty())
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
+            ) {
+                InfoCell(modifier = Modifier.weight(1f), label = stringResource(id = R.string.rover_name), value = photo?.roverName.orEmpty())
+                InfoCell(modifier = Modifier.weight(1f), label = stringResource(id = R.string.camera_name), value = photo?.cameraName.orEmpty())
+            }
+
+            val badges = buildList {
+                photo?.lightingConditions?.takeIf { it.isNotBlank() }?.let { add(stringResource(id = R.string.photo_meta_lighting) to it) }
+                if (photo?.isPanoramaPart == true) add(stringResource(id = R.string.photo_meta_panorama) to null)
+                if (photo?.hasStereoPair == true) add(stringResource(id = R.string.photo_meta_stereo) to null)
+            }
+            if (badges.isNotEmpty()) {
                 Row(
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.Top,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(top = 14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp),
-                        text = stringResource(id = R.string.sol),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        letterSpacing = 1.sp,
-                        textAlign = TextAlign.Start
-                    )
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = photo?.sol?.toString().orEmpty(),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        letterSpacing = 1.sp,
-                        textAlign = TextAlign.Start
-                    )
-                }
-                //Earth Date
-                Row(
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.Top,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp),
-                        text = stringResource(id = R.string.earth_date),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        letterSpacing = 1.sp,
-                        textAlign = TextAlign.Start
-                    )
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = photo?.earthFormattedDate.orEmpty(),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        letterSpacing = 1.sp,
-                        textAlign = TextAlign.Start
-                    )
-                }
-                //Rover
-                Row(
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.Top,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp),
-                        text = stringResource(id = R.string.rover_name),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        letterSpacing = 1.sp,
-                        textAlign = TextAlign.Start
-                    )
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = photo?.roverName.orEmpty(),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        letterSpacing = 1.sp,
-                        textAlign = TextAlign.Start
-                    )
-                }
-                //Camera
-                Row(
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.Top,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp),
-                        text = stringResource(id = R.string.camera_name),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        letterSpacing = 1.sp,
-                        textAlign = TextAlign.Start
-                    )
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = "${photo?.cameraFullName.orEmpty()} (${photo?.cameraName.orEmpty()})",
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        letterSpacing = 1.sp,
-                        textAlign = TextAlign.Start
-                    )
+                    badges.forEach { (label, value) ->
+                        Text(
+                            modifier = Modifier
+                                .background(color = SurfaceBorder, shape = RoundedCornerShape(999.dp))
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                            text = if (value != null) "${label.uppercase()}: $value" else label.uppercase(),
+                            style = MartianType.MonoLabel,
+                            color = TextPrimary
+                        )
+                    }
                 }
             }
+
+            Text(
+                modifier = Modifier.padding(top = 14.dp),
+                text = stringResource(id = R.string.photo_credit),
+                style = MartianType.MonoCaption,
+                color = TextTertiary
+            )
         }
+    }
+}
+
+@Composable
+private fun InfoCell(
+    modifier: Modifier,
+    label: String,
+    value: String
+) {
+    Column(modifier = modifier) {
+        Text(text = label.uppercase(), style = MartianType.MonoLabel, color = TextTertiary, textAlign = TextAlign.Start)
+        Text(
+            modifier = Modifier.padding(top = 3.dp),
+            text = value,
+            style = MartianType.MonoValue,
+            color = TextPrimary,
+            textAlign = TextAlign.Start
+        )
     }
 }

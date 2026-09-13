@@ -15,15 +15,12 @@ class NetworkMonitor(
     private fun isNetworkAvailable(): Boolean {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkCapabilities = connectivityManager.activeNetwork ?: return false
-        val actNw =
-            connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
-        return when {
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-            else -> false
-        }
+        val activeNetwork = connectivityManager.activeNetwork ?: return false
+        val networkCapabilities =
+            connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
+
+        return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL)
     }
 }
 

@@ -12,6 +12,7 @@ import com.pavellukyanov.themartian.R
 import com.pavellukyanov.themartian.common.NetworkStateException
 import com.pavellukyanov.themartian.domain.usecase.UpdateRoverInfoCache
 import com.pavellukyanov.themartian.utils.ErrorQueue
+import com.pavellukyanov.themartian.utils.ext.ApiException
 import com.pavellukyanov.themartian.utils.ext.log
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -28,8 +29,17 @@ class UpdateRoverInfoCacheWork(appContext: Context, workerParams: WorkerParamete
             Result.success()
         } catch (e: Throwable) {
             log.e(e)
-            if (e is NetworkStateException) errorQueue.add(e)
+            errorQueue.add(e.asReportableError())
             Result.failure()
+        }
+
+    private fun Throwable.asReportableError(): Throwable =
+        when (this) {
+            is NetworkStateException -> this
+            is ApiException.ConnectionException -> NetworkStateException(
+                message = applicationContext.getString(R.string.bad_internet_connection_error_message)
+            )
+            else -> this
         }
 
     override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(Random.nextInt(), getNotification())

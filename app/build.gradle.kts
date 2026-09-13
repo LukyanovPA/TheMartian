@@ -1,4 +1,3 @@
-import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
@@ -13,14 +12,14 @@ plugins {
 
 android {
     namespace = "com.pavellukyanov.themartian"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.pavellukyanov.themartian"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 11400
-        versionName = "1.1.4"
+        targetSdk = 37
+        versionCode = 20000
+        versionName = "2.0"
 
         extensions.getByType(BasePluginExtension::class.java).archivesName.set("${rootProject.name}-$versionName-($versionCode)")
 
@@ -29,9 +28,35 @@ android {
         }
 
         val localProperties = Properties()
-        localProperties.load(FileInputStream(rootProject.file("local.properties")))
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use(localProperties::load)
+        }
 
-        buildConfigField("String", "API_KEY", localProperties["apiKey"].toString())
+        val apiKey = localProperties.getProperty("apiKey").orEmpty().trim().trim('"')
+        require(apiKey.isNotEmpty()) {
+            "Missing 'apiKey' in local.properties. Add the MarsVista API key as: apiKey=<key>"
+        }
+
+        buildConfigField("String", "API_KEY", "\"$apiKey\"")
+
+        val relayBaseUrl = localProperties.getProperty("relayBaseUrl").orEmpty().trim().trim('"')
+        require(relayBaseUrl.isNotEmpty()) {
+            "Missing 'relayBaseUrl' in local.properties. Add the relay endpoint as: " +
+                "relayBaseUrl=https://<host>/api/v2/"
+        }
+
+        require(relayBaseUrl.endsWith("/")) {
+            "relayBaseUrl must end with '/': relayBaseUrl=https://<host>/api/v2/"
+        }
+
+        val relayToken = localProperties.getProperty("relayToken").orEmpty().trim().trim('"')
+        require(relayToken.isNotEmpty()) {
+            "Missing 'relayToken' in local.properties. Add the relay gate token as: relayToken=<token>"
+        }
+
+        buildConfigField("String", "BASE_URL", "\"$relayBaseUrl\"")
+        buildConfigField("String", "RELAY_TOKEN", "\"$relayToken\"")
     }
 
     buildTypes {
@@ -58,9 +83,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
     packaging {
         resources {
@@ -106,6 +128,7 @@ dependencies {
 
     //Coil
     implementation(libs.coil)
+    implementation(libs.coil.network.okhttp)
 
     //Retrofit
     implementation(libs.retrofit)
@@ -115,7 +138,6 @@ dependencies {
 
     //Room
     implementation(libs.androidx.room.runtime)
-    annotationProcessor(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 

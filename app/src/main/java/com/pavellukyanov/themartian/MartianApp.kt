@@ -4,11 +4,13 @@ import android.app.Application
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
 import androidx.work.WorkManager
-import coil.ImageLoader
-import coil.ImageLoaderFactory
-import coil.disk.DiskCache
-import coil.memory.MemoryCache
-import coil.util.DebugLogger
+import coil3.ImageLoader
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.util.DebugLogger
+import okhttp3.OkHttpClient
+import okio.Path.Companion.toOkioPath
 import com.pavellukyanov.themartian.di.commonModule
 import com.pavellukyanov.themartian.di.dataModule
 import com.pavellukyanov.themartian.di.domainModule
@@ -22,18 +24,50 @@ import com.pavellukyanov.themartian.utils.C.DEFAULT_CACHE_SIZE
 import com.pavellukyanov.themartian.utils.work.DebugCheckFirstStartWork
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.koin.core.context.startKoin
 import timber.log.Timber
 
 private const val IMAGE_CACHE = "image_cache"
 
-class MartianApp : Application(), ImageLoaderFactory {
+class MartianApp : Application(), KoinComponent {
+    lateinit var imageLoader: ImageLoader
+        private set
+
+    private val httpClient: OkHttpClient by inject()
+
     override fun onCreate() {
         super.onCreate()
         initDi()
+        imageLoader = createImageLoader()
         if (BuildConfig.DEBUG) initLogger(); debugCheckFirstStart()
+    }
 
-//        this.applicationContext.deleteDatabase(DB_NAME)
+    private fun createImageLoader(): ImageLoader {
+        val size = applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE).getFloat(CACHE_SIZE, DEFAULT_CACHE_SIZE).toLong()
+
+        return ImageLoader.Builder(this)
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(this@MartianApp, 0.25)
+                    .build()
+            }
+            .apply {
+                if (size > 0) {
+                    diskCache {
+                        DiskCache.Builder()
+                            .directory(cacheDir.resolve(IMAGE_CACHE).toOkioPath())
+                            .maxSizeBytes(size * 1024 * 1024)
+                            .build()
+                    }
+                }
+            }
+            .components {
+                add(OkHttpNetworkFetcherFactory(callFactory = { httpClient }))
+            }
+            .logger(DebugLogger())
+            .build()
     }
 
     private fun initDi() {
@@ -64,27 +98,4 @@ class MartianApp : Application(), ImageLoaderFactory {
     private fun initLogger() {
         Timber.plant(Timber.DebugTree())
     }
-
-    override fun newImageLoader(): ImageLoader =
-        ImageLoader.Builder(this)
-            .memoryCache {
-                MemoryCache.Builder(this)
-                    .maxSizePercent(0.25)
-                    .build()
-            }
-            .apply {
-                val size = applicationContext.getSharedPreferences(COMMON, MODE_PRIVATE).getFloat(CACHE_SIZE, DEFAULT_CACHE_SIZE).toLong()
-
-                if (size > 0) {
-                    diskCache {
-                        DiskCache.Builder()
-                            .directory(cacheDir.resolve(IMAGE_CACHE))
-                            .maxSizeBytes(size * 1024 * 1024)
-                            .build()
-                    }
-                }
-            }
-            .logger(DebugLogger())
-            .respectCacheHeaders(true)
-            .build()
 }

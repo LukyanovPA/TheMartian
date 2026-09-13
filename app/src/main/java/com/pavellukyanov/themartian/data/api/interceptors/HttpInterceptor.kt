@@ -23,21 +23,33 @@ class HttpInterceptor : Interceptor {
         }
 
     private fun safeHandleResponse(chain: Interceptor.Chain): Response {
-        val initialResponse = chain.proceed(chain.request())
+        val response = chain.proceed(chain.request())
 
-        return when (initialResponse.code) {
-            in HttpResponseCode.OK.errorCode -> initialResponse
-            in HttpResponseCode.SERVER_ERROR.errorCode -> throw ApiException.ServerException(message = initialResponse.message)
-            in HttpResponseCode.MANY_REQUESTS.errorCode -> throw ApiException.ServerException(message = initialResponse.message)
-            in HttpResponseCode.BAD_REQUEST.errorCode -> throw ApiException.ClientException(message = initialResponse.message)
-            else -> throw IllegalStateException("Unexpected response with code: ${initialResponse.code} and body: ${initialResponse.body}")
+        if (response.code in HttpResponseCode.OK.errorCode ||
+            response.code in HttpResponseCode.NOT_MODIFIED.errorCode
+        ) return response
+
+        val code = response.code
+        val message = response.message
+        response.close()
+
+        throw when (code) {
+            in HttpResponseCode.NOT_FOUND.errorCode -> ApiException.ClientException("Resource not found")
+            in HttpResponseCode.VALIDATION_ERROR.errorCode -> ApiException.ClientException("Validation error")
+            in HttpResponseCode.SERVER_ERROR.errorCode -> ApiException.ServerException(message = message)
+            in HttpResponseCode.MANY_REQUESTS.errorCode -> ApiException.ServerException(message = message)
+            in HttpResponseCode.BAD_REQUEST.errorCode -> ApiException.ClientException(message = message)
+            else -> ApiException.UndefinedException(message = "Unexpected response with code: $code")
         }
     }
 }
 
 private enum class HttpResponseCode(val errorCode: IntRange) {
     OK(200..299),
+    NOT_MODIFIED(304..304),
     BAD_REQUEST(400..400),
+    NOT_FOUND(404..404),
+    VALIDATION_ERROR(422..422),
     MANY_REQUESTS(429..429),
     SERVER_ERROR(500..526)
 }

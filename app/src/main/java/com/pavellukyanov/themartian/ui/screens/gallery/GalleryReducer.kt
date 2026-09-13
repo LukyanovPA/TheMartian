@@ -7,85 +7,108 @@ import com.pavellukyanov.themartian.domain.usecase.GetFavourites
 import com.pavellukyanov.themartian.domain.usecase.GetRoversOnFavourites
 import com.pavellukyanov.themartian.domain.usecase.LoadPhotos
 import com.pavellukyanov.themartian.domain.usecase.PhotoToCache
+import com.pavellukyanov.themartian.domain.usecase.UpdateCamerasCache
 import com.pavellukyanov.themartian.ui.base.Reducer
+import com.pavellukyanov.themartian.utils.GalleryBrowseSession
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flatMapLatest
 
 class GalleryReducer(
     private val photoToCache: PhotoToCache,
-    private val getCameras: GetCameras,
     private val loadPhotos: LoadPhotos,
+    private val getCameras: GetCameras,
+    private val updateCamerasCache: UpdateCamerasCache,
     private val getFavourites: GetFavourites,
-    private val getRoversOnFavourites: GetRoversOnFavourites
+    private val getRoversOnFavourites: GetRoversOnFavourites,
+    private val browseSession: GalleryBrowseSession
 ) : Reducer<GalleryState, GalleryAction, GalleryEffect>(GalleryState()) {
+
+    private var isLoadingLocked = false
 
     override suspend fun reduce(oldState: GalleryState, action: GalleryAction) {
         when (action) {
-            is GalleryAction.LoadLatestPhotos -> handleLoadLatestPhotosAction(oldState = oldState, roverName = action.roverName, isLocal = action.isLocal)
-            is GalleryAction.OnBackClick -> sendEffect(newEffect = GalleryEffect.OnBackClick)
-            is GalleryAction.OnPhotoClick -> onSaveSelectedPhoto(photo = action.photoDto)
-            is GalleryAction.OnSetNewOptions -> handleOnSetNewOptionsAction(oldState = oldState, action.newOptions)
-            is GalleryAction.LoadMore -> onLoadPhotos(options = oldState.options, page = oldState.page, isLatest = oldState.isLatest)
-            is GalleryAction.OnImageError -> onError(error = action.error)
+            is GalleryAction.InitGallery -> handleInit(oldState, action.roverName, action.isLocal)
+            is GalleryAction.LoadPage -> handleLoadPage(oldState, page = action.page, isLatest = oldState.isLatest)
+            is GalleryAction.OnSetNewOptions -> handleNewOptions(oldState, action.newOptions)
+            is GalleryAction.OnBackClick -> sendEffect(GalleryEffect.OnBackClick)
+            is GalleryAction.OnPhotoClick -> onSaveSelectedPhoto(action.photoDto)
+            is GalleryAction.OnImageError -> onError(action.error)
             is GalleryAction.OnChooseRover -> execute(oldState.copy(chooseRover = action.rover))
         }
     }
 
-    private suspend fun handleOnSetNewOptionsAction(oldState: GalleryState, newOptions: PhotosOptions) {
+    private suspend fun handleInit(oldState: GalleryState, roverName: String, isLocal: Boolean) {
+        if (isLocal) {
+            execute(oldState.copy(isLoading = true, isLocal = true))
+            onLoadFavouritesRovers()
+            onSubscribeFavourites()
+            return
+        }
+
         execute(
             oldState.copy(
                 isLoading = true,
-                options = newOptions,
-                isLatest = false,
-                photos = mutableListOf(),
-                page = 1
+                isLocal = false,
+                isLatest = true,
+                options = oldState.options.copy(roverName = roverName)
             )
         )
-        onLoadPhotos(options = newOptions, page = 1, isLatest = false)
+
+        onLoadCameras()
+        handleLoadPage(_state.value, page = 1, isLatest = true)
     }
 
-    private suspend fun handleLoadLatestPhotosAction(oldState: GalleryState, roverName: String, isLocal: Boolean) {
-        if (isLocal) {
-            onLoadFavouritesRovers()
-            onSubscribeFavourites()
+    private suspend fun onLoadCameras() {
+        execute(_state.value.copy(cameras = getCameras.invokeOnce(options = _state.value.options)))
+    }
+
+    private suspend fun handleLoadPage(oldState: GalleryState, page: Int, isLatest: Boolean) {
+        if (isLoadingLocked) return
+        isLoadingLocked = true
+        try {
+            val result = loadPhotos(options = oldState.options, page = page, isLatest = isLatest)
+
+            if (page == 1 && result.photos.isNotEmpty()) {
+                updateCamerasCache(photos = result.photos)
+            }
+
+            val newestPhoto = result.photos.firstOrNull().takeIf { page == 1 }
+
+            val allPhotos = if (page == 1) result.photos else _state.value.photos + result.photos
+
             execute(
-                oldState.copy(
-                    isLoading = true,
-                    isLocal = true
+                _state.value.copy(
+                    isLoading = false,
+                    canPaginate = result.canPaginate,
+                    totalCount = result.totalCount ?: _state.value.totalCount,
+                    options = _state.value.options.copy(
+                        date = newestPhoto?.earthDate ?: _state.value.options.date,
+                        displayDate = newestPhoto?.earthFormattedDate ?: _state.value.options.displayDate
+                    ),
+                    page = if (result.canPaginate) _state.value.page + 1 else _state.value.page,
+                    photos = allPhotos
                 )
             )
-        } else {
-            execute(
-                oldState.copy(
-                    isLoading = true,
-                    options = oldState.options.copy(roverName = roverName),
-                    isLocal = false,
-                    isLatest = true
-                )
-            )
-            onLoadPhotos(options = oldState.options.copy(roverName = roverName), page = oldState.page, isLatest = true)
+            browseSession.update(allPhotos.map { it.id })
+        } catch (_: Exception) {
+            execute(_state.value.copy(isLoading = false))
+        } finally {
+            isLoadingLocked = false
         }
     }
 
-    private suspend fun onLoadPhotos(options: PhotosOptions, page: Int, isLatest: Boolean) {
-        onSubscribeCameras(options = options)
-        val photos = loadPhotos(options = options, page = page, isLatest = isLatest)
-        val date = if (photos.isNotEmpty()) photos.firstOrNull()?.earthDate.orEmpty() else _state.value.options.date
-        val displayDate = if (photos.isNotEmpty()) photos.firstOrNull()?.earthFormattedDate.orEmpty() else _state.value.options.displayDate
-
-        val newList = _state.value.photos
-        val canPaginate = photos.size == 25
-        newList.addAll(photos)
-
+    private suspend fun handleNewOptions(oldState: GalleryState, newOptions: PhotosOptions) {
+        isLoadingLocked = false
         execute(
-            _state.value.copy(
-                isLoading = false,
-                canPaginate = canPaginate,
-                options = _state.value.options.copy(date = date, displayDate = displayDate),
-                page = if (canPaginate) _state.value.page + 1 else _state.value.page,
-                photos = newList
+            oldState.copy(
+                isLoading = true,
+                isLatest = false,
+                options = newOptions,
+                photos = listOf(),
+                page = 1
             )
         )
+        handleLoadPage(_state.value, page = 1, isLatest = false)
     }
 
     private fun onSaveSelectedPhoto(photo: Photo) = cpu {
@@ -93,21 +116,13 @@ class GalleryReducer(
         sendEffect(GalleryEffect.OnPhotoClick(photoId = photo.id))
     }
 
-    private fun onSubscribeCameras(options: PhotosOptions) = cpu {
-        getCameras(options = options)
-            .collect { cameras ->
-                execute(_state.value.copy(cameras = cameras))
-            }
-    }
-
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun onSubscribeFavourites() = cpu {
         _state
-            .flatMapMerge { state ->
-                getFavourites(roverName = state.chooseRover.orEmpty())
-            }
+            .flatMapLatest { state -> getFavourites(roverName = state.chooseRover.orEmpty()) }
             .collect { photos ->
-                execute(_state.value.copy(isLoading = false, photos = photos.toMutableList()))
+                execute(_state.value.copy(isLoading = false, photos = photos))
+                browseSession.update(photos.map { it.id })
             }
     }
 

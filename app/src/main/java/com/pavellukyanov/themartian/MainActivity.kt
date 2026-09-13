@@ -2,7 +2,6 @@ package com.pavellukyanov.themartian
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -10,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
@@ -26,10 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.paint
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -39,6 +35,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
 import androidx.work.WorkManager
 import com.pavellukyanov.themartian.ui.NavigationGraph
+import com.pavellukyanov.themartian.ui.theme.BgDeep
 import com.pavellukyanov.themartian.ui.theme.TheMartianTheme
 import com.pavellukyanov.themartian.ui.wigets.SettingsButton
 import com.pavellukyanov.themartian.ui.wigets.drawer.SettingsDrawer
@@ -73,7 +70,6 @@ class MainActivity : ComponentActivity() {
             TheMartianTheme {
                 val state by reducer.asState()
                 val navController = rememberNavController()
-                val configuration = LocalConfiguration.current
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -186,10 +182,7 @@ class MainActivity : ComponentActivity() {
                             NavigationGraph(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .paint(
-                                        painterResource(id = R.drawable.main_background),
-                                        contentScale = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) ContentScale.Crop else ContentScale.FillHeight
-                                    ),
+                                    .background(BgDeep),
                                 navController = navController,
                                 start = startDestination
                             )

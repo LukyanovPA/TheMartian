@@ -13,7 +13,8 @@ data class GalleryState(
     val isLocal: Boolean = false,
     val cameras: List<Camera> = listOf(),
     val canPaginate: Boolean = false,
-    val photos: MutableList<Photo> = mutableListOf(),
+    val photos: List<Photo> = listOf(),
+    val totalCount: Int? = null,
     val isLatest: Boolean = false,
     val page: Int = 1,
     val rovers: List<String>? = null,
@@ -21,11 +22,11 @@ data class GalleryState(
 ) : State()
 
 sealed class GalleryAction : Action() {
-    data class LoadLatestPhotos(val roverName: String, val isLocal: Boolean) : GalleryAction()
+    data class InitGallery(val roverName: String, val isLocal: Boolean) : GalleryAction()
+    data class LoadPage(val page: Int) : GalleryAction()
     data object OnBackClick : GalleryAction()
     data class OnPhotoClick(val photoDto: Photo) : GalleryAction()
     data class OnSetNewOptions(val newOptions: PhotosOptions) : GalleryAction()
-    data object LoadMore : GalleryAction()
     data class OnImageError(val error: Throwable) : GalleryAction()
     data class OnChooseRover(val rover: String?) : GalleryAction()
 }
