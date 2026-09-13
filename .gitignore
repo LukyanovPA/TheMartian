@@ -19,6 +19,8 @@
 .cxx
 local.properties
 .claude
+/aso
+/aso/
 
 app/debug/
 app/release/
