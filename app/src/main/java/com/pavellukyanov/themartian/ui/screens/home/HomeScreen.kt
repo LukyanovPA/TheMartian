@@ -2,6 +2,7 @@ package com.pavellukyanov.themartian.ui.screens.home
 
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,8 +25,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -95,6 +98,7 @@ fun HomeScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeScreenContent(
     modifier: Modifier,
@@ -105,80 +109,83 @@ private fun HomeScreenContent(
     var privacyPolicyState by remember { mutableStateOf(false) }
     val favouritesRoute = "ui/screens/gallery/${stringResource(id = R.string.favourites_title)}/${true}"
 
-    val heroRover = state.rovers.filter { it.status == STATUS_ACTIVE }.maxByOrNull { it.maxDate } ?: state.rovers.firstOrNull()
-    val heroPhoto = heroRover?.let { state.thumbnails[it.roverName]?.firstOrNull() }
-
     if (privacyPolicyState) {
         PrivacyPolicyWebView(onBackClick = { privacyPolicyState = !privacyPolicyState })
     } else {
         Box(modifier = modifier.fillMaxSize()) {
-            LazyColumn(
-                state = rememberLazyListState(),
-                modifier = Modifier.padding(top = 20.dp),
-                contentPadding = PaddingValues(bottom = 88.dp)
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = { onClick(HomeAction.Refresh) },
+                modifier = Modifier.fillMaxSize()
             ) {
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 24.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
+                LazyColumn(
+                    state = rememberLazyListState(),
+                    modifier = Modifier.padding(top = 20.dp),
+                    contentPadding = PaddingValues(bottom = 88.dp)
+                ) {
+                    item {
+                        Row(
                             modifier = Modifier
-                                .size(8.dp)
-                                .background(color = AccentMars, shape = CircleShape)
-                        )
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 24.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(color = AccentMars, shape = CircleShape)
+                            )
+                            Text(
+                                modifier = Modifier.padding(start = 9.dp),
+                                text = stringResource(id = R.string.app_name),
+                                style = MartianType.ScreenTitle,
+                                color = TextPrimary
+                            )
+                        }
+                    }
+
+                    if (state.rovers.isNotEmpty()) {
+                        item {
+                            HeroSection(photo = state.heroPhoto)
+                        }
+                    }
+
+                    item {
                         Text(
-                            modifier = Modifier.padding(start = 9.dp),
-                            text = stringResource(id = R.string.app_name),
-                            style = MartianType.ScreenTitle,
-                            color = TextPrimary
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                            text = stringResource(id = R.string.home_section_rovers).uppercase(),
+                            style = MartianType.Kicker,
+                            color = TextSecondary
                         )
                     }
-                }
 
-                if (heroRover != null) {
-                    item {
-                        HeroSection(rover = heroRover, photo = heroPhoto)
+                    state.rovers.forEach { rover ->
+                        item {
+                            RoverCard(
+                                modifier = Modifier.animateItem(),
+                                rover = rover,
+                                thumbnails = state.thumbnails[rover.roverName].orEmpty(),
+                                onClick = { onClick(HomeAction.OnRoverClick(rover = it)) },
+                                onLoadThumbnail = { onClick(HomeAction.LoadThumbnail(roverName = rover.roverName)) }
+                            )
+                        }
                     }
-                }
 
-                item {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 12.dp),
-                        text = stringResource(id = R.string.home_section_rovers).uppercase(),
-                        style = MartianType.Kicker,
-                        color = TextSecondary
-                    )
-                }
-
-                state.rovers.forEach { rover ->
                     item {
-                        RoverCard(
-                            modifier = Modifier.animateItem(),
-                            rover = rover,
-                            thumbnails = state.thumbnails[rover.roverName].orEmpty(),
-                            onClick = { onClick(HomeAction.OnRoverClick(rover = it)) },
-                            onLoadThumbnail = { onClick(HomeAction.LoadThumbnail(roverName = rover.roverName)) }
+                        Text(
+                            text = stringResource(id = R.string.privacy_policy),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 20.dp, bottom = 8.dp)
+                                .clickable { privacyPolicyState = !privacyPolicyState }
+                                .padding(16.dp),
+                            style = MartianType.MonoCaption,
+                            color = TextTertiary,
+                            textAlign = TextAlign.Center
                         )
                     }
-                }
-
-                item {
-                    Text(
-                        text = stringResource(id = R.string.privacy_policy),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 20.dp, bottom = 8.dp)
-                            .clickable { privacyPolicyState = !privacyPolicyState }
-                            .padding(16.dp),
-                        style = MartianType.MonoCaption,
-                        color = TextTertiary,
-                        textAlign = TextAlign.Center
-                    )
                 }
             }
 
@@ -258,7 +265,6 @@ private val HERO_HEIGHT = 196.dp
 
 @Composable
 private fun HeroSection(
-    rover: Rover,
     photo: Photo?
 ) {
     Box(
@@ -267,49 +273,53 @@ private fun HeroSection(
             .height(HERO_HEIGHT)
             .background(SurfaceMuted)
     ) {
-        if (photo != null) {
-            Picture(
-                url = photo.src,
-                contentDescription = photo.cameraFullName,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-                onError = {}
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colorStops = arrayOf(
-                                0f to BgDeep.copy(alpha = 0.15f),
-                                0.58f to BgDeep.copy(alpha = 0.55f),
-                                1f to BgDeep
-                            )
-                        )
+        Crossfade(targetState = photo, label = "hero") { currentPhoto ->
+            if (currentPhoto != null) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Picture(
+                        url = currentPhoto.src,
+                        contentDescription = currentPhoto.cameraFullName,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                        onError = {}
                     )
-            )
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(horizontal = 20.dp, vertical = 14.dp)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.home_hero_kicker).uppercase(),
-                    style = MartianType.Kicker,
-                    color = AccentMars
-                )
-                Text(
-                    modifier = Modifier.padding(top = 4.dp),
-                    text = "${rover.roverName} · ${stringResource(id = R.string.sol)} ${photo.sol}",
-                    style = MartianType.ScreenTitle,
-                    color = TextPrimary
-                )
-                Text(
-                    modifier = Modifier.padding(top = 2.dp),
-                    text = "${photo.cameraName} · ${photo.earthFormattedDate}",
-                    style = MartianType.MonoCaption,
-                    color = TextSecondary
-                )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colorStops = arrayOf(
+                                        0f to BgDeep.copy(alpha = 0.15f),
+                                        0.58f to BgDeep.copy(alpha = 0.55f),
+                                        1f to BgDeep
+                                    )
+                                )
+                            )
+                    )
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(horizontal = 20.dp, vertical = 14.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.home_hero_kicker).uppercase(),
+                            style = MartianType.Kicker,
+                            color = AccentMars
+                        )
+                        Text(
+                            modifier = Modifier.padding(top = 4.dp),
+                            text = "${currentPhoto.roverName} · ${stringResource(id = R.string.sol)} ${currentPhoto.sol}",
+                            style = MartianType.ScreenTitle,
+                            color = TextPrimary
+                        )
+                        Text(
+                            modifier = Modifier.padding(top = 2.dp),
+                            text = "${currentPhoto.cameraName} · ${currentPhoto.earthFormattedDate}",
+                            style = MartianType.MonoCaption,
+                            color = TextSecondary
+                        )
+                    }
+                }
             }
         }
     }

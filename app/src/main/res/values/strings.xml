@@ -65,7 +65,7 @@
     <string name="home_stat_landing">Посадка</string>
     <string name="home_stat_last_photo">Свежий кадр</string>
     <string name="home_stat_total_photos">Всего фото</string>
-    <string name="home_hero_kicker">Последний кадр</string>
+    <string name="home_hero_kicker">Случайный кадр</string>
 
     <string name="gallery_photos_count">%d кадров</string>
     <string name="filter_button_description">Открыть фильтр</string>
