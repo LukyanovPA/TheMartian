@@ -6,7 +6,8 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import java.net.URI
 
-private const val NASA_IMAGE_HOST = "mars.nasa.gov"
+// mars.jpl.nasa.gov is the legacy host of older raw images; it redirects to mars.nasa.gov, bypassing the relay
+private val NASA_IMAGE_HOSTS = setOf("mars.nasa.gov", "mars.jpl.nasa.gov")
 
 private const val RELAY_IMAGE_PREFIX = "/nasa"
 
@@ -22,7 +23,7 @@ class ImageRelayInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
-        if (request.url.host != NASA_IMAGE_HOST) return chain.proceed(request)
+        if (request.url.host !in NASA_IMAGE_HOSTS) return chain.proceed(request)
 
         val relayedUrl = relayOrigin.newBuilder()
             .encodedPath(RELAY_IMAGE_PREFIX + request.url.encodedPath)

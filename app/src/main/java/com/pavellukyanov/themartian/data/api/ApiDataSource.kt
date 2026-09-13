@@ -11,6 +11,10 @@ import com.pavellukyanov.themartian.data.dto.map
 import com.pavellukyanov.themartian.utils.ext.onIo
 import com.pavellukyanov.themartian.utils.ext.toData
 
+private const val RANDOM_CANDIDATES = 25
+
+private const val SAMPLE_TYPE_THUMBNAIL = "thumbnail"
+
 class ApiDataSource(
     private val roverService: RoverService,
     private val networkMonitor: NetworkMonitor
@@ -59,6 +63,20 @@ class ApiDataSource(
                 perPage = pagination?.perPage ?: perPage,
                 totalCount = response.meta?.totalCount
             )
+        }
+    }
+
+    suspend fun getPhotosByEarthDate(roverName: String, earthDate: String): List<Photo> = onIo {
+        networkMonitor {
+            roverService.getPhotos(
+                rovers = roverName,
+                earthDate = earthDate,
+                perPage = RANDOM_CANDIDATES,
+                imageSizes = "small,medium,large,full"
+            ).toData()
+                .data
+                .filterNot { it.attributes.sampleType.equals(SAMPLE_TYPE_THUMBNAIL, ignoreCase = true) }
+                .map(PhotoDto::map)
         }
     }
 

@@ -48,7 +48,7 @@
     <string name="home_stat_landing">Landing</string>
     <string name="home_stat_last_photo">Last photo</string>
     <string name="home_stat_total_photos">Total photos</string>
-    <string name="home_hero_kicker">Latest frame</string>
+    <string name="home_hero_kicker">Random frame</string>
     <string name="gallery_photos_count">%d photos</string>
     <string name="filter_button_description">Open filter</string>
     <string name="photo_meta_lighting">Lighting</string>
